@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customer Dashboard | HutFix</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="global.css" />
+    <link rel="stylesheet" href="customer.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="nav-container">
+        <a href="index.html" class="logo-container">
+          <span class="brand-name">HutFix.</span>
+        </a>
+        <div class="nav-links">
+          <button id="theme-toggle" class="btn-icon" aria-label="Toggle Dark Mode">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+          <div class="user-profile-nav">
+            <img id="nav-avatar" src="" alt="User" class="avatar-sm" />
+            <span id="nav-username">User</span>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="dashboard-layout container">
+      <aside class="sidebar">
+        <ul class="sidebar-menu">
+          <li class="active" data-target="section-book">
+            <i class="fa-solid fa-plus-circle"></i> New Request
+          </li>
+          <li data-target="section-history">
+            <i class="fa-solid fa-list"></i> My Bookings
+          </li>
+          <li data-target="section-profile">
+            <i class="fa-solid fa-user"></i> Profile
+          </li>
+          <li id="logout-btn" class="text-danger">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </li>
+        </ul>
+      </aside>
+
+      <main class="dashboard-content">
+        <section id="section-book" class="dash-section active">
+          <div class="card form-card">
+            <h2>Book a Service</h2>
+            <p class="text-muted">Fill out the details, and our smart engine will find the best match.</p>
+
+            <form id="booking-form">
+              <div class="form-row">
+                <div class="input-group">
+                  <label>Service Type</label>
+                  <select id="book-category" required>
+                    <option value="" disabled selected>Select a Service</option>
+                    <option value="AC & Appliance">❄️ AC & Appliance Repair</option>
+                    <option value="Plumbing">💧 Plumbing</option>
+                    <option value="Electrical">⚡ Electrical Work</option>
+                    <option value="Cleaning">✨ Cleaning & Pest Control</option>
+                    <option value="Carpentry">🔨 Carpentry & Furniture</option>
+                    <option value="Painting">🎨 Painting & Decoration</option>
+                    <option value="Gardening">🌱 Gardening & Landscaping</option>
+                    <option value="Security">🛡️ Security Systems</option>
+                    <option value="IT & Networking">🌐 IT & Networking</option>
+                    <option value="Other">🔧 Other Services</option>
+                  </select>
+                </div>
+                <div class="input-group">
+                  <label>Urgency</label>
+                  <select id="book-urgency">
+                    <option value="Normal">Normal</option>
+                    <option value="Urgent">Urgent (Within 2 hrs)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="input-group">
+                  <label>Preferred Date</label>
+                  <input type="date" id="book-date" required />
+                </div>
+                <div class="input-group">
+                  <label>Preferred Time</label>
+                  <input type="time" id="book-time" required />
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label>Location (Area)</label>
+                <input type="text" id="book-location" placeholder="e.g., Dhanmondi, Mirpur" required />
+              </div>
+
+              <div class="input-group">
+                <label>Problem Details</label>
+                <textarea id="book-details" rows="3" placeholder="Briefly describe the issue..."></textarea>
+              </div>
+
+              <button type="submit" class="btn-primary btn-large btn-full">Find Best Provider</button>
+            </form>
+          </div>
+
+          <div id="match-result-container" class="card form-card" style="display: none; margin-top: 20px;">
+            <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Best Match Found!</h3>
+            <div id="match-details" class="match-details-box"></div>
+            <button id="confirm-booking-btn" class="btn-primary btn-full mt-3">Confirm Booking</button>
+            <button id="cancel-booking-btn" class="btn-outline btn-full mt-2">Cancel</button>
+          </div>
+        </section>
+
+        <section id="section-history" class="dash-section">
+          <h2>My Bookings</h2>
+          <div id="bookings-list" class="bookings-grid"></div>
+          <div style="margin-top: 20px;">
+            <a href="index.html#services" class="btn-outline">
+              <i class="fa-solid fa-magnifying-glass"></i> Browse More Services
+            </a>
+          </div>
+        </section>
+
+        <section id="section-profile" class="dash-section">
+          <div class="card form-card">
+            <h2>Profile Settings</h2>
+            <form id="profile-form">
+              <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" id="prof-name" required />
+              </div>
+              <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" id="prof-email" readonly style="opacity: 0.7" />
+              </div>
+              <div class="input-group">
+                <label>New Password (Optional)</label>
+                <input type="password" id="prof-password" placeholder="Leave blank to keep current" />
+              </div>
+              <button type="submit" class="btn-primary">Save Changes</button>
+            </form>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Review Modal -->
+    <div class="auth-overlay" id="review-modal">
+      <div class="auth-box">
+        <button class="close-btn" id="close-review"><i class="fa-solid fa-xmark"></i></button>
+        <h3 style="margin-bottom: 10px; text-align: center;">Rate Your Service</h3>
+        <p class="text-muted" style="text-align: center; margin-bottom: 20px;">How was the provider?</p>
+
+        <div id="star-rating" style="text-align: center; font-size: 2.5rem; color: #e2e8f0; cursor: pointer; margin-bottom: 20px;">
+          <i class="fa-solid fa-star star-btn" data-val="1"></i>
+          <i class="fa-solid fa-star star-btn" data-val="2"></i>
+          <i class="fa-solid fa-star star-btn" data-val="3"></i>
+          <i class="fa-solid fa-star star-btn" data-val="4"></i>
+          <i class="fa-solid fa-star star-btn" data-val="5"></i>
+        </div>
+
+        <form id="review-form">
+          <input type="hidden" id="review-provider-id" />
+          <input type="hidden" id="review-booking-id" />
+          <input type="hidden" id="review-score" value="0" />
+
+          <div class="input-group">
+            <textarea id="review-comment" placeholder="Leave a comment (optional)..." rows="3" style="width: 100%; border-radius: 8px; padding: 12px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary); font-family: inherit; resize: none;"></textarea>
+          </div>
+          <button type="submit" class="btn-primary btn-full">Submit Review</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="db.js"></script>
+    <script src="global.js"></script>
+    <script src="customer.js"></script>
+  </body>
+</html>

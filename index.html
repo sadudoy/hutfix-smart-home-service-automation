@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HutFix | Smart Home Services</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="global.css" />
+    <link rel="stylesheet" href="auth.css" />
+  </head>
+  <body>
+    <div id="loader-wrapper"><div class="loader"></div></div>
+
+    <nav class="navbar">
+      <div class="nav-container">
+        <a href="index.html" class="logo-container">
+          <div class="logo-icon">
+            <img src="/images/logo.jpg" alt="logo" height="40px" />
+          </div>
+          <span class="brand-name">HutFix</span>
+        </a>
+
+        <div class="nav-links" id="nav-links">
+          <a href="#services">Services</a>
+          <button
+            id="theme-toggle"
+            class="btn-icon"
+            aria-label="Toggle Dark Mode"
+          >
+            <i class="fa-solid fa-moon"></i>
+          </button>
+          <div id="nav-auth-area">
+            <button class="btn-primary auth-trigger">Login / Sign Up</button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <header class="hero-slider-container">
+      <div class="slide active">
+        <div class="slide-overlay"></div>
+        <div class="hero-content">
+          <span class="badge">Fast & Reliable</span>
+          <h1>Everyday Services, Automated.</h1>
+          <p>
+            Find trusted professionals for repair, cleaning, and maintenance
+            instantly.
+          </p>
+
+          <div class="search-bar">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input
+              type="text"
+              id="hero-search"
+              placeholder="Search for AC repair, plumbing, cleaners..."
+            />
+            <button id="search-btn" class="btn-primary">Search</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section id="services" class="services-section">
+      <div class="container">
+        <div class="section-header">
+          <h2>Our Premium Services</h2>
+        </div>
+        <div class="services-grid">
+          <div
+            class="service-card category-trigger"
+            data-category="AC & Appliance"
+          >
+            <div
+              class="card-icon-wrapper"
+              style="background: rgba(74, 144, 226, 0.1); color: #4a90e2"
+            >
+              <i class="fa-solid fa-snowflake"></i>
+            </div>
+            <h3>AC & Appliance</h3>
+          </div>
+
+          <div class="service-card category-trigger" data-category="Plumbing">
+            <div
+              class="card-icon-wrapper"
+              style="background: rgba(16, 185, 129, 0.1); color: #10b981"
+            >
+              <i class="fa-solid fa-faucet-drip"></i>
+            </div>
+            <h3>Plumbing</h3>
+          </div>
+
+          <div class="service-card category-trigger" data-category="Electrical">
+            <div
+              class="card-icon-wrapper"
+              style="background: rgba(245, 158, 11, 0.1); color: #f59e0b"
+            >
+              <i class="fa-solid fa-bolt"></i>
+            </div>
+            <h3>Electrical</h3>
+          </div>
+
+          <div class="service-card category-trigger" data-category="Cleaning">
+            <div
+              class="card-icon-wrapper"
+              style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6"
+            >
+              <i class="fa-solid fa-spray-can-sparkles"></i>
+            </div>
+            <h3>Cleaning</h3>
+          </div>
+
+          <div class="service-card category-trigger" data-category="Carpentry">
+            <div
+              class="card-icon-wrapper"
+              style="background: rgba(249, 115, 22, 0.1); color: #f97316"
+            >
+              <i class="fa-solid fa-hammer"></i>
+            </div>
+            <h3>Carpentry</h3>
+          </div>
+
+          <div class="service-card category-trigger" data-category="Painting">
+            <div
+              class="card-icon-wrapper"
+              style="background: rgba(236, 72, 153, 0.1); color: #ec4899"
+            >
+              <i class="fa-solid fa-paintbrush"></i>
+            </div>
+            <h3>Painting</h3>
+          </div>
+
+          <div class="service-card category-trigger" data-category="Gardening">
+            <div
+              class="card-icon-wrapper"
+              style="background: rgba(34, 197, 94, 0.1); color: #22c55e"
+            >
+              <i class="fa-solid fa-seedling"></i>
+            </div>
+            <h3>Gardening</h3>
+          </div>
+
+          <div class="service-card category-trigger" data-category="Security">
+            <div
+              class="card-icon-wrapper"
+              style="background: rgba(239, 68, 68, 0.1); color: #ef4444"
+            >
+              <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h3>Security</h3>
+          </div>
+
+          <div
+            class="service-card category-trigger"
+            data-category="IT & Networking"
+          >
+            <div
+              class="card-icon-wrapper"
+              style="background: rgba(99, 102, 241, 0.1); color: #6366f1"
+            >
+              <i class="fa-solid fa-network-wired"></i>
+            </div>
+            <h3>IT & Networking</h3>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section
+      id="marketplace-section"
+      class="services-section"
+      style="display: none; background: var(--surface-color)"
+    >
+      <div class="container">
+        <div class="section-header">
+          <h2>Available Technicians</h2>
+          <p id="marketplace-subtitle">Showing experts for your request.</p>
+        </div>
+        <div id="gigs-grid" class="gigs-grid"></div>
+      </div>
+    </section>
+
+    <div class="auth-overlay" id="booking-modal">
+      <div class="auth-box">
+        <button class="close-btn" id="close-booking">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <h3 style="margin-bottom: 20px; text-align: center">Book Provider</h3>
+        <form id="direct-booking-form">
+          <input type="hidden" id="book-provider-id" />
+          <input type="hidden" id="book-provider-name" />
+          <input type="hidden" id="book-provider-category" />
+          <input type="hidden" id="book-provider-price" />
+
+          <div
+            class="input-group"
+            style="position: relative; margin-bottom: 15px"
+          >
+            <i
+              class="fa-regular fa-calendar"
+              style="
+                position: absolute;
+                left: 14px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #888;
+              "
+            ></i>
+            <input
+              type="date"
+              id="book-date"
+              required
+              style="
+                width: 100%;
+                padding: 12px 14px 12px 40px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                background: #fff;
+                font-size: 15px;
+                outline: none;
+                box-sizing: border-box;
+              "
+            />
+          </div>
+
+          <div
+            class="input-group"
+            style="position: relative; margin-bottom: 15px"
+          >
+            <i
+              class="fa-regular fa-clock"
+              style="
+                position: absolute;
+                left: 14px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #888;
+              "
+            ></i>
+            <input
+              type="time"
+              id="book-time"
+              required
+              style="
+                width: 100%;
+                padding: 12px 14px 12px 40px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                background: #fff;
+                font-size: 15px;
+                outline: none;
+                box-sizing: border-box;
+              "
+            />
+          </div>
+
+          <div
+            class="input-group"
+            style="position: relative; margin-bottom: 15px"
+          >
+            <i
+              class="fa-solid fa-location-dot"
+              style="
+                position: absolute;
+                left: 14px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #888;
+              "
+            ></i>
+            <input
+              type="text"
+              id="book-location"
+              placeholder="Your Address / Area"
+              required
+              style="
+                width: 100%;
+                padding: 12px 14px 12px 40px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                background: #fff;
+                font-size: 15px;
+                outline: none;
+                box-sizing: border-box;
+              "
+            />
+          </div>
+
+          <div class="input-group">
+            <textarea
+              id="book-details"
+              rows="3"
+              placeholder="Briefly describe the issue..."
+              style="
+                width: 100%;
+                padding: 12px 14px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                background: #fff;
+                font-size: 15px;
+                outline: none;
+                box-sizing: border-box;
+                resize: vertical;
+                font-family: inherit;
+              "
+            ></textarea>
+          </div>
+
+          <button
+            type="submit"
+            class="btn-primary btn-full"
+            style="
+              width: 100%;
+              padding: 14px;
+              background: linear-gradient(135deg, #0052cc 0%, #4a90e2 100%);
+              color: #fff;
+              border: none;
+              border-radius: 8px;
+              font-size: 16px;
+              font-weight: 600;
+              cursor: pointer;
+              transition: all 0.3s ease;
+            "
+          >
+            Confirm Booking
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="auth-overlay" id="auth-modal">
+      <div class="auth-box">
+        <button class="close-btn" id="close-auth">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-target="login-form">
+            Login
+          </button>
+          <button class="auth-tab" data-target="signup-form">Sign Up</button>
+        </div>
+
+        <form id="login-form" class="auth-form active">
+          <div class="input-group">
+            <i class="fa-solid fa-envelope"></i>
+            <input
+              type="email"
+              id="login-email"
+              placeholder="Email Address"
+              required
+            />
+          </div>
+          <div class="input-group">
+            <i class="fa-solid fa-lock"></i>
+            <input
+              type="password"
+              id="login-password"
+              placeholder="Password"
+              required
+            />
+          </div>
+          <div id="login-error" class="auth-error"></div>
+          <button type="submit" class="btn-primary btn-full">Login</button>
+        </form>
+
+        <form id="signup-form" class="auth-form">
+          <div class="role-selector">
+            <input
+              type="radio"
+              id="role-customer"
+              name="role"
+              value="customer"
+              checked
+            />
+            <label for="role-customer">Customer</label>
+            <input
+              type="radio"
+              id="role-provider"
+              name="role"
+              value="provider"
+            />
+            <label for="role-provider">Provider</label>
+          </div>
+
+          <div class="input-group">
+            <i class="fa-solid fa-user"></i>
+            <input
+              type="text"
+              id="signup-name"
+              placeholder="Full Name"
+              required
+            />
+          </div>
+
+          <div class="input-group">
+            <i class="fa-solid fa-envelope"></i>
+            <input
+              type="email"
+              id="signup-email"
+              placeholder="Email Address"
+              required
+            />
+          </div>
+
+          <div class="input-group">
+            <i class="fa-solid fa-lock"></i>
+            <input
+              type="password"
+              id="signup-password"
+              placeholder="Password"
+              required
+            />
+          </div>
+
+          <div
+            id="provider-category-group"
+            class="input-group"
+            style="display: none"
+          >
+            <i class="fa-solid fa-tools"></i>
+            <select id="signup-provider-category">
+              <option value="" disabled selected>
+                Select your service category
+              </option>
+              <option value="AC & Appliance">❄️ AC & Appliance Repair</option>
+              <option value="Plumbing">💧 Plumbing</option>
+              <option value="Electrical">⚡ Electrical Work</option>
+              <option value="Cleaning">✨ Cleaning & Pest Control</option>
+              <option value="Carpentry">🔨 Carpentry & Furniture</option>
+              <option value="Painting">🎨 Painting & Decoration</option>
+              <option value="Gardening">🌱 Gardening & Landscaping</option>
+              <option value="Security">🛡️ Security Systems</option>
+              <option value="IT & Networking">🌐 IT & Networking</option>
+              <option value="Other">🔧 Other Services</option>
+            </select>
+            <small class="text-muted"
+              >Please select the type of service you provide</small
+            >
+          </div>
+
+          <div id="signup-error" class="auth-error"></div>
+          <button type="submit" class="btn-primary btn-full">
+            Create Account
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script src="db.js"></script>
+    <script src="global.js"></script>
+    <script src="auth.js"></script>
+  </body>
+</html>

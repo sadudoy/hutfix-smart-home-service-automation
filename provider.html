@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Provider Dashboard | HutFix</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="global.css" />
+    <link rel="stylesheet" href="customer.css" />
+    <link rel="stylesheet" href="provider.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="nav-container">
+        <a href="index.html" class="logo-container">
+          <div class="logo-icon">
+            <i class="fa-solid fa-screwdriver-wrench"></i>
+          </div>
+          <span class="brand-name">HutFix Pro.</span>
+        </a>
+        <div class="nav-links">
+          <button id="theme-toggle" class="btn-icon" aria-label="Toggle Dark Mode">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+          <div class="user-profile-nav">
+            <img id="nav-avatar" src="" alt="Provider" class="avatar-sm" />
+            <span id="nav-username">Pro</span>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="dashboard-layout container">
+      <aside class="sidebar">
+        <ul class="sidebar-menu">
+          <li class="active" data-target="section-requests">
+            <i class="fa-solid fa-bell"></i> New Requests
+            <span id="request-badge" class="badge-count">0</span>
+          </li>
+          <li data-target="section-active">
+            <i class="fa-solid fa-route"></i> Active Jobs
+          </li>
+          <li data-target="section-history">
+            <i class="fa-solid fa-check-double"></i> Completed
+          </li>
+          <li data-target="section-profile">
+            <i class="fa-solid fa-user-tie"></i> My Profile
+          </li>
+          <li data-target="section-services">
+            <i class="fa-solid fa-gear"></i> Service Settings
+          </li>
+          <li id="logout-btn" class="text-danger">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </li>
+        </ul>
+      </aside>
+
+      <main class="dashboard-content">
+        <section id="section-requests" class="dash-section active">
+          <h2>Incoming Job Requests</h2>
+          <p class="text-muted">Review and accept jobs assigned to you.</p>
+          <div id="requests-list" class="bookings-grid"></div>
+        </section>
+
+        <section id="section-active" class="dash-section">
+          <h2>Active Jobs</h2>
+          <p class="text-muted">Update statuses and navigate to customer locations.</p>
+          <div id="active-jobs-list" class="bookings-grid"></div>
+        </section>
+
+        <section id="section-history" class="dash-section">
+          <h2>Job History</h2>
+          <div id="history-list" class="bookings-grid"></div>
+        </section>
+
+        <section id="section-profile" class="dash-section">
+          <div class="card form-card">
+            <h2>Professional Profile</h2>
+
+            <div class="profile-upload-section">
+              <img id="profile-preview" src="" alt="Profile" class="profile-large" />
+              <div>
+                <label class="btn-outline" for="upload-avatar" style="display: inline-block; margin-bottom: 10px">
+                  <i class="fa-solid fa-camera"></i> Upload Picture
+                </label>
+                <input type="file" id="upload-avatar" accept="image/png,image/jpeg,image/webp" style="display: none" />
+                <p class="text-muted" style="font-size: 0.8rem">JPG, PNG or WebP. Recommended: square image.</p>
+              </div>
+            </div>
+
+            <form id="provider-profile-form">
+              <div class="form-row">
+                <div class="input-group">
+                  <label>Full Name / Business Name</label>
+                  <input type="text" id="prof-name" required />
+                </div>
+                <div class="input-group">
+                  <label>Service Category</label>
+                  <select id="prof-category">
+                    <option value="AC & Appliance">❄️ AC & Appliance</option>
+                    <option value="Plumbing">💧 Plumbing</option>
+                    <option value="Electrical">⚡ Electrical</option>
+                    <option value="Cleaning">✨ Cleaning</option>
+                    <option value="Carpentry">🔨 Carpentry</option>
+                    <option value="Painting">🎨 Painting</option>
+                    <option value="Gardening">🌱 Gardening</option>
+                    <option value="Security">🛡️ Security</option>
+                    <option value="IT & Networking">🌐 IT & Networking</option>
+                    <option value="Other">🔧 Other</option>
+                  </select>
+                </div>
+              </div>
+              <button type="submit" class="btn-primary">Update Profile</button>
+            </form>
+          </div>
+        </section>
+
+        <section id="section-services" class="dash-section">
+          <div class="card form-card">
+            <h2><i class="fa-solid fa-gear"></i> Service Settings</h2>
+            <p class="text-muted">Configure your service details, pricing, and availability.</p>
+
+            <form id="service-settings-form">
+              <div class="pricing-section" style="background: var(--bg-color); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid var(--sky-blue);">
+                <h3 style="color: var(--sky-blue); margin-bottom: 15px;">
+                  <i class="fa-solid fa-money-bill-wave"></i> Service Charge
+                </h3>
+                
+                <div class="form-row">
+                  <div class="input-group">
+                    <label>Service Charge (per hour) <span style="color: #ef4444;">*</span></label>
+                    <div style="position: relative;">
+                      <span style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-weight: 700; color: var(--text-secondary);">৳</span>
+                      <input type="number" id="service-charge" required min="100" step="50" style="padding-left: 40px; font-size: 1.2rem;" />
+                    </div>
+                    <small class="text-muted">Minimum charge: ৳100 per hour</small>
+                  </div>
+                  <div class="input-group">
+                    <label>Service Area <span style="color: #ef4444;">*</span></label>
+                    <select id="service-area" required>
+                      <option value="Dhaka">Dhaka</option>
+                      <option value="Gazipur">Gazipur</option>
+                      <option value="Narayanganj">Narayanganj</option>
+                      <option value="Savar">Savar</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style="margin-top: 15px;">
+                  <label style="display: block; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem;">Quick Price Presets:</label>
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button type="button" class="btn-outline price-preset" data-amount="300" style="padding: 6px 14px; font-size: 0.85rem;">৳300</button>
+                    <button type="button" class="btn-outline price-preset" data-amount="500" style="padding: 6px 14px; font-size: 0.85rem;">৳500</button>
+                    <button type="button" class="btn-outline price-preset" data-amount="800" style="padding: 6px 14px; font-size: 0.85rem;">৳800</button>
+                    <button type="button" class="btn-outline price-preset" data-amount="1000" style="padding: 6px 14px; font-size: 0.85rem;">৳1000</button>
+                    <button type="button" class="btn-outline price-preset" data-amount="1500" style="padding: 6px 14px; font-size: 0.85rem;">৳1500</button>
+                    <button type="button" class="btn-outline price-preset" data-amount="2000" style="padding: 6px 14px; font-size: 0.85rem;">৳2000</button>
+                  </div>
+                </div>
+              </div>
+
+              <div style="background: var(--bg-color); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 15px;"><i class="fa-solid fa-tags"></i> Service Types</h3>
+                <div class="input-group">
+                  <label>Service Types (comma separated) <span style="color: #ef4444;">*</span></label>
+                  <input type="text" id="service-types" placeholder="e.g., AC Repair, Installation, Maintenance" />
+                  <small class="text-muted">Enter multiple services separated by commas</small>
+                </div>
+              </div>
+
+              <div style="background: var(--bg-color); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 15px;"><i class="fa-solid fa-toggle-on"></i> Availability</h3>
+                <div class="input-group">
+                  <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 10px; background: var(--surface-color); border-radius: 8px; border: 1px solid var(--border-color);">
+                    <input type="checkbox" id="service-available" checked style="width: 20px; height: 20px; accent-color: var(--royal-blue);" />
+                    <span style="font-weight: 500;">Available for new bookings</span>
+                  </label>
+                </div>
+              </div>
+
+              <button type="submit" class="btn-primary" style="width: 100%; padding: 14px; font-size: 1.1rem;">
+                <i class="fa-solid fa-save"></i> Save Service Settings
+              </button>
+            </form>
+
+            <div id="service-settings-display" style="margin-top: 25px; padding: 20px; background: var(--bg-color); border-radius: 12px; border: 1px solid var(--border-color);">
+              <h4 style="margin-bottom: 15px;"><i class="fa-solid fa-eye"></i> Current Service Details</h4>
+              <div id="current-service-info" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div style="padding: 10px; background: var(--surface-color); border-radius: 8px; border: 1px solid var(--border-color);">
+                  <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2px;">Service Charge</p>
+                  <p style="font-size: 1.3rem; font-weight: 700; color: var(--sky-blue);">
+                    <span id="display-charge">-</span>
+                  </p>
+                </div>
+                <div style="padding: 10px; background: var(--surface-color); border-radius: 8px; border: 1px solid var(--border-color);">
+                  <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2px;">Service Area</p>
+                  <p style="font-size: 1.1rem; font-weight: 600;">
+                    <span id="display-area">-</span>
+                  </p>
+                </div>
+                <div style="padding: 10px; background: var(--surface-color); border-radius: 8px; border: 1px solid var(--border-color); grid-column: span 2;">
+                  <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2px;">Service Types</p>
+                  <p style="font-weight: 500;">
+                    <span id="display-types">-</span>
+                  </p>
+                </div>
+                <div style="padding: 10px; background: var(--surface-color); border-radius: 8px; border: 1px solid var(--border-color); grid-column: span 2;">
+                  <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2px;">Availability Status</p>
+                  <p style="font-weight: 600;">
+                    <span id="display-availability">-</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="db.js"></script>
+    <script src="global.js"></script>
+    <script src="provider.js"></script>
+  </body>
+</html>

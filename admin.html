@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Control Panel | HutFix</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="global.css">
+    <link rel="stylesheet" href="customer.css"> <!-- Reusing sidebar layout -->
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo-container">
+                <div class="logo-icon" style="background: #ef4444;"><i class="fa-solid fa-shield-halved"></i></div>
+                <span class="brand-name">HutFix Admin.</span>
+            </a>
+            <div class="nav-links">
+                <button id="theme-toggle" class="btn-icon" aria-label="Toggle Dark Mode">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <div class="user-profile-nav">
+                    <img id="nav-avatar" src="" alt="Admin" class="avatar-sm">
+                    <span id="nav-username">Admin</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-layout container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+                <li class="active" data-target="section-overview"><i class="fa-solid fa-chart-pie"></i> Overview</li>
+                <li data-target="section-bookings"><i class="fa-solid fa-clipboard-list"></i> All Bookings</li>
+                <li data-target="section-providers"><i class="fa-solid fa-users-gear"></i> Marketplace Pros</li>
+                <li data-target="section-users"><i class="fa-solid fa-users"></i> Registered Users</li>
+                <li id="logout-btn" class="text-danger"><i class="fa-solid fa-right-from-bracket"></i> Logout</li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-content">
+            
+            <!-- SECTION 1: System Overview -->
+            <section id="section-overview" class="dash-section active">
+                <h2>System Overview</h2>
+                <p class="text-muted">Real-time statistics of your marketplace.</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="color: var(--royal-blue); background: rgba(0, 82, 204, 0.1);"><i class="fa-solid fa-clipboard-check"></i></div>
+                        <div class="stat-info">
+                            <h3 id="stat-total-bookings">0</h3>
+                            <p>Total Bookings</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="color: #10b981; background: rgba(16, 185, 129, 0.1);"><i class="fa-solid fa-wallet"></i></div>
+                        <div class="stat-info">
+                            <h3 id="stat-total-revenue">৳0</h3>
+                            <p>Est. Platform Value</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1);"><i class="fa-solid fa-users-gear"></i></div>
+                        <div class="stat-info">
+                            <h3 id="stat-total-providers">0</h3>
+                            <p>Active Providers</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="color: #8b5cf6; background: rgba(139, 92, 246, 0.1);"><i class="fa-solid fa-users"></i></div>
+                        <div class="stat-info">
+                            <h3 id="stat-total-users">0</h3>
+                            <p>Registered Users</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: Master Ledger (Bookings) -->
+            <section id="section-bookings" class="dash-section">
+                <h2>Master Ledger: All Bookings</h2>
+                <div class="card table-card">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Provider</th>
+                                    <th>Service</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-bookings-table">
+                                <!-- Injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: Providers Directory -->
+            <section id="section-providers" class="dash-section">
+                <h2>Marketplace Providers</h2>
+                <div class="card table-card">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Provider Name</th>
+                                    <th>Category</th>
+                                    <th>Base Rate</th>
+                                    <th>Rating</th>
+                                    <th>Jobs Done</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-providers-table">
+                                <!-- Injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 4: Registered Users -->
+            <section id="section-users" class="dash-section">
+                <h2>Registered Accounts</h2>
+                <div class="card table-card">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Account Role</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users-table">
+                                <!-- Injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="db.js"></script>
+    <script src="global.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
