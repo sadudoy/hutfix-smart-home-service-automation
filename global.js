@@ -40,6 +40,25 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // =========================
+    // CATEGORY ICON HELPER - FIXED to match all categories
+    // =========================
+    function getCategoryIcon(category) {
+        var icons = {
+            "AC & Appliance": { icon: "fa-snowflake", color: "#4a90e2", bg: "rgba(74, 144, 226, 0.1)" },
+            "Plumbing": { icon: "fa-faucet-drip", color: "#10b981", bg: "rgba(16, 185, 129, 0.1)" },
+            "Electrical": { icon: "fa-bolt", color: "#f59e0b", bg: "rgba(245, 158, 11, 0.1)" },
+            "Cleaning": { icon: "fa-spray-can-sparkles", color: "#8b5cf6", bg: "rgba(139, 92, 246, 0.1)" },
+            "Carpentry": { icon: "fa-hammer", color: "#f97316", bg: "rgba(249, 115, 22, 0.1)" },
+            "Painting": { icon: "fa-paintbrush", color: "#ec4899", bg: "rgba(236, 72, 153, 0.1)" },
+            "Gardening": { icon: "fa-seedling", color: "#22c55e", bg: "rgba(34, 197, 94, 0.1)" },
+            "Security": { icon: "fa-shield-halved", color: "#ef4444", bg: "rgba(239, 68, 68, 0.1)" },
+            "IT & Networking": { icon: "fa-network-wired", color: "#6366f1", bg: "rgba(99, 102, 241, 0.1)" },
+            "Other": { icon: "fa-tools", color: "#6b7280", bg: "rgba(107, 114, 128, 0.1)" }
+        };
+        return icons[category] || icons["Other"];
+    }
+
+    // =========================
     // CURRENT USER
     // =========================
     var currentUser = null;
@@ -55,24 +74,21 @@ document.addEventListener("DOMContentLoaded", function() {
     var navAuthArea = document.getElementById("nav-auth-area");
 
     if (currentUser && navAuthArea) {
-        var dashboardLink = "index.html"; // CUSTOMERS go to homepage
+        var dashboardLink = "index.html";
         if (currentUser.role === "provider") {
             dashboardLink = "provider.html";
         } else if (currentUser.role === "admin") {
             dashboardLink = "admin.html";
         }
 
-        // Check if user is customer - show different menu
         var isCustomer = currentUser.role === "customer";
         var menuItems = '';
         
         if (isCustomer) {
-            // Customer menu - link to homepage with booking section
             menuItems = 
                 '<a href="index.html#marketplace-section"><i class="fa-solid fa-search"></i> Browse Services</a>' +
                 '<a href="customer.html"><i class="fa-solid fa-list"></i> My Bookings</a>';
         } else {
-            // Provider/Admin menu
             menuItems = 
                 '<a href="' + dashboardLink + '"><i class="fa-solid fa-gauge"></i> My Dashboard</a>' +
                 '<a href="' + dashboardLink + '"><i class="fa-solid fa-list"></i> Order History</a>';
@@ -111,103 +127,60 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // =========================
-    // RENDER PROVIDERS
+    // RENDER PROVIDERS - USING getCategoryIcon HELPER
     // =========================
-    // =========================
-// RENDER PROVIDERS - UPDATED WITH BETTER ICONS
-// =========================
-function renderGigs(providers, titleText, shouldScroll) {
-    shouldScroll = shouldScroll || false;
-    var subtitle = document.getElementById("marketplace-subtitle");
+    function renderGigs(providers, titleText, shouldScroll) {
+        shouldScroll = shouldScroll || false;
+        var subtitle = document.getElementById("marketplace-subtitle");
 
-    if (subtitle) {
-        subtitle.textContent = titleText;
-    }
-
-    marketplaceSection.style.display = "block";
-    gigsGrid.innerHTML = "";
-
-    if (!providers || providers.length === 0) {
-        gigsGrid.innerHTML = '<p style="text-align:center; grid-column:1/-1;">No providers found.</p>';
-        return;
-    }
-
-    providers.forEach(function(provider) {
-        // --- REPLACE THIS SECTION WITH THE NEW ICON MAPPING ---
-        var icon = "fa-tools";
-        var iconColor = "#6b7280";
-        var iconBg = "rgba(107, 114, 128, 0.1)";
-        
-        if (provider.category && provider.category.includes("AC")) {
-            icon = "fa-snowflake";
-            iconColor = "#4a90e2";
-            iconBg = "rgba(74, 144, 226, 0.1)";
-        } else if (provider.category && provider.category.includes("Plumb")) {
-            icon = "fa-faucet-drip";
-            iconColor = "#10b981";
-            iconBg = "rgba(16, 185, 129, 0.1)";
-        } else if (provider.category && provider.category.includes("Elect")) {
-            icon = "fa-bolt";
-            iconColor = "#f59e0b";
-            iconBg = "rgba(245, 158, 11, 0.1)";
-        } else if (provider.category && provider.category.includes("Clean")) {
-            icon = "fa-spray-can-sparkles";
-            iconColor = "#8b5cf6";
-            iconBg = "rgba(139, 92, 246, 0.1)";
-        } else if (provider.category && provider.category.includes("Carpent")) {
-            icon = "fa-hammer";
-            iconColor = "#f97316";
-            iconBg = "rgba(249, 115, 22, 0.1)";
-        } else if (provider.category && provider.category.includes("Paint")) {
-            icon = "fa-paintbrush";
-            iconColor = "#ec4899";
-            iconBg = "rgba(236, 72, 153, 0.1)";
-        } else if (provider.category && provider.category.includes("Garden")) {
-            icon = "fa-seedling";
-            iconColor = "#22c55e";
-            iconBg = "rgba(34, 197, 94, 0.1)";
-        } else if (provider.category && provider.category.includes("Security")) {
-            icon = "fa-shield-halved";
-            iconColor = "#ef4444";
-            iconBg = "rgba(239, 68, 68, 0.1)";
-        } else if (provider.category && provider.category.includes("IT")) {
-            icon = "fa-network-wired";
-            iconColor = "#6366f1";
-            iconBg = "rgba(99, 102, 241, 0.1)";
+        if (subtitle) {
+            subtitle.textContent = titleText;
         }
 
-        var avatar = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(provider.name) + '&background=1A365D&color=fff';
-        var safeName = provider.name.replace(/'/g, "\\'");
-        var safeCategory = provider.category.replace(/'/g, "\\'");
+        marketplaceSection.style.display = "block";
+        gigsGrid.innerHTML = "";
 
-        var card = document.createElement("div");
-        card.className = "gig-card";
-        card.innerHTML = 
-            '<div class="gig-image" style="background: ' + iconBg + '; display: flex; align-items: center; justify-content: center;">' +
-                '<i class="fa-solid ' + icon + '" style="font-size: 4rem; color: ' + iconColor + ';"></i>' +
-            '</div>' +
-            '<div class="gig-info">' +
-                '<div class="gig-provider">' +
-                    '<img src="' + avatar + '" class="provider-avatar" alt="' + provider.name + '">' +
-                    '<span>' + provider.name + '</span>' +
-                '</div>' +
-                '<h4>Professional ' + provider.category + ' Service</h4>' +
-                '<div class="gig-rating">' +
-                    '<i class="fa-solid fa-star"></i> ' + provider.rating +
-                    ' <span>(' + provider.jobsCompleted + ' jobs)</span>' +
-                '</div>' +
-                '<div class="gig-footer">' +
-                    '<span class="gig-price">৳' + provider.pricePerHour + '</span>' +
-                    '<button class="btn-primary" onclick="initiateBooking(\'' + provider.id + '\', \'' + safeName + '\', \'' + safeCategory + '\', ' + provider.pricePerHour + ')">Book Now</button>' +
-                '</div>' +
-            '</div>';
-        gigsGrid.appendChild(card);
-    });
+        if (!providers || providers.length === 0) {
+            gigsGrid.innerHTML = '<p style="text-align:center; grid-column:1/-1;">No providers found.</p>';
+            return;
+        }
 
-    if (shouldScroll) {
-        marketplaceSection.scrollIntoView({ behavior: "smooth" });
+        providers.forEach(function(provider) {
+            // Use the helper function instead of inline mapping
+            var iconData = getCategoryIcon(provider.category);
+            
+            var avatar = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(provider.name) + '&background=1A365D&color=fff';
+            var safeName = provider.name.replace(/'/g, "\\'");
+            var safeCategory = provider.category.replace(/'/g, "\\'");
+
+            var card = document.createElement("div");
+            card.className = "gig-card";
+            card.innerHTML = 
+                '<div class="gig-image" style="background: ' + iconData.bg + '; display: flex; align-items: center; justify-content: center;">' +
+                    '<i class="fa-solid ' + iconData.icon + '" style="font-size: 4rem; color: ' + iconData.color + ';"></i>' +
+                '</div>' +
+                '<div class="gig-info">' +
+                    '<div class="gig-provider">' +
+                        '<img src="' + avatar + '" class="provider-avatar" alt="' + provider.name + '">' +
+                        '<span>' + provider.name + '</span>' +
+                    '</div>' +
+                    '<h4>Professional ' + provider.category + ' Service</h4>' +
+                    '<div class="gig-rating">' +
+                        '<i class="fa-solid fa-star"></i> ' + provider.rating +
+                        ' <span>(' + provider.jobsCompleted + ' jobs)</span>' +
+                    '</div>' +
+                    '<div class="gig-footer">' +
+                        '<span class="gig-price">৳' + provider.pricePerHour + '</span>' +
+                        '<button class="btn-primary" onclick="initiateBooking(\'' + provider.id + '\', \'' + safeName + '\', \'' + safeCategory + '\', ' + provider.pricePerHour + ')">Book Now</button>' +
+                    '</div>' +
+                '</div>';
+            gigsGrid.appendChild(card);
+        });
+
+        if (shouldScroll) {
+            marketplaceSection.scrollIntoView({ behavior: "smooth" });
+        }
     }
-}
 
     // =========================
     // SHOW ALL PROVIDERS
