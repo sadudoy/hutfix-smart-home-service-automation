@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser');
 const { PORT, NODE_ENV } = require('./config/env');
 const { pool } = require('./config/db');
 const healthRouter = require('./routes/health.routes');
+const authRouter = require('./routes/auth.routes');
 const errorHandler = require('./middleware/error');
 
 const app = express();
@@ -24,6 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // API Routes
 app.use('/api', healthRouter);
+app.use('/api/auth', authRouter);
 
 // Static frontend serving
 app.use(express.static(path.join(__dirname, '..', 'client')));
