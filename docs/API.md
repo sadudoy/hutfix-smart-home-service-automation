@@ -1,681 +1,436 @@
-# HutFix API Documentation
+# HutFix — Complete REST API Specification
 
-## System Endpoints
+---
 
-### 1. Health Check
-
-Verifies server responsiveness and active PostgreSQL database pool connectivity.
-
-- **Method:** `GET`
-- **Path:** `/api/health`
-- **Authentication:** None (Public)
-
-#### Success Response
-
-- **Status Code:** `200 OK`
-- **Content-Type:** `application/json`
-- **Body:**
-
+## 1. Health
+### `GET /api/health`
+- **Auth**: None (Public)
+- **Role**: Any
+- **Response `200 OK`**:
 ```json
 {
   "ok": true,
-  "db": "connected",
-  "now": "2026-10-25T13:16:00.000Z"
-}
-```
-
-#### Failure Response
-
-- **Status Code:** `500 Internal Server Error`
-- **Content-Type:** `application/json`
-- **Body:**
-
-```json
-{
-  "ok": false,
-  "db": "disconnected",
-  "error": "connection to server at 'localhost' failed..."
+  "db": "connected"
 }
 ```
 
 ---
 
-## Authentication Endpoints
-
-Base path: `/api/auth`  
-Session management is handled via httpOnly cookie (`hutfix_token`, `sameSite: lax`, 7-day duration) or `Authorization: Bearer <token>` header.
-
-### 2. User Registration
-
-Creates a new customer or provider account. Password hashing uses PostgreSQL `pgcrypto` `crypt(..., gen_salt('bf'))`.
-
-- **Method:** `POST`
-- **Path:** `/api/auth/register`
-- **Rate Limit:** 50 requests per 15 minutes
-- **Request Body:**
-
+## 2. Authentication
+### `POST /api/auth/register`
+- **Auth**: None
+- **Body**:
 ```json
 {
   "email": "user@example.com",
-  "password": "securepassword123",
-  "full_name": "John Doe",
-  "phone": "+8801700000000",
-  "role": "customer"
+  "password": "SecretPassword123",
+  "full_name": "Rahim Khan",
+  "role": "customer",
+  "phone": "+8801700000000"
 }
 ```
-
-- **Validation Rules:**
-  - `email`, `password`, `full_name` are required.
-  - `password.length >= 6`.
-  - `role` must be `'customer'` or `'provider'` (default is `'customer'`). `'admin'` is rejected.
-
-#### Response
-
-- **Status Code:** `200 OK`
-- **Set-Cookie:** `hutfix_token=<jwt>; HttpOnly; Path=/; Max-Age=604800`
-- **Body:**
-
+- **Response `201 Created`**:
 ```json
 {
   "ok": true,
   "user": {
-    "id": 15,
+    "id": "4",
     "email": "user@example.com",
-    "full_name": "John Doe",
-    "phone": "+8801700000000",
     "role": "customer",
-    "created_at": "2026-10-25T13:20:00.000Z"
+    "full_name": "Rahim Khan",
+    "phone": "+8801700000000",
+    "created_at": "2026-10-25T12:00:00.000Z"
   }
 }
 ```
 
-### 3. User Login
-
-Authenticates existing customer, provider, or administrator credentials.
-
-- **Method:** `POST`
-- **Path:** `/api/auth/login`
-- **Rate Limit:** 50 requests per 15 minutes
-- **Request Body:**
-
+### `POST /api/auth/login`
+- **Auth**: None
+- **Body**:
 ```json
 {
   "email": "customer@demo.test",
   "password": "demo1234"
 }
 ```
-
-#### Response
-
-- **Status Code:** `200 OK`
-- **Set-Cookie:** `hutfix_token=<jwt>; HttpOnly; Path=/; Max-Age=604800`
-- **Body:**
-
+- **Response `200 OK`** (Sets HTTP-only `hutfix_token` cookie):
 ```json
 {
   "ok": true,
   "user": {
-    "id": 1,
+    "id": "1",
     "email": "customer@demo.test",
+    "role": "customer",
     "full_name": "Demo Customer",
     "phone": "+8801700000001",
-    "role": "customer",
-    "created_at": "2026-10-25T13:14:00.000Z"
+    "created_at": "2026-10-25T12:00:00.000Z"
   }
 }
 ```
+- **Errors**: `400 Bad Request` (`email and password required`), `401 Unauthorized` (`invalid credentials`).
 
-### 4. Current User Session (`me`)
-
-Retrieves the authenticated user profile for active session validation.
-
-- **Method:** `GET`
-- **Path:** `/api/auth/me`
-- **Authentication:** `requireAuth` (reads `hutfix_token` cookie or `Authorization: Bearer <token>`)
-
-#### Success Response
-
-- **Status Code:** `200 OK`
-- **Body:**
-
-```json
-{
-  "ok": true,
-  "user": {
-    "id": 1,
-    "email": "customer@demo.test",
-    "full_name": "Demo Customer",
-    "phone": "+8801700000001",
-    "role": "customer",
-    "created_at": "2026-10-25T13:14:00.000Z"
-  }
-}
-```
-
-#### Unauthorized Response
-
-- **Status Code:** `401 Unauthorized`
-- **Body:**
-
-```json
-{
-  "ok": false,
-  "error": "auth required"
-}
-```
-
-### 5. User Logout
-
-Terminates the session and clears the httpOnly token cookie.
-
-- **Method:** `POST`
-- **Path:** `/api/auth/logout`
-
-#### Response
-
-- **Status Code:** `200 OK`
-- **Set-Cookie:** `hutfix_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT`
-- **Body:**
-
+### `POST /api/auth/logout`
+- **Auth**: None
+- **Response `200 OK`**:
 ```json
 {
   "ok": true
 }
 ```
 
-
----
-
-## Service Catalog Endpoints
-
-Base path: `/api/services`
-
-### 6. List Service Categories
-
-Returns all active service categories ordered by `id` ASC.
-
-- **Method:** `GET`
-- **Path:** `/api/services`
-- **Authentication:** None (Public)
-
-#### Response
-
-- **Status Code:** `200 OK`
-- **Body:**
-
+### `GET /api/auth/me`
+- **Auth**: Required (`hutfix_token` cookie or Bearer token)
+- **Response `200 OK`**:
 ```json
 {
   "ok": true,
-  "services": [
+  "user": {
+    "id": "1",
+    "email": "customer@demo.test",
+    "role": "customer",
+    "full_name": "Demo Customer",
+    "phone": "+8801700000001",
+    "created_at": "2026-10-25T12:00:00.000Z"
+  }
+}
+```
+- **Errors**: `401 Unauthorized` (`auth required`).
+
+---
+
+## 3. Services Catalog
+### `GET /api/services`
+- **Auth**: None (Public)
+- **Response `200 OK`**:
+```json
+{
+  "ok": true,
+  "categories": [
     {
-      "id": 1,
+      "id": "1",
       "slug": "appliance-repair",
-      "name": "Appliance Repair",
-      "icon": "bi-wrench-adjustable",
-      "description": "Fix refrigerators, washing machines, microwaves, and ovens.",
-      "base_price": "800.00"
+      "name": "Appliance & Gadget Repair",
+      "description": "Expert repair for ACs, refrigerators, washing machines, and microwave ovens.",
+      "icon": "bi-tools",
+      "base_price": "800.00",
+      "is_active": true
     }
   ]
 }
 ```
 
-### 7. Get Category by Slug
+---
 
-Retrieves category details for a specific slug identifier.
-
-- **Method:** `GET`
-- **Path:** `/api/services/:slug`
-- **Authentication:** None (Public)
-
-#### Response
-
-- **Status Code:** `200 OK` (or `404 Not Found` if slug does not exist)
-- **Body:**
-
+## 4. Providers & Slots
+### `GET /api/providers/:id/slots?date=YYYY-MM-DD&category=slug`
+- **Auth**: None (Public)
+- **Query Params**: `date` (`YYYY-MM-DD`), `category` (`appliance-repair`)
+- **Response `200 OK`**:
 ```json
 {
   "ok": true,
-  "service": {
-    "id": 1,
-    "slug": "appliance-repair",
-    "name": "Appliance Repair",
-    "icon": "bi-wrench-adjustable",
-    "description": "Fix refrigerators, washing machines, microwaves, and ovens.",
-    "base_price": "800.00"
-  }
+  "provider_id": 1,
+  "date": "2026-11-21",
+  "slots": [
+    {
+      "start_minute": 540,
+      "end_minute": 600,
+      "start_label": "09:00",
+      "end_label": "10:00",
+      "available": true
+    },
+    {
+      "start_minute": 600,
+      "end_minute": 660,
+      "start_label": "10:00",
+      "end_label": "11:00",
+      "available": false
+    }
+  ]
 }
 ```
 
 ---
 
-## Service Request & Matching Endpoints
-
-Base path: `/api/requests`
-
-### 8. Match Providers
-
-Runs the multi-factor smart matching engine: computes provider availability, rating, haversine distance, price competitiveness, and daily workload balance.
-
-- **Method:** `POST`
-- **Path:** `/api/requests/match`
-- **Authentication:** `requireAuth`, `requireRole('customer')`
-- **Request Body:**
-
+## 5. Requests
+### `POST /api/requests/match`
+- **Auth**: Required
+- **Body**:
 ```json
 {
   "category_slug": "appliance-repair",
-  "preferred_date": "2026-10-31",
-  "preferred_start_minute": 960,
-  "preferred_end_minute": 1080,
+  "preferred_date": "2026-11-21",
+  "preferred_start_minute": 600,
+  "preferred_end_minute": 660,
   "urgency": "normal",
   "address": "Dhanmondi, Dhaka",
   "latitude": 23.7465,
   "longitude": 90.3760
 }
 ```
-
-#### Response
-
-- **Status Code:** `200 OK`
-- **Body:**
-
+- **Response `200 OK`**:
 ```json
 {
   "ok": true,
   "candidates": [
     {
       "provider": {
-        "id": 1,
-        "name": "Rahim Appliance Care",
+        "id": "2",
+        "name": "Rahim Electronics & AC Care",
         "rating": 4.8,
-        "rating_count": 28,
-        "address": "Dhanmondi 27, Dhaka",
-        "headline": "Certified Home Appliance Specialist",
+        "rating_count": 115,
+        "address": "Green Road, Dhanmondi, Dhaka",
+        "headline": "Senior HVAC & Refrigerator Technician",
         "years_experience": 8,
-        "distance_km": 0.5,
-        "price": 1000.00
+        "distance_km": 1.2,
+        "price": 950,
+        "workload_slots_used": 1
       },
-      "score": 0.9450,
+      "score": 0.8875,
       "breakdown": {
-        "availability": 1.0000,
-        "rating": 0.9600,
-        "distance": 0.9750,
-        "price": 0.8500,
-        "workload": 1.0000
+        "availability": 1,
+        "rating": 0.96,
+        "distance": 0.94,
+        "price": 1,
+        "workload": 0.8
       }
     }
   ]
 }
 ```
 
-### 9. Create Service Request & Booking
-
-Executes an atomic transaction that inserts the service request, reserves the provider's calendar slot in `provider_bookings`, and logs the initial `requested` status event. Supports multipart file upload for optional image attachment.
-
-- **Method:** `POST`
-- **Path:** `/api/requests`
-- **Authentication:** `requireAuth`, `requireRole('customer')`
-- **Content-Type:** `multipart/form-data` or `application/x-www-form-urlencoded`
-- **Form Fields:**
-  - `category_slug` (string, required)
-  - `preferred_date` (string `YYYY-MM-DD`, required)
-  - `preferred_start_minute` (integer, required)
-  - `preferred_end_minute` (integer, required)
-  - `urgency` (string, optional: `low` | `normal` | `high` | `urgent`)
-  - `address` (string, required)
-  - `latitude` (float, optional)
-  - `longitude` (float, optional)
-  - `description` (string, optional)
-  - `contact_phone` (string, optional)
-  - `provider_id` (integer, optional)
-  - `image` (binary file, optional: jpeg, png, webp <= 5MB)
-
-#### Success Response
-
-- **Status Code:** `200 OK`
-- **Body:**
-
+### `POST /api/requests`
+- **Auth**: Required (`customer`)
+- **Content-Type**: `multipart/form-data` or `application/json`
+- **Fields**: `category_slug`, `provider_id`, `preferred_date`, `preferred_start_minute`, `preferred_end_minute`, `urgency`, `address`, `description`, `contact_phone`, `image` (file).
+- **Response `200 OK`**:
 ```json
 {
   "ok": true,
   "request": {
-    "id": 1,
-    "customer_id": 1,
-    "category_id": 1,
-    "assigned_provider_id": 1,
-    "status": "requested",
-    "description": "Washing machine won't spin.",
+    "id": "29",
+    "customer_id": "1",
+    "category_id": "1",
+    "assigned_provider_id": "2",
+    "description": "AC cooling problem",
     "urgency": "normal",
     "address": "Dhanmondi, Dhaka",
-    "latitude": 23.7465,
-    "longitude": 90.3760,
-    "preferred_date": "2026-10-31",
-    "preferred_start_minute": 960,
-    "preferred_end_minute": 1080,
+    "latitude": null,
+    "longitude": null,
+    "preferred_date": "2026-11-21",
+    "preferred_start_minute": 600,
+    "preferred_end_minute": 660,
     "contact_phone": "+8801700000001",
-    "image_url": "/uploads/requests/1761400000000-a1b2c3.jpg",
-    "estimated_price": "1000.00",
-    "created_at": "2026-10-25T13:30:00.000Z"
+    "image_url": null,
+    "status": "requested",
+    "estimated_price": "950.00",
+    "created_at": "2026-10-25T14:00:00.000Z",
+    "updated_at": "2026-10-25T14:00:00.000Z"
   }
 }
 ```
+- **Errors**: `409 Conflict` (slot already booked, includes `suggestions` array).
 
-#### Slot Conflict Response
-
-- **Status Code:** `409 Conflict`
-- **Body:**
-
-```json
-{
-  "ok": false,
-  "error": "slot already booked",
-  "suggestions": [
-    {
-      "date": "2026-10-31",
-      "start_minute": 660,
-      "end_minute": 720,
-      "label": "11:00–12:00"
-    },
-    {
-      "date": "2026-10-31",
-      "start_minute": 720,
-      "end_minute": 780,
-      "label": "12:00–13:00"
-    }
-  ]
-}
-```
-
-### 10. List User Requests (`mine`)
-
-Retrieves requests tailored to the authenticated user's role:
-- `customer`: Requests created by this customer (`WHERE customer_id = $1`)
-- `provider`: Requests assigned to this provider (`WHERE p.user_id = $1`)
-- `admin`: All platform requests
-
-- **Method:** `GET`
-- **Path:** `/api/requests/mine`
-- **Authentication:** `requireAuth`
-
-#### Response
-
-- **Status Code:** `200 OK`
-- **Body:**
-
+### `GET /api/requests/mine`
+- **Auth**: Required
+- **Response `200 OK`**:
 ```json
 {
   "ok": true,
   "requests": [
     {
-      "id": 1,
-      "customer_id": 1,
-      "category_id": 1,
-      "assigned_provider_id": 1,
+      "id": "29",
+      "customer_id": "1",
+      "category_id": "1",
       "status": "requested",
-      "address": "Dhanmondi, Dhaka",
-      "preferred_date": "2026-10-31",
-      "preferred_start_minute": 960,
-      "preferred_end_minute": 1080,
-      "created_at": "2026-10-25T13:30:00.000Z"
+      "estimated_price": "950.00"
     }
   ]
 }
 ```
 
----
-
-## Provider Scheduling Endpoints
-
-Base path: `/api/providers`
-
-### 11. Get Provider Real-Time Available Slots
-
-Generates 1-hour time slots for a specified provider, date, and category. Evaluates weekday availability against active bookings in `provider_bookings`.
-
-- **Method:** `GET`
-- **Path:** `/api/providers/:id/slots`
-- **Authentication:** None (Public)
-- **Query Parameters:**
-  - `date` (`YYYY-MM-DD`, required): The target service date.
-  - `category_slug` (string, required): Service category slug to verify coverage and retrieve pricing.
-
-#### Response
-
-- **Status Code:** `200 OK`
-- **Body:**
-
-```json
-{
-  "ok": true,
-  "provider": {
-    "id": 2,
-    "name": "Rahim Electronics & AC Care",
-    "rating": 4.8,
-    "rating_count": 115,
-    "headline": "Senior HVAC & Refrigerator Technician",
-    "address": "Green Road, Dhanmondi, Dhaka",
-    "price": 950
-  },
-  "date": "2026-10-31",
-  "slots": [
-    {
-      "start_minute": 600,
-      "end_minute": 660,
-      "available": true,
-      "label": "10:00–11:00"
-    },
-    {
-      "start_minute": 660,
-      "end_minute": 720,
-      "available": true,
-      "label": "11:00–12:00"
-    },
-    {
-      "start_minute": 720,
-      "end_minute": 780,
-      "available": false,
-      "label": "12:00–13:00"
-    }
-  ]
-}
-```
-
-
-
----
-
-## Request Lifecycle & Provider Management Endpoints
-
-### 12. Get Request Details with Timeline Events
-
-Retrieves a detailed single service request alongside its chronological timeline event history. Access is restricted to the owning customer, assigned provider, or an administrator.
-
-- **Method:** `GET`
-- **Path:** `/api/requests/:id`
-- **Authentication:** `requireAuth`
-
-#### Response
-
-- **Status Code:** `200 OK`
-- **Body:**
-
+### `GET /api/requests/:id`
+- **Auth**: Required (scoped to owner, assigned provider, or admin)
+- **Response `200 OK`**:
 ```json
 {
   "ok": true,
   "request": {
-    "id": 1,
-    "customer_id": 1,
-    "category_id": 1,
-    "assigned_provider_id": 2,
-    "description": "Fix refrigerator cooling",
-    "urgency": "normal",
-    "address": "Dhanmondi, Road 5",
-    "preferred_date": "2026-10-31",
-    "preferred_start_minute": 600,
-    "preferred_end_minute": 660,
-    "status": "accepted",
+    "id": "29",
+    "customer_id": "1",
+    "category_id": "1",
+    "assigned_provider_id": "2",
+    "status": "completed",
+    "estimated_price": "950.00",
     "category_slug": "appliance-repair",
     "category_name": "Appliance & Gadget Repair",
+    "category_icon": "bi-tools",
     "provider_name": "Rahim Electronics & AC Care",
-    "provider_phone": "+8801700000002",
-    "estimated_price": "950.00"
+    "provider_phone": "+8801711000001"
   },
   "events": [
-    {
-      "id": 1,
-      "status": "requested",
-      "note": "Request submitted",
-      "created_at": "2026-10-25T13:30:00.000Z"
-    },
-    {
-      "id": 2,
-      "status": "accepted",
-      "note": "Accepted by provider",
-      "created_at": "2026-10-25T13:35:00.000Z"
-    }
-  ]
-}
-```
-
-### 13. Customer Request Cancellation
-
-Allows a customer to cancel their request if it is still in `requested` or `accepted` status. Cancelling frees the reserved provider booking slot and records a cancellation event.
-
-- **Method:** `POST`
-- **Path:** `/api/requests/:id/cancel`
-- **Authentication:** `requireAuth`, `requireRole('customer')`
-
-#### Response
-
-- **Status Code:** `200 OK`
-- **Body:**
-
-```json
-{
-  "ok": true,
-  "request": {
-    "id": 1,
-    "status": "cancelled",
-    "updated_at": "2026-10-25T13:40:00.000Z"
+    { "id": "43", "status": "requested", "note": "Request submitted", "created_at": "2026-10-25T14:00:00.000Z" },
+    { "id": "44", "status": "accepted", "note": "Accepted by provider", "created_at": "2026-10-25T14:01:00.000Z" }
+  ],
+  "invoice": {
+    "id": "1",
+    "request_id": "29",
+    "provider_id": "2",
+    "subtotal": "950.00",
+    "tax": "47.50",
+    "total": "997.50",
+    "currency": "BDT"
+  },
+  "rating": {
+    "id": "1",
+    "request_id": "29",
+    "stars": 5,
+    "comment": "Fast and clean work."
   }
 }
 ```
 
-### 14. Provider Accept Request
+### `POST /api/requests/:id/cancel`
+- **Auth**: Required (Customer owner only)
+- **Response `200 OK`**: Returns updated request object with status `cancelled`.
 
-Allows the assigned provider to accept an incoming request. Transitions status from `requested` to `accepted`.
+### `POST /api/requests/:id/accept`
+- **Auth**: Required (Assigned Provider only)
+- **Response `200 OK`**: Returns updated request object with status `accepted`.
 
-- **Method:** `POST`
-- **Path:** `/api/requests/:id/accept`
-- **Authentication:** `requireAuth`, `requireRole('provider')`
+### `POST /api/requests/:id/reject`
+- **Auth**: Required (Assigned Provider only)
+- **Response `200 OK`**: Returns updated request object with status `cancelled` and releases slot.
 
-#### Response
+### `PATCH /api/requests/:id/status`
+- **Auth**: Required (Assigned Provider only)
+- **Body**: `{ "status": "on_the_way" | "in_progress" | "completed" }`
+- **Response `200 OK`**: Returns updated request object.
+- **Errors**: `400 Bad Request` (`invalid transition from X to Y`).
 
-- **Status Code:** `200 OK`
-- **Body:**
+---
 
-```json
-{
-  "ok": true,
-  "request": {
-    "id": 1,
-    "status": "accepted",
-    "updated_at": "2026-10-25T13:42:00.000Z"
-  }
-}
-```
-
-### 15. Provider Reject Request
-
-Allows the assigned provider to reject an incoming request. Transitions status to `cancelled` and frees the provider booking slot.
-
-- **Method:** `POST`
-- **Path:** `/api/requests/:id/reject`
-- **Authentication:** `requireAuth`, `requireRole('provider')`
-
-#### Response
-
-- **Status Code:** `200 OK`
-- **Body:**
-
-```json
-{
-  "ok": true,
-  "request": {
-    "id": 1,
-    "status": "cancelled",
-    "updated_at": "2026-10-25T13:45:00.000Z"
-  }
-}
-```
-
-### 16. Update Request Status Progression
-
-Advances request fulfillment along the validated state machine:
-`accepted` &rarr; `on_the_way` &rarr; `in_progress` &rarr; `completed`.
-
-- **Method:** `PATCH`
-- **Path:** `/api/requests/:id/status`
-- **Authentication:** `requireAuth`, `requireRole('provider', 'admin')`
-- **Request Body:**
-
-```json
-{
-  "status": "on_the_way"
-}
-```
-
-#### Response
-
-- **Status Code:** `200 OK`
-- **Body:**
-
-```json
-{
-  "ok": true,
-  "request": {
-    "id": 1,
-    "status": "on_the_way",
-    "updated_at": "2026-10-25T13:50:00.000Z"
-  }
-}
-```
-
-### 17. Provider Requests by Bucket
-
-Retrieves assignments partitioned into three functional buckets:
-- `incoming`: newly requested (`['requested']`)
-- `active`: currently in fulfillment (`['accepted', 'on_the_way', 'in_progress']`)
-- `history`: completed or cancelled (`['completed', 'cancelled']`)
-
-- **Method:** `GET`
-- **Path:** `/api/provider/requests`
-- **Authentication:** `requireAuth`, `requireRole('provider')`
-- **Query Parameters:**
-  - `bucket` (`incoming` | `active` | `history`, default: `incoming`)
-
-#### Response
-
-- **Status Code:** `200 OK`
-- **Body:**
-
+## 6. Provider Dashboard
+### `GET /api/provider/requests?bucket={incoming|active|history}`
+- **Auth**: Required (`provider`)
+- **Response `200 OK`**:
 ```json
 {
   "ok": true,
   "bucket": "incoming",
   "requests": [
     {
-      "id": 1,
+      "id": "29",
+      "customer_id": "1",
       "status": "requested",
       "customer_name": "Demo Customer",
-      "customer_phone": "+8801700000001",
-      "category_name": "Appliance & Gadget Repair",
-      "address": "Dhanmondi, Road 5",
-      "preferred_date": "2026-10-31",
-      "preferred_start_minute": 600,
-      "preferred_end_minute": 660,
-      "estimated_price": "950.00"
+      "customer_phone": "+8801700000001"
     }
   ]
+}
+```
+
+---
+
+## 7. Invoices
+### `GET /api/invoices/by-request/:requestId`
+- **Auth**: Required (Customer owner, Assigned provider, or Admin)
+- **Response `200 OK`**:
+```json
+{
+  "ok": true,
+  "invoice": {
+    "id": "1",
+    "request_id": "29",
+    "provider_id": "2",
+    "subtotal": "950.00",
+    "tax": "47.50",
+    "total": "997.50",
+    "currency": "BDT",
+    "issued_at": "2026-10-25T14:15:00.000Z",
+    "customer_name": "Demo Customer",
+    "customer_phone": "+8801700000001",
+    "provider_name": "Rahim Electronics & AC Care",
+    "provider_phone": "+8801711000001",
+    "provider_address": "Green Road, Dhanmondi, Dhaka",
+    "category_name": "Appliance & Gadget Repair"
+  }
+}
+```
+- **Errors**: `403 Forbidden`, `404 Not Found`.
+
+---
+
+## 8. Ratings
+### `POST /api/ratings/by-request/:requestId`
+- **Auth**: Required (`customer` owner only)
+- **Body**:
+```json
+{
+  "stars": 5,
+  "comment": "Super quick response and fixed the cooling perfectly."
+}
+```
+- **Response `200 OK`**:
+```json
+{
+  "ok": true,
+  "rating": {
+    "id": "1",
+    "request_id": "29",
+    "customer_id": "1",
+    "provider_id": "2",
+    "stars": 5,
+    "comment": "Super quick response and fixed the cooling perfectly.",
+    "created_at": "2026-10-25T14:20:00.000Z"
+  },
+  "provider_rating": 4.8,
+  "provider_rating_count": 116
+}
+```
+- **Errors**: `400 Bad Request` (`can only rate completed requests`, `stars must be an integer between 1 and 5`), `409 Conflict` (`already rated`).
+
+---
+
+## 9. Notifications
+### `GET /api/notifications`
+- **Auth**: Required
+- **Response `200 OK`**:
+```json
+{
+  "ok": true,
+  "notifications": [
+    {
+      "id": "1",
+      "kind": "request_accepted",
+      "title": "Your request was accepted",
+      "body": "Provider is on the way soon.",
+      "is_read": false,
+      "request_id": "29",
+      "created_at": "2026-10-25T14:05:00.000Z"
+    }
+  ],
+  "unread_count": 1
+}
+```
+
+### `POST /api/notifications/read`
+- **Auth**: Required
+- **Body**: `{ "id": 1 }`
+- **Response `200 OK`**:
+```json
+{
+  "ok": true,
+  "id": "1"
+}
+```
+
+### `POST /api/notifications/read-all`
+- **Auth**: Required
+- **Response `200 OK`**:
+```json
+{
+  "ok": true,
+  "updated": 1
 }
 ```

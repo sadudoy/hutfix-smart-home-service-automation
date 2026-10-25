@@ -13,6 +13,9 @@ const servicesRouter = require('./routes/services.routes');
 const requestsRouter = require('./routes/requests.routes');
 const providersRouter = require('./routes/providers.routes');
 const providerRouter = require('./routes/provider.routes');
+const invoicesRouter = require('./routes/invoices.routes');
+const ratingsRouter = require('./routes/ratings.routes');
+const notificationsRouter = require('./routes/notifications.routes');
 const errorHandler = require('./middleware/error');
 
 const app = express();
@@ -37,6 +40,9 @@ app.use('/api/services', servicesRouter);
 app.use('/api/requests', requestsRouter);
 app.use('/api/providers', providersRouter);
 app.use('/api/provider', providerRouter);
+app.use('/api/invoices', invoicesRouter);
+app.use('/api/ratings', ratingsRouter);
+app.use('/api/notifications', notificationsRouter);
 
 // Static frontend serving
 app.use(express.static(path.join(__dirname, '..', 'client')));

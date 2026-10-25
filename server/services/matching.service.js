@@ -81,12 +81,22 @@ async function matchProviders({
         return [];
     }
 
+    // Busy-day filter: before scoring, exclude providers whose total provider_bookings on requested date >= 4
+    const availableCandidates = candidates.filter(c => {
+        const slotsUsed = parseInt(c.day_bookings, 10) || 0;
+        return !(slotsUsed >= 4);
+    });
+
+    if (availableCandidates.length === 0) {
+        return [];
+    }
+
     // 4. Calculate price min and max across candidate set
-    const prices = candidates.map(c => parseFloat(c.price));
+    const prices = availableCandidates.map(c => parseFloat(c.price));
     const min_price = Math.min(...prices);
     const max_price = Math.max(...prices);
 
-    const scoredCandidates = candidates.map(provider => {
+    const scoredCandidates = availableCandidates.map(provider => {
         const pPrice = parseFloat(provider.price);
         const pRating = parseFloat(provider.rating) || 0;
         const pDayBookings = parseInt(provider.day_bookings, 10) || 0;
@@ -127,7 +137,8 @@ async function matchProviders({
                 headline: provider.headline,
                 years_experience: parseInt(provider.years_experience, 10) || 0,
                 distance_km: distance_km !== null ? Math.round(distance_km * 10) / 10 : null,
-                price: Number(provider.price)
+                price: Number(provider.price),
+                workload_slots_used: pDayBookings
             },
             score,
             breakdown: {

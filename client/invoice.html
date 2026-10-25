@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HutFix — Service Invoice</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <style>
+    body {
+      background-color: var(--bg-muted, #f8fafc);
+      font-family: var(--font-sans, 'Inter', sans-serif);
+      color: var(--text-dark, #1e293b);
+      min-height: 100vh;
+    }
+    .invoice-card {
+      max-width: 800px;
+      margin: 2rem auto;
+      background: #ffffff;
+      border-radius: var(--radius-lg, 12px);
+      box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0,0,0,0.1));
+      padding: 3rem;
+      border: 1px solid var(--border, #e2e8f0);
+    }
+    @media print {
+      body {
+        background: #ffffff !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .invoice-card {
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        max-width: 100% !important;
+      }
+    }
+    .invoice-table th, .invoice-table td {
+      padding: 0.85rem 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Screen Nav / Action Bar -->
+  <div class="no-print bg-white border-bottom py-2 px-4 shadow-sm">
+    <div class="container-fluid d-flex justify-content-between align-items-center" style="max-width: 800px;">
+      <a href="/tracking.html" class="btn btn-outline-secondary btn-sm fw-semibold">
+        <i class="bi bi-arrow-left me-1"></i> Back to tracking
+      </a>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-primary btn-sm px-3 fw-semibold" onclick="window.print()">
+          <i class="bi bi-printer me-1"></i> Download / Print
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <main class="container py-3">
+    <!-- Loading / Error Alert -->
+    <div id="invoice-status" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading invoice...</span>
+      </div>
+      <p class="mt-2 text-muted small">Loading invoice details...</p>
+    </div>
+
+    <!-- Invoice Sheet -->
+    <div id="invoice-content" class="invoice-card d-none">
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <img src="/assets/images/logo.jpg" alt="HutFix" style="height: 42px; border-radius: 8px;">
+            <span class="fs-3 fw-bold text-primary">HutFix</span>
+          </div>
+          <p class="text-muted small mb-0">Smart Home Service Automation</p>
+          <p class="text-muted small mb-0">Dhaka, Bangladesh &bull; support@hutfix.local</p>
+        </div>
+        <div class="text-end">
+          <h1 class="h3 fw-bold text-dark text-uppercase tracking-wide mb-1">INVOICE</h1>
+          <div class="fw-semibold text-secondary" id="inv-number">INV-000</div>
+          <div class="small text-muted" id="inv-date">Issued: 2026-10-25</div>
+          <span class="badge bg-success-subtle text-success border border-success-subtle mt-2">PAID / ISSUED</span>
+        </div>
+      </div>
+
+      <!-- Two-column Bill To / Provider -->
+      <div class="row g-4 mb-4">
+        <div class="col-sm-6">
+          <div class="text-uppercase text-muted small fw-bold mb-2">Bill To</div>
+          <h2 class="h6 fw-bold text-dark mb-1" id="cust-name">Customer Name</h2>
+          <div class="small text-secondary mb-1" id="cust-phone">+8801...</div>
+          <div class="small text-muted" id="cust-address">Customer Address</div>
+        </div>
+        <div class="col-sm-6">
+          <div class="text-uppercase text-muted small fw-bold mb-2">Service Provider</div>
+          <h2 class="h6 fw-bold text-dark mb-1" id="prov-name">Provider Agency / Specialist</h2>
+          <div class="small text-secondary mb-1" id="prov-phone">+8801...</div>
+          <div class="small text-muted" id="prov-address">Provider Address</div>
+        </div>
+      </div>
+
+      <!-- Line Items Table -->
+      <div class="table-responsive mb-4">
+        <table class="table table-bordered invoice-table align-middle">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" style="width: 60%;">Description</th>
+              <th scope="col" class="text-center" style="width: 15%;">Qty</th>
+              <th scope="col" class="text-end" style="width: 25%;">Amount (BDT)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="fw-semibold" id="inv-desc">Service Description</div>
+                <div class="small text-muted" id="inv-service-sub">Fulfilled home service request</div>
+              </td>
+              <td class="text-center">1</td>
+              <td class="text-end fw-semibold" id="inv-subtotal">৳0.00</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th colspan="2" class="text-end text-muted fw-normal">Subtotal:</th>
+              <td class="text-end fw-semibold" id="inv-calc-subtotal">৳0.00</td>
+            </tr>
+            <tr>
+              <th colspan="2" class="text-end text-muted fw-normal">Platform Tax (5%):</th>
+              <td class="text-end" id="inv-tax">৳0.00</td>
+            </tr>
+            <tr class="table-active">
+              <th colspan="2" class="text-end fw-bold fs-6">Total (BDT):</th>
+              <td class="text-end fw-bold fs-5 text-primary" id="inv-total">৳0.00</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Footer Note -->
+      <div class="border-top pt-4 text-center">
+        <p class="fw-semibold text-secondary mb-1">Thank you for using HutFix.</p>
+        <p class="small text-muted mb-0">For any billing questions, reach us at support@hutfix.local</p>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const statusEl = document.getElementById('invoice-status');
+      const contentEl = document.getElementById('invoice-content');
+
+      // 1. Auth check
+      try {
+        const meRes = await fetch('/api/auth/me', { credentials: 'same-origin' });
+        if (!meRes.ok) {
+          window.location.href = '/login.html';
+          return;
+        }
+      } catch (e) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      // 2. Query param ?id=<requestId>
+      const params = new URLSearchParams(window.location.search);
+      const requestId = params.get('id');
+      if (!requestId) {
+        statusEl.innerHTML = '<div class="alert alert-danger">No invoice request ID specified. <a href="/tracking.html">Back to tracking</a></div>';
+        return;
+      }
+
+      // 3. Fetch invoice
+      try {
+        const res = await fetch(`/api/invoices/by-request/${requestId}`, { credentials: 'same-origin' });
+        const data = await res.json();
+
+        if (!res.ok || !data.ok || !data.invoice) {
+          statusEl.innerHTML = `<div class="alert alert-warning">${data.error || 'Invoice not found or not yet generated.'} <a href="/tracking.html">Back to tracking</a></div>`;
+          return;
+        }
+
+        const inv = data.invoice;
+        document.getElementById('inv-number').textContent = `INV-${inv.id}`;
+        const issuedDate = inv.issued_at ? new Date(inv.issued_at).toLocaleDateString() : new Date().toLocaleDateString();
+        document.getElementById('inv-date').textContent = `Issued: ${issuedDate}`;
+
+        document.getElementById('cust-name').textContent = inv.customer_name || 'Customer';
+        document.getElementById('cust-phone').textContent = inv.customer_phone || 'N/A';
+        document.getElementById('cust-address').textContent = inv.address || 'Dhaka';
+
+        document.getElementById('prov-name').textContent = inv.provider_name || 'Specialist Provider';
+        document.getElementById('prov-phone').textContent = inv.provider_phone || 'N/A';
+        document.getElementById('prov-address').textContent = inv.provider_address || 'Dhaka';
+
+        document.getElementById('inv-desc').textContent = inv.category_name || 'Home Service';
+        document.getElementById('inv-subtotal').textContent = `৳${parseFloat(inv.subtotal).toFixed(2)}`;
+        document.getElementById('inv-calc-subtotal').textContent = `৳${parseFloat(inv.subtotal).toFixed(2)}`;
+        document.getElementById('inv-tax').textContent = `৳${parseFloat(inv.tax).toFixed(2)}`;
+        document.getElementById('inv-total').textContent = `৳${parseFloat(inv.total).toFixed(2)}`;
+
+        statusEl.classList.add('d-none');
+        contentEl.classList.remove('d-none');
+      } catch (err) {
+        statusEl.innerHTML = `<div class="alert alert-danger">Failed to load invoice: ${err.message}. <a href="/tracking.html">Back to tracking</a></div>`;
+      }
+    });
+  </script>
+</body>
+</html>
