@@ -182,3 +182,228 @@ Terminates the session and clears the httpOnly token cookie.
   "ok": true
 }
 ```
+
+
+---
+
+## Service Catalog Endpoints
+
+Base path: `/api/services`
+
+### 6. List Service Categories
+
+Returns all active service categories ordered by `id` ASC.
+
+- **Method:** `GET`
+- **Path:** `/api/services`
+- **Authentication:** None (Public)
+
+#### Response
+
+- **Status Code:** `200 OK`
+- **Body:**
+
+```json
+{
+  "ok": true,
+  "services": [
+    {
+      "id": 1,
+      "slug": "appliance-repair",
+      "name": "Appliance Repair",
+      "icon": "bi-wrench-adjustable",
+      "description": "Fix refrigerators, washing machines, microwaves, and ovens.",
+      "base_price": "800.00"
+    }
+  ]
+}
+```
+
+### 7. Get Category by Slug
+
+Retrieves category details for a specific slug identifier.
+
+- **Method:** `GET`
+- **Path:** `/api/services/:slug`
+- **Authentication:** None (Public)
+
+#### Response
+
+- **Status Code:** `200 OK` (or `404 Not Found` if slug does not exist)
+- **Body:**
+
+```json
+{
+  "ok": true,
+  "service": {
+    "id": 1,
+    "slug": "appliance-repair",
+    "name": "Appliance Repair",
+    "icon": "bi-wrench-adjustable",
+    "description": "Fix refrigerators, washing machines, microwaves, and ovens.",
+    "base_price": "800.00"
+  }
+}
+```
+
+---
+
+## Service Request & Matching Endpoints
+
+Base path: `/api/requests`
+
+### 8. Match Providers
+
+Runs the multi-factor smart matching engine: computes provider availability, rating, haversine distance, price competitiveness, and daily workload balance.
+
+- **Method:** `POST`
+- **Path:** `/api/requests/match`
+- **Authentication:** `requireAuth`, `requireRole('customer')`
+- **Request Body:**
+
+```json
+{
+  "category_slug": "appliance-repair",
+  "preferred_date": "2026-10-31",
+  "preferred_start_minute": 960,
+  "preferred_end_minute": 1080,
+  "urgency": "normal",
+  "address": "Dhanmondi, Dhaka",
+  "latitude": 23.7465,
+  "longitude": 90.3760
+}
+```
+
+#### Response
+
+- **Status Code:** `200 OK`
+- **Body:**
+
+```json
+{
+  "ok": true,
+  "candidates": [
+    {
+      "provider": {
+        "id": 1,
+        "name": "Rahim Appliance Care",
+        "rating": 4.8,
+        "rating_count": 28,
+        "address": "Dhanmondi 27, Dhaka",
+        "headline": "Certified Home Appliance Specialist",
+        "years_experience": 8,
+        "distance_km": 0.5,
+        "price": 1000.00
+      },
+      "score": 0.9450,
+      "breakdown": {
+        "availability": 1.0000,
+        "rating": 0.9600,
+        "distance": 0.9750,
+        "price": 0.8500,
+        "workload": 1.0000
+      }
+    }
+  ]
+}
+```
+
+### 9. Create Service Request & Booking
+
+Executes an atomic transaction that inserts the service request, reserves the provider's calendar slot in `provider_bookings`, and logs the initial `requested` status event. Supports multipart file upload for optional image attachment.
+
+- **Method:** `POST`
+- **Path:** `/api/requests`
+- **Authentication:** `requireAuth`, `requireRole('customer')`
+- **Content-Type:** `multipart/form-data` or `application/x-www-form-urlencoded`
+- **Form Fields:**
+  - `category_slug` (string, required)
+  - `preferred_date` (string `YYYY-MM-DD`, required)
+  - `preferred_start_minute` (integer, required)
+  - `preferred_end_minute` (integer, required)
+  - `urgency` (string, optional: `low` | `normal` | `high` | `urgent`)
+  - `address` (string, required)
+  - `latitude` (float, optional)
+  - `longitude` (float, optional)
+  - `description` (string, optional)
+  - `contact_phone` (string, optional)
+  - `provider_id` (integer, optional)
+  - `image` (binary file, optional: jpeg, png, webp <= 5MB)
+
+#### Success Response
+
+- **Status Code:** `200 OK`
+- **Body:**
+
+```json
+{
+  "ok": true,
+  "request": {
+    "id": 1,
+    "customer_id": 1,
+    "category_id": 1,
+    "assigned_provider_id": 1,
+    "status": "requested",
+    "description": "Washing machine won't spin.",
+    "urgency": "normal",
+    "address": "Dhanmondi, Dhaka",
+    "latitude": 23.7465,
+    "longitude": 90.3760,
+    "preferred_date": "2026-10-31",
+    "preferred_start_minute": 960,
+    "preferred_end_minute": 1080,
+    "contact_phone": "+8801700000001",
+    "image_url": "/uploads/requests/1761400000000-a1b2c3.jpg",
+    "estimated_price": "1000.00",
+    "created_at": "2026-10-25T13:30:00.000Z"
+  }
+}
+```
+
+#### Slot Conflict Response
+
+- **Status Code:** `409 Conflict`
+- **Body:**
+
+```json
+{
+  "ok": false,
+  "error": "slot already booked, please choose another provider/time"
+}
+```
+
+### 10. List User Requests (`mine`)
+
+Retrieves requests tailored to the authenticated user's role:
+- `customer`: Requests created by this customer (`WHERE customer_id = $1`)
+- `provider`: Requests assigned to this provider (`WHERE p.user_id = $1`)
+- `admin`: All platform requests
+
+- **Method:** `GET`
+- **Path:** `/api/requests/mine`
+- **Authentication:** `requireAuth`
+
+#### Response
+
+- **Status Code:** `200 OK`
+- **Body:**
+
+```json
+{
+  "ok": true,
+  "requests": [
+    {
+      "id": 1,
+      "customer_id": 1,
+      "category_id": 1,
+      "assigned_provider_id": 1,
+      "status": "requested",
+      "address": "Dhanmondi, Dhaka",
+      "preferred_date": "2026-10-31",
+      "preferred_start_minute": 960,
+      "preferred_end_minute": 1080,
+      "created_at": "2026-10-25T13:30:00.000Z"
+    }
+  ]
+}
+```

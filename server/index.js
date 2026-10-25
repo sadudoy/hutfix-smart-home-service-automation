@@ -9,6 +9,8 @@ const { PORT, NODE_ENV } = require('./config/env');
 const { pool } = require('./config/db');
 const healthRouter = require('./routes/health.routes');
 const authRouter = require('./routes/auth.routes');
+const servicesRouter = require('./routes/services.routes');
+const requestsRouter = require('./routes/requests.routes');
 const errorHandler = require('./middleware/error');
 
 const app = express();
@@ -23,9 +25,14 @@ app.use(cookieParser());
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Uploads static directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // API Routes
 app.use('/api', healthRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/services', servicesRouter);
+app.use('/api/requests', requestsRouter);
 
 // Static frontend serving
 app.use(express.static(path.join(__dirname, '..', 'client')));
