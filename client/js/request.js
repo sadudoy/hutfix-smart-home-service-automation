@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const matchSuccess = document.getElementById('match-success');
   const matchSuccessMsg = document.getElementById('match-success-msg');
   const btnBookAnother = document.getElementById('btn-book-another');
+  const btnViewTracking = document.getElementById('btn-view-tracking');
   const roleWarning = document.getElementById('role-warning');
   const authNavBtn = document.getElementById('auth-nav-btn');
 
@@ -131,8 +132,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       e.preventDefault();
       clearError();
 
-      const startMin = timeStringToMinutes(startInput.value);
-      const endMin = timeStringToMinutes(endInput.value);
+      const startMin = timeStringToMinutes(startInput.value || '09:00');
+      const endMin = timeStringToMinutes(endInput.value || '18:00');
 
       if (startMin >= endMin) {
         showError('Start time must be earlier than end time.');
@@ -186,23 +187,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // 5. Render candidates list
+  // 5. Render candidates list with images and expandable slot picker
   function renderCandidates(candidates, matchPayload) {
+    const categorySlug = matchPayload.category_slug;
+    const heroImgUrl = window.IMAGES.category(categorySlug);
+    const heroFallback = window.IMAGES.categoryFallback(categorySlug);
+
     matchList.innerHTML = candidates.map((c, index) => {
       const p = c.provider;
       const collapseId = `collapse-breakdown-${index}`;
+      const slotsBoxId = `slots-box-${p.id}`;
       const distText = p.distance_km != null ? `${p.distance_km} km away` : 'Dhaka Metro';
       const ratingStars = p.rating ? `★ ${p.rating.toFixed(1)}` : 'New';
+      const avatarUrl = window.IMAGES.providerAvatar(p.name);
 
       return `
-        <div class="candidate-card">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <div>
-              <h3 class="h6 fw-bold mb-0 text-dark">${p.name}</h3>
-              <p class="text-muted small mb-0">${p.headline || 'Verified Service Professional'} &bull; ${p.years_experience} yrs exp</p>
-            </div>
-            <div class="text-end">
-              <span class="score-badge"><i class="bi bi-cpu me-1"></i>Score: ${(c.score * 100).toFixed(0)}%</span>
+        <div class="candidate-card" id="candidate-card-${p.id}">
+          <div class="d-flex gap-3 align-items-start mb-3">
+            <img src="${heroImgUrl}" alt="${categorySlug}" class="category-thumb shadow-sm" onerror="this.src='${heroFallback}'">
+            <div class="flex-grow-1">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="d-flex align-items-center gap-2">
+                  <img src="${avatarUrl}" alt="${p.name}" class="provider-avatar shadow-sm border">
+                  <div>
+                    <h3 class="h6 fw-bold mb-0 text-dark">${p.name}</h3>
+                    <p class="text-muted small mb-0">${p.headline || 'Verified Service Professional'}</p>
+                  </div>
+                </div>
+                <span class="score-badge"><i class="bi bi-cpu me-1"></i>${(c.score * 100).toFixed(0)}%</span>
+              </div>
             </div>
           </div>
 
@@ -214,10 +227,14 @@ document.addEventListener('DOMContentLoaded', async () => {
               <i class="bi bi-geo-alt me-1"></i>${distText}
             </span>
             <span class="badge bg-light text-secondary border">
+              <i class="bi bi-briefcase me-1"></i>${p.years_experience} yrs exp
+            </span>
+            <span class="badge bg-light text-secondary border fw-bold text-dark">
               <i class="bi bi-tag me-1"></i>৳${p.price}
             </span>
           </div>
 
+          <!-- Why this match breakdown -->
           <div class="mb-3">
             <button class="btn btn-sm btn-link text-decoration-none p-0 text-primary small" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}">
               <i class="bi bi-info-circle me-1"></i>Why this match?
@@ -248,38 +265,135 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
           </div>
 
-          <button type="button" class="btn btn-primary w-100 py-2 btn-book-provider fw-semibold" data-provider-id="${p.id}">
-            Book this provider (৳${p.price})
+          <!-- Book & Slot Picker Trigger -->
+          <button type="button" class="btn btn-primary w-100 py-2 btn-open-slots fw-semibold" data-provider-id="${p.id}" data-price="${p.price}">
+            <i class="bi bi-calendar-event me-1"></i> Select Slot & Book (৳${p.price})
           </button>
+
+          <!-- Expandable Slot Picker Container -->
+          <div id="${slotsBoxId}" class="slots-box mt-3 p-3 bg-light rounded border d-none">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h4 class="small fw-bold text-dark mb-0"><i class="bi bi-clock-history me-1"></i>Available Time Slots</h4>
+              <div class="d-flex align-items-center gap-1">
+                <input type="date" class="form-control form-control-sm slot-date-change" style="width: 140px;" value="${matchPayload.preferred_date}">
+              </div>
+            </div>
+
+            <div class="slots-feedback mb-2"></div>
+            <div class="slots-pills-container d-flex flex-wrap gap-2 mb-3">
+              <span class="text-muted small">Loading available slots...</span>
+            </div>
+
+            <button type="button" class="btn btn-success w-100 py-2 btn-confirm-booking fw-semibold" disabled>
+              Confirm Booking (৳${p.price})
+            </button>
+          </div>
         </div>
       `;
     }).join('');
 
-    // Attach click listeners to all "Book this provider" buttons
-    matchList.querySelectorAll('.btn-book-provider').forEach(btn => {
+    // Attach slot-picker toggle listeners
+    matchList.querySelectorAll('.btn-open-slots').forEach(btn => {
       btn.addEventListener('click', async () => {
         const providerId = btn.dataset.providerId;
-        await handleBooking(providerId, matchPayload, btn);
+        const slotsBox = document.getElementById(`slots-box-${providerId}`);
+        if (!slotsBox) return;
+
+        const isHidden = slotsBox.classList.contains('d-none');
+        if (isHidden) {
+          slotsBox.classList.remove('d-none');
+          btn.innerHTML = '<i class="bi bi-chevron-up me-1"></i> Close Slot Picker';
+          const dateInput = slotsBox.querySelector('.slot-date-change');
+          await loadProviderSlots(providerId, dateInput.value, categorySlug, slotsBox, matchPayload);
+        } else {
+          slotsBox.classList.add('d-none');
+          btn.innerHTML = `<i class="bi bi-calendar-event me-1"></i> Select Slot & Book (৳${btn.dataset.price})`;
+        }
       });
     });
   }
 
-  // 6. Handle Booking via multipart/form-data
-  async function handleBooking(providerId, payload, btn) {
-    clearError();
-    const originalText = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = 'Securing booking...';
+  // 6. Load slots from /api/providers/:id/slots
+  async function loadProviderSlots(providerId, dateStr, categorySlug, slotsBox, matchPayload) {
+    const pillsContainer = slotsBox.querySelector('.slots-pills-container');
+    const feedback = slotsBox.querySelector('.slots-feedback');
+    const confirmBtn = slotsBox.querySelector('.btn-confirm-booking');
+    const dateInput = slotsBox.querySelector('.slot-date-change');
+
+    pillsContainer.innerHTML = '<div class="spinner-border spinner-border-sm text-primary me-2"></div><span class="text-muted small">Checking real-time calendar...</span>';
+    feedback.innerHTML = '';
+    confirmBtn.disabled = true;
+
+    // Date change listener
+    dateInput.onchange = async () => {
+      await loadProviderSlots(providerId, dateInput.value, categorySlug, slotsBox, matchPayload);
+    };
+
+    let selectedSlot = null;
+
+    try {
+      const res = await fetch(`/api/providers/${providerId}/slots?date=${encodeURIComponent(dateStr)}&category_slug=${encodeURIComponent(categorySlug)}`);
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) {
+        pillsContainer.innerHTML = `<span class="text-danger small">${(data && data.error) || 'Failed to load slots.'}</span>`;
+        return;
+      }
+
+      const slots = data.slots || [];
+      if (slots.length === 0) {
+        pillsContainer.innerHTML = '<div class="alert alert-secondary py-2 small mb-0 w-100">No slots available on this day. Please choose a different date above.</div>';
+        return;
+      }
+
+      pillsContainer.innerHTML = '';
+      slots.forEach(slot => {
+        const pill = document.createElement('button');
+        pill.type = 'button';
+        pill.className = `btn btn-sm ${slot.available ? 'btn-outline-primary' : 'btn-outline-secondary'} slot-pill`;
+        pill.textContent = slot.label;
+        pill.disabled = !slot.available;
+
+        if (slot.available) {
+          pill.addEventListener('click', () => {
+            pillsContainer.querySelectorAll('.slot-pill').forEach(p => p.classList.remove('selected', 'active'));
+            pill.classList.add('selected', 'active');
+            selectedSlot = slot;
+            confirmBtn.disabled = false;
+          });
+        }
+
+        pillsContainer.appendChild(pill);
+      });
+
+      // Hook Confirm Booking
+      confirmBtn.onclick = async () => {
+        if (!selectedSlot) return;
+        await executeBooking(providerId, dateInput.value, selectedSlot, matchPayload, slotsBox, confirmBtn);
+      };
+
+    } catch (err) {
+      pillsContainer.innerHTML = '<span class="text-danger small">Network error while fetching slots.</span>';
+    }
+  }
+
+  // 7. Execute Booking with 409 suggestions handling
+  async function executeBooking(providerId, dateStr, slot, matchPayload, slotsBox, confirmBtn) {
+    const feedback = slotsBox.querySelector('.slots-feedback');
+    const originalText = confirmBtn.textContent;
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Locking slot & booking...';
+    feedback.innerHTML = '';
 
     const formData = new FormData();
-    formData.append('category_slug', payload.category_slug);
-    formData.append('preferred_date', payload.preferred_date);
-    formData.append('preferred_start_minute', payload.preferred_start_minute);
-    formData.append('preferred_end_minute', payload.preferred_end_minute);
-    formData.append('urgency', payload.urgency);
-    formData.append('address', payload.address);
-    formData.append('latitude', payload.latitude);
-    formData.append('longitude', payload.longitude);
+    formData.append('category_slug', matchPayload.category_slug);
+    formData.append('preferred_date', dateStr);
+    formData.append('preferred_start_minute', slot.start_minute);
+    formData.append('preferred_end_minute', slot.end_minute);
+    formData.append('urgency', matchPayload.urgency);
+    formData.append('address', matchPayload.address);
+    formData.append('latitude', matchPayload.latitude);
+    formData.append('longitude', matchPayload.longitude);
     formData.append('provider_id', providerId);
 
     const description = descInput ? descInput.value.trim() : '';
@@ -302,9 +416,33 @@ document.addEventListener('DOMContentLoaded', async () => {
       const data = await response.json().catch(() => null);
 
       if (response.status === 409) {
-        alert(data && data.error ? data.error : 'Slot already booked, please choose another provider or time slot.');
-        btn.disabled = false;
-        btn.textContent = originalText;
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = originalText;
+
+        // Render suggestions if available
+        if (data && Array.isArray(data.suggestions) && data.suggestions.length > 0) {
+          feedback.innerHTML = `
+            <div class="alert alert-warning py-2 small mb-2">
+              <div class="fw-bold"><i class="bi bi-exclamation-circle me-1"></i>That slot was just taken. Try:</div>
+              <div class="d-flex flex-wrap gap-1 mt-1 suggestion-pills"></div>
+            </div>
+          `;
+          const sugContainer = feedback.querySelector('.suggestion-pills');
+          data.suggestions.forEach(sug => {
+            const sugBtn = document.createElement('button');
+            sugBtn.type = 'button';
+            sugBtn.className = 'btn btn-xs btn-outline-dark btn-sm py-0 px-2';
+            sugBtn.textContent = `${sug.date} (${sug.label})`;
+            sugBtn.onclick = async () => {
+              const dateInput = slotsBox.querySelector('.slot-date-change');
+              dateInput.value = sug.date;
+              await loadProviderSlots(providerId, sug.date, matchPayload.category_slug, slotsBox, matchPayload);
+            };
+            sugContainer.appendChild(sugBtn);
+          });
+        } else {
+          feedback.innerHTML = '<div class="alert alert-warning py-2 small mb-2">That slot was just booked. Please pick another available slot.</div>';
+        }
         return;
       }
 
@@ -321,14 +459,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (matchSuccessMsg && data && data.request) {
         matchSuccessMsg.textContent = `Request #${data.request.id} created — the provider will be notified.`;
       }
+      if (btnViewTracking && data && data.request) {
+        btnViewTracking.href = `/tracking.html?id=${data.request.id}`;
+      }
     } catch (err) {
-      alert(err.message || 'An error occurred while creating your booking.');
-      btn.disabled = false;
-      btn.textContent = originalText;
+      feedback.innerHTML = `<div class="alert alert-danger py-2 small mb-2">${err.message || 'An error occurred while creating booking.'}</div>`;
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = originalText;
     }
   }
 
-  // 7. Reset / Book Another
+  // 8. Reset / Book Another
   if (btnBookAnother) {
     btnBookAnother.addEventListener('click', () => {
       form.reset();

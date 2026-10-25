@@ -368,7 +368,21 @@ Executes an atomic transaction that inserts the service request, reserves the pr
 ```json
 {
   "ok": false,
-  "error": "slot already booked, please choose another provider/time"
+  "error": "slot already booked",
+  "suggestions": [
+    {
+      "date": "2026-10-31",
+      "start_minute": 660,
+      "end_minute": 720,
+      "label": "11:00–12:00"
+    },
+    {
+      "date": "2026-10-31",
+      "start_minute": 720,
+      "end_minute": 780,
+      "label": "12:00–13:00"
+    }
+  ]
 }
 ```
 
@@ -407,3 +421,62 @@ Retrieves requests tailored to the authenticated user's role:
   ]
 }
 ```
+
+---
+
+## Provider Scheduling Endpoints
+
+Base path: `/api/providers`
+
+### 11. Get Provider Real-Time Available Slots
+
+Generates 1-hour time slots for a specified provider, date, and category. Evaluates weekday availability against active bookings in `provider_bookings`.
+
+- **Method:** `GET`
+- **Path:** `/api/providers/:id/slots`
+- **Authentication:** None (Public)
+- **Query Parameters:**
+  - `date` (`YYYY-MM-DD`, required): The target service date.
+  - `category_slug` (string, required): Service category slug to verify coverage and retrieve pricing.
+
+#### Response
+
+- **Status Code:** `200 OK`
+- **Body:**
+
+```json
+{
+  "ok": true,
+  "provider": {
+    "id": 2,
+    "name": "Rahim Electronics & AC Care",
+    "rating": 4.8,
+    "rating_count": 115,
+    "headline": "Senior HVAC & Refrigerator Technician",
+    "address": "Green Road, Dhanmondi, Dhaka",
+    "price": 950
+  },
+  "date": "2026-10-31",
+  "slots": [
+    {
+      "start_minute": 600,
+      "end_minute": 660,
+      "available": true,
+      "label": "10:00–11:00"
+    },
+    {
+      "start_minute": 660,
+      "end_minute": 720,
+      "available": true,
+      "label": "11:00–12:00"
+    },
+    {
+      "start_minute": 720,
+      "end_minute": 780,
+      "available": false,
+      "label": "12:00–13:00"
+    }
+  ]
+}
+```
+

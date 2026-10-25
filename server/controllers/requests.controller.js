@@ -1,5 +1,6 @@
 const { pool } = require('../config/db');
 const matchingService = require('../services/matching.service');
+const scheduling = require('../services/scheduling.service');
 
 async function match(req, res, next) {
     try {
@@ -137,10 +138,47 @@ async function create(req, res, next) {
         }
     }
 
-    // Execute atomic creation transaction
+    // Execute atomic creation transaction with advisory concurrency lock
     const client = await pool.connect();
+    let inTransaction = false;
+    let clientReleased = false;
+
     try {
         await client.query('BEGIN');
+        inTransaction = true;
+
+        if (provider_id) {
+            // Advisory lock before checking or writing
+            const lockKey = `booking:${provider_id}:${preferred_date}:${startMin}`;
+            await client.query('SELECT pg_advisory_xact_lock(hashtext($1::text)) AS _lock;', [lockKey]);
+
+            // Re-check slot availability inside the lock
+            const slotCheck = await client.query(`
+                SELECT 1 FROM provider_bookings
+                WHERE provider_id = $1 AND slot_date = $2 AND start_minute = $3;
+            `, [parseInt(provider_id, 10), preferred_date, startMin]);
+
+            if (slotCheck.rows.length > 0) {
+                await client.query('ROLLBACK');
+                inTransaction = false;
+                client.release();
+                clientReleased = true;
+
+                const suggestions = await scheduling.getSuggestions(
+                    parseInt(provider_id, 10),
+                    preferred_date,
+                    category_slug,
+                    startMin,
+                    3
+                );
+
+                return res.status(409).json({
+                    ok: false,
+                    error: 'slot already booked',
+                    suggestions
+                });
+            }
+        }
 
         const imageUrl = req.file ? `/uploads/requests/${req.file.filename}` : null;
 
@@ -195,22 +233,42 @@ async function create(req, res, next) {
         await client.query(insertEventQuery, [newRequest.id, req.user.id]);
 
         await client.query('COMMIT');
+        inTransaction = false;
 
         return res.status(200).json({
             ok: true,
             request: newRequest
         });
     } catch (err) {
-        await client.query('ROLLBACK');
+        if (inTransaction) {
+            await client.query('ROLLBACK').catch(() => {});
+            inTransaction = false;
+        }
+
         if (err.code === '23505') {
+            let suggestions = [];
+            if (provider_id) {
+                try {
+                    suggestions = await scheduling.getSuggestions(
+                        parseInt(provider_id, 10),
+                        preferred_date,
+                        category_slug,
+                        startMin,
+                        3
+                    );
+                } catch (_) {}
+            }
             return res.status(409).json({
                 ok: false,
-                error: 'slot already booked, please choose another provider/time'
+                error: 'slot already booked, please choose another provider/time',
+                suggestions
             });
         }
         return next(err);
     } finally {
-        client.release();
+        if (!clientReleased) {
+            client.release();
+        }
     }
 }
 

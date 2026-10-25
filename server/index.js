@@ -11,6 +11,7 @@ const healthRouter = require('./routes/health.routes');
 const authRouter = require('./routes/auth.routes');
 const servicesRouter = require('./routes/services.routes');
 const requestsRouter = require('./routes/requests.routes');
+const providersRouter = require('./routes/providers.routes');
 const errorHandler = require('./middleware/error');
 
 const app = express();
@@ -33,6 +34,7 @@ app.use('/api', healthRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/services', servicesRouter);
 app.use('/api/requests', requestsRouter);
+app.use('/api/providers', providersRouter);
 
 // Static frontend serving
 app.use(express.static(path.join(__dirname, '..', 'client')));
