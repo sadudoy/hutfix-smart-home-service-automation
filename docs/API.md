@@ -480,3 +480,202 @@ Generates 1-hour time slots for a specified provider, date, and category. Evalua
 }
 ```
 
+
+
+---
+
+## Request Lifecycle & Provider Management Endpoints
+
+### 12. Get Request Details with Timeline Events
+
+Retrieves a detailed single service request alongside its chronological timeline event history. Access is restricted to the owning customer, assigned provider, or an administrator.
+
+- **Method:** `GET`
+- **Path:** `/api/requests/:id`
+- **Authentication:** `requireAuth`
+
+#### Response
+
+- **Status Code:** `200 OK`
+- **Body:**
+
+```json
+{
+  "ok": true,
+  "request": {
+    "id": 1,
+    "customer_id": 1,
+    "category_id": 1,
+    "assigned_provider_id": 2,
+    "description": "Fix refrigerator cooling",
+    "urgency": "normal",
+    "address": "Dhanmondi, Road 5",
+    "preferred_date": "2026-10-31",
+    "preferred_start_minute": 600,
+    "preferred_end_minute": 660,
+    "status": "accepted",
+    "category_slug": "appliance-repair",
+    "category_name": "Appliance & Gadget Repair",
+    "provider_name": "Rahim Electronics & AC Care",
+    "provider_phone": "+8801700000002",
+    "estimated_price": "950.00"
+  },
+  "events": [
+    {
+      "id": 1,
+      "status": "requested",
+      "note": "Request submitted",
+      "created_at": "2026-10-25T13:30:00.000Z"
+    },
+    {
+      "id": 2,
+      "status": "accepted",
+      "note": "Accepted by provider",
+      "created_at": "2026-10-25T13:35:00.000Z"
+    }
+  ]
+}
+```
+
+### 13. Customer Request Cancellation
+
+Allows a customer to cancel their request if it is still in `requested` or `accepted` status. Cancelling frees the reserved provider booking slot and records a cancellation event.
+
+- **Method:** `POST`
+- **Path:** `/api/requests/:id/cancel`
+- **Authentication:** `requireAuth`, `requireRole('customer')`
+
+#### Response
+
+- **Status Code:** `200 OK`
+- **Body:**
+
+```json
+{
+  "ok": true,
+  "request": {
+    "id": 1,
+    "status": "cancelled",
+    "updated_at": "2026-10-25T13:40:00.000Z"
+  }
+}
+```
+
+### 14. Provider Accept Request
+
+Allows the assigned provider to accept an incoming request. Transitions status from `requested` to `accepted`.
+
+- **Method:** `POST`
+- **Path:** `/api/requests/:id/accept`
+- **Authentication:** `requireAuth`, `requireRole('provider')`
+
+#### Response
+
+- **Status Code:** `200 OK`
+- **Body:**
+
+```json
+{
+  "ok": true,
+  "request": {
+    "id": 1,
+    "status": "accepted",
+    "updated_at": "2026-10-25T13:42:00.000Z"
+  }
+}
+```
+
+### 15. Provider Reject Request
+
+Allows the assigned provider to reject an incoming request. Transitions status to `cancelled` and frees the provider booking slot.
+
+- **Method:** `POST`
+- **Path:** `/api/requests/:id/reject`
+- **Authentication:** `requireAuth`, `requireRole('provider')`
+
+#### Response
+
+- **Status Code:** `200 OK`
+- **Body:**
+
+```json
+{
+  "ok": true,
+  "request": {
+    "id": 1,
+    "status": "cancelled",
+    "updated_at": "2026-10-25T13:45:00.000Z"
+  }
+}
+```
+
+### 16. Update Request Status Progression
+
+Advances request fulfillment along the validated state machine:
+`accepted` &rarr; `on_the_way` &rarr; `in_progress` &rarr; `completed`.
+
+- **Method:** `PATCH`
+- **Path:** `/api/requests/:id/status`
+- **Authentication:** `requireAuth`, `requireRole('provider', 'admin')`
+- **Request Body:**
+
+```json
+{
+  "status": "on_the_way"
+}
+```
+
+#### Response
+
+- **Status Code:** `200 OK`
+- **Body:**
+
+```json
+{
+  "ok": true,
+  "request": {
+    "id": 1,
+    "status": "on_the_way",
+    "updated_at": "2026-10-25T13:50:00.000Z"
+  }
+}
+```
+
+### 17. Provider Requests by Bucket
+
+Retrieves assignments partitioned into three functional buckets:
+- `incoming`: newly requested (`['requested']`)
+- `active`: currently in fulfillment (`['accepted', 'on_the_way', 'in_progress']`)
+- `history`: completed or cancelled (`['completed', 'cancelled']`)
+
+- **Method:** `GET`
+- **Path:** `/api/provider/requests`
+- **Authentication:** `requireAuth`, `requireRole('provider')`
+- **Query Parameters:**
+  - `bucket` (`incoming` | `active` | `history`, default: `incoming`)
+
+#### Response
+
+- **Status Code:** `200 OK`
+- **Body:**
+
+```json
+{
+  "ok": true,
+  "bucket": "incoming",
+  "requests": [
+    {
+      "id": 1,
+      "status": "requested",
+      "customer_name": "Demo Customer",
+      "customer_phone": "+8801700000001",
+      "category_name": "Appliance & Gadget Repair",
+      "address": "Dhanmondi, Road 5",
+      "preferred_date": "2026-10-31",
+      "preferred_start_minute": 600,
+      "preferred_end_minute": 660,
+      "estimated_price": "950.00"
+    }
+  ]
+}
+```

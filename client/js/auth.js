@@ -31,6 +31,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (authSuccess) authSuccess.classList.remove('d-none');
         if (whoSpan) whoSpan.textContent = user.full_name || user.email;
         if (roleSpan) roleSpan.textContent = user.role;
+
+        const gotoDashBtn = document.getElementById('goto-dashboard');
+        if (gotoDashBtn) {
+            gotoDashBtn.onclick = (e) => {
+                e.preventDefault();
+                if (user.role === 'customer') {
+                    location.href = '/tracking.html';
+                } else if (user.role === 'provider') {
+                    location.href = '/provider.html';
+                } else if (user.role === 'admin') {
+                    alert('Admin dashboard arrives in Phase 7');
+                } else {
+                    location.href = '/index.html';
+                }
+            };
+        }
     }
 
     // Try auto-login on page load
@@ -112,24 +128,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const nameInput = document.getElementById('reg-name');
             const emailInput = document.getElementById('reg-email');
-            const phoneInput = document.getElementById('reg-phone');
             const passwordInput = document.getElementById('reg-password');
+            const phoneInput = document.getElementById('reg-phone');
             const roleSelect = document.getElementById('reg-role');
             const submitBtn = registerForm.querySelector('button[type="submit"]');
 
             const full_name = nameInput ? nameInput.value.trim() : '';
             const email = emailInput ? emailInput.value.trim() : '';
-            const phone = phoneInput ? phoneInput.value.trim() : '';
             const password = passwordInput ? passwordInput.value : '';
+            const phone = phoneInput ? phoneInput.value.trim() : '';
             const role = roleSelect ? roleSelect.value : 'customer';
 
             if (!full_name || !email || !password) {
-                showError('Name, email, and password are required.');
+                showError('Please fill out all required fields.');
                 return;
             }
 
             if (password.length < 6) {
-                showError('Password must be at least 6 characters long.');
+                showError('Password must be at least 6 characters.');
                 return;
             }
 
@@ -140,8 +156,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             try {
-                const payload = { email, password, full_name, phone, role };
-                const res = await window.API.post('/api/auth/register', payload);
+                const res = await window.API.post('/api/auth/register', {
+                    full_name,
+                    email,
+                    password,
+                    phone: phone || null,
+                    role
+                });
                 if (res && res.user) {
                     showLoggedIn(res.user);
                 }
@@ -156,13 +177,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Logout
+    // Logout action
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async () => {
             try {
                 await window.API.post('/api/auth/logout');
-            } catch (_) {}
-            window.location.reload();
+            } catch (_) {
+                // Ignore failure on logout
+            }
+            location.reload();
         });
     }
 });

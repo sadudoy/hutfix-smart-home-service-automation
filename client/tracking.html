@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HutFix — Service Tracking</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <style>
+    .tracking-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 1.5rem;
+      min-height: calc(100vh - 160px);
+    }
+    @media (max-width: 991px) {
+      .tracking-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .detail-hero-img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .timeline-item {
+      position: relative;
+      padding-left: 2rem;
+      margin-bottom: 1.25rem;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 6px;
+      bottom: -18px;
+      width: 2px;
+      background-color: var(--border);
+    }
+    .timeline-item:last-child::before {
+      display: none;
+    }
+    .timeline-dot {
+      position: absolute;
+      left: 0;
+      top: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--brand-500);
+      border: 3px solid #ffffff;
+      box-shadow: 0 0 0 1px var(--brand-500);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top border-bottom shadow-sm">
+    <div class="container-fluid px-md-4">
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-dark" href="/index.html">
+        <img src="assets/images/logo.jpg" alt="HutFix Logo" style="height: 38px; border-radius: 6px;">
+        <span class="fs-4 text-primary">HutFix</span>
+      </a>
+
+      <div class="d-flex align-items-center gap-3">
+        <a href="/index.html" class="btn btn-outline-secondary btn-sm px-3 fw-semibold">Home</a>
+        <a href="/request.html" class="btn btn-primary btn-sm px-3 fw-semibold">
+          <i class="bi bi-plus-circle me-1"></i> New Request
+        </a>
+        <span id="nav-username" class="fw-semibold text-secondary small">Customer</span>
+        <button type="button" id="logout-btn" class="btn btn-outline-danger btn-sm px-2 py-1">
+          <i class="bi bi-box-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Tracking Container -->
+  <main class="container-fluid px-md-4 py-4 flex-grow-1">
+    <div id="role-warning" class="alert alert-warning d-none" role="alert">
+      <h5 class="alert-heading fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Customer Access Only</h5>
+      <p class="mb-0">This tracking portal is designed for customer accounts. Please log in with a customer account.</p>
+    </div>
+
+    <div id="tracking-view" class="tracking-grid">
+      <!-- Left Sidebar: Requests List -->
+      <aside class="surface p-3 d-flex flex-column h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="h6 fw-bold text-dark mb-0"><i class="bi bi-collection me-2"></i>My Requests</h2>
+          <span id="requests-count" class="badge bg-secondary">0</span>
+        </div>
+
+        <div id="request-list" class="overflow-auto flex-grow-1" style="max-height: calc(100vh - 230px);">
+          <!-- Injected via client/js/tracking.js -->
+          <div class="text-center py-4 text-muted small">Loading your requests...</div>
+        </div>
+      </aside>
+
+      <!-- Right Detail Panel -->
+      <section class="surface p-0 overflow-hidden d-flex flex-column">
+        <div id="request-detail" class="h-100 d-flex flex-column">
+          <!-- Injected via client/js/tracking.js or empty state -->
+          <div class="empty-state my-auto">
+            <i class="bi bi-inbox"></i>
+            <h3 class="h6 fw-semibold">No Request Selected</h3>
+            <p class="small text-muted mb-0">Select a service request from the sidebar to view live fulfillment tracking.</p>
+          </div>
+          <!-- Timeline placeholder -->
+          <div id="timeline" class="d-none"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/images.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/tracking.js"></script>
+</body>
+</html>

@@ -9,5 +9,7 @@ window.API = {
     return data;
   },
   get(p) { return this.request(p); },
-  post(p, body) { return this.request(p, { method: 'POST', body }); }
+  post(p, body) { return this.request(p, { method: 'POST', body }); },
+  patch(p, body) { return this.request(p, { method: 'PATCH', body }); },
+  del(p) { return this.request(p, { method: 'DELETE' }); }
 };
