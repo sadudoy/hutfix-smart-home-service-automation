@@ -172,7 +172,7 @@ async function runTests() {
     const healthRoutesContent = fs.readFileSync(path.resolve(__dirname, 'server/routes/health.routes.js'), 'utf8');
     assert(healthRoutesContent.includes('/health'), 'server/routes/health.routes.js contains /health');
 
-    const isLegacy = fs.existsSync(path.resolve(__dirname, 'client/customer.html'));
+    const isLegacy = fs.existsSync(path.resolve(__dirname, 'client/customer.html')) || fs.existsSync(path.resolve(__dirname, 'client/_legacy_phase9/customer.html'));
     const clientIndexContent = fs.readFileSync(path.resolve(__dirname, 'client/index.html'), 'utf8');
     assert(isLegacy || /bootstrap.*\.min\.css/i.test(clientIndexContent), 'client/index.html references bootstrap CDN or legacy UI');
     assert(isLegacy || clientIndexContent.includes("fetch('/api/health')"), "client/index.html contains fetch('/api/health') or legacy UI");

@@ -107,5 +107,21 @@
 
 ---
 
-## Phase 10+: pending
+## Phase 10 — Final UI Implementation (Fixora Reference) & Real Backend Wiring
+- **Landed**:
+  - Adopted the definitive Fixora reference UI (`client/_reference_fixora/` &rarr; `client/index.html`, `style.css`, `app.js`).
+  - Safely archived Phase 9 multi-page UI to `client/_legacy_phase9/` and exposed static assets as an Express fallback to maintain backward compatibility.
+  - Scaled entire CSS typographic hierarchy in `client/style.css` to $\ge 11$px (7–10px &rarr; 11–13px, 11–14px &rarr; 14–15px, explicit `.hero h1` 40px and `.page-head h1` 32px), eliminating all sub-11px illegibility defects.
+  - Implemented client-side authentication overlay (`#auth-screen`) with instant demo credentials switching (`customer@demo.test`, `provider@demo.test`, `admin@demo.test`) and session logout (`#logoutBtn`).
+  - Completely rewired `client/app.js` to real PostgreSQL REST backend endpoints with zero mock data and zero dummy local storage.
+  - Sourced category photography dynamically via `client/js/images.js` Unsplash integration across all 8 services.
+  - Implemented 5-stage tracking lifecycle, audit timeline, invoice dialog, and review submission in customer view.
+  - Wired provider incoming task acceptance/rejection, active task status progression, and earnings ledger.
+  - Implemented admin platform overview KPIs, user accounts directory, and master bookings ledger.
+  - Added backend endpoints: `GET /api/admin/stats`, `GET /api/admin/users`, `GET /api/admin/bookings`, `GET /api/providers/:userId/profile`, and `GET /api/invoices/mine`.
+  - Renamed legacy test suite to `test_phase9.legacy.js` and authored comprehensive `test_phase10.js` verification suite with full regression passing across all prior phases.
+
+---
+
+## Phase 11+: pending
 - Future planned enhancements outlined in `docs/ROADMAP.md`.

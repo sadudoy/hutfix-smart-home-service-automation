@@ -26,7 +26,8 @@ console.log('   PHASE 8: IMPECCABLE REDESIGN & DARK-MODE SUITE   ');
 console.log('====================================================\n');
 
 async function runTests() {
-    const isLegacy = fs.existsSync(path.join(__dirname, 'client', 'customer.html'));
+    const isLegacy = fs.existsSync(path.join(__dirname, 'client', 'customer.html')) || fs.existsSync(path.join(__dirname, 'client', '_legacy_phase9', 'customer.html'));
+    const legacyDir = fs.existsSync(path.join(__dirname, 'client', 'customer.html')) ? 'client' : 'client/_legacy_phase9';
 
     // --------------------------------------------------------
     // Part 1: Product Truth & Detector Baseline Assertions
@@ -63,7 +64,7 @@ async function runTests() {
 
     if (isLegacy) {
         // In Phase 9, tokens.css was replaced with restored global.css
-        const globalCssPath = path.join(__dirname, 'client', 'global.css');
+        const globalCssPath = path.join(__dirname, legacyDir, 'global.css');
         assert(fs.existsSync(globalCssPath), 'client/global.css exists');
         const globalCss = fs.readFileSync(globalCssPath, 'utf8');
 
@@ -127,7 +128,7 @@ async function runTests() {
     ];
 
     if (isLegacy) {
-        const legacyCss = fs.readFileSync(path.join(__dirname, 'client', 'global.css'), 'utf8');
+        const legacyCss = fs.readFileSync(path.join(__dirname, legacyDir, 'global.css'), 'utf8');
         for (const bp of bannedPatterns) {
             assert(!legacyCss.includes(bp), `client/global.css does not contain AI pattern "${bp}"`);
         }
@@ -166,7 +167,7 @@ async function runTests() {
     };
 
     for (const [page, ids] of Object.entries(requiredHooks)) {
-        const content = fs.readFileSync(path.join(__dirname, 'client', page), 'utf8');
+        const content = fs.readFileSync(path.join(__dirname, isLegacy ? legacyDir : 'client', page), 'utf8');
         for (const id of ids) {
             assert(content.includes(`id="${id}"`), `${page} preserves required id="${id}"`);
         }

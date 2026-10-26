@@ -90,16 +90,18 @@ async function runTests() {
     const allSlugsPresent = expectedSlugs.every(s => imagesJsContent.includes(`'${s}'`));
     assert(allSlugsPresent, 'client/js/images.js contains all 8 category slugs');
 
-    const isLegacy = fs.existsSync(path.resolve(__dirname, 'client/customer.html'));
-    const indexHtmlContent = fs.readFileSync(path.resolve(__dirname, 'client/index.html'), 'utf8');
+    const isLegacy = fs.existsSync(path.resolve(__dirname, 'client/customer.html')) || fs.existsSync(path.resolve(__dirname, 'client/_legacy_phase9/customer.html'));
+    const legacyDir = fs.existsSync(path.resolve(__dirname, 'client/customer.html')) ? 'client' : 'client/_legacy_phase9';
+    const indexHtmlPath = isLegacy ? path.resolve(__dirname, `${legacyDir}/index.html`) : path.resolve(__dirname, 'client/index.html');
+    const indexHtmlContent = fs.readFileSync(indexHtmlPath, 'utf8');
     assert(indexHtmlContent.includes('services-grid') || indexHtmlContent.includes('card-img-top'), 'client/index.html contains services-grid or card-img-top');
     assert(isLegacy || indexHtmlContent.includes('card-img-top'), 'client/index.html card images check');
 
-    const reqHtmlPath = fs.existsSync(path.resolve(__dirname, 'client/request.html')) ? path.resolve(__dirname, 'client/request.html') : path.resolve(__dirname, 'client/customer.html');
+    const reqHtmlPath = path.resolve(__dirname, `${legacyDir}/customer.html`);
     const reqHtmlContent = fs.readFileSync(reqHtmlPath, 'utf8');
     assert(reqHtmlContent.includes('booking-form') || reqHtmlContent.includes('/api/providers/'), 'Request/booking markup present');
 
-    const reqJsPath = fs.existsSync(path.resolve(__dirname, 'client/js/request.js')) ? path.resolve(__dirname, 'client/js/request.js') : path.resolve(__dirname, 'client/customer.js');
+    const reqJsPath = path.resolve(__dirname, `${legacyDir}/customer.js`);
     const reqJsContent = fs.readFileSync(reqJsPath, 'utf8');
     assert(reqJsContent.includes('match') || reqJsContent.includes('suggestions'), 'Request/customer JS contains matching logic');
 

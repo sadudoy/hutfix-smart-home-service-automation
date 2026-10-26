@@ -54,16 +54,17 @@ async function runTests() {
     // --------------------------------------------------------
     console.log('--- 1. Static File & Code Structure Checks ---');
 
-    const isLegacy = fs.existsSync(path.resolve(__dirname, 'client/customer.html'));
+    const isLegacy = fs.existsSync(path.resolve(__dirname, 'client/customer.html')) || fs.existsSync(path.resolve(__dirname, 'client/_legacy_phase9/customer.html'));
+    const legacyDir = fs.existsSync(path.resolve(__dirname, 'client/customer.html')) ? 'client' : 'client/_legacy_phase9';
     const requiredFiles = [
         'server/services/lifecycle.service.js',
         'server/routes/provider.routes.js',
-        isLegacy ? 'client/customer.html' : 'client/tracking.html',
-        'client/provider.html',
-        isLegacy ? 'client/customer.js' : 'client/js/tracking.js',
-        isLegacy ? 'client/provider.js' : 'client/js/provider.js',
-        isLegacy ? 'client/customer.css' : 'client/css/tokens.css',
-        isLegacy ? 'client/global.css' : 'client/css/components.css',
+        isLegacy ? `${legacyDir}/customer.html` : 'client/tracking.html',
+        isLegacy ? `${legacyDir}/provider.html` : 'client/provider.html',
+        isLegacy ? `${legacyDir}/customer.js` : 'client/js/tracking.js',
+        isLegacy ? `${legacyDir}/provider.js` : 'client/js/provider.js',
+        isLegacy ? `${legacyDir}/customer.css` : 'client/css/tokens.css',
+        isLegacy ? `${legacyDir}/global.css` : 'client/css/components.css',
         'test_phase5.js'
     ];
 
@@ -93,26 +94,26 @@ async function runTests() {
     const serverIndexContent = fs.readFileSync(path.resolve(__dirname, 'server/index.js'), 'utf8');
     assert(serverIndexContent.includes('/api/provider'), 'server/index.js mounts /api/provider');
 
-    const trackingHtmlPath = isLegacy ? path.resolve(__dirname, 'client/customer.html') : path.resolve(__dirname, 'client/tracking.html');
+    const trackingHtmlPath = isLegacy ? path.resolve(__dirname, `${legacyDir}/customer.html`) : path.resolve(__dirname, 'client/tracking.html');
     const trackingHtmlContent = fs.readFileSync(trackingHtmlPath, 'utf8');
     assert(trackingHtmlContent.includes('id="bookings-list"') || trackingHtmlContent.includes('id="request-list"'), 'Tracking/bookings list present');
     assert(trackingHtmlContent.includes('id="booking-form"') || trackingHtmlContent.includes('id="request-detail"'), 'Request form/detail present');
-    assert(trackingHtmlContent.includes('timeline') || fs.readFileSync(path.resolve(__dirname, 'client/customer.css'), 'utf8').includes('timeline'), 'Timeline stepper present');
+    assert(trackingHtmlContent.includes('timeline') || fs.readFileSync(path.resolve(__dirname, `${legacyDir}/customer.css`), 'utf8').includes('timeline'), 'Timeline stepper present');
 
-    const providerHtmlContent = fs.readFileSync(path.resolve(__dirname, 'client/provider.html'), 'utf8');
+    const providerHtmlContent = fs.readFileSync(path.resolve(__dirname, `${legacyDir}/provider.html`), 'utf8');
     assert(providerHtmlContent.includes('id="requests-list"') || providerHtmlContent.includes('id="requests-grid"'), 'Provider requests container present');
     assert(providerHtmlContent.includes('section-requests') || providerHtmlContent.includes('id="tab-incoming"'), 'Provider incoming tab present');
     assert(providerHtmlContent.includes('request-badge') || providerHtmlContent.includes('id="incoming-count"'), 'Provider incoming count present');
 
-    const apiJsPath = fs.existsSync(path.resolve(__dirname, 'client/js/api.js')) ? path.resolve(__dirname, 'client/js/api.js') : path.resolve(__dirname, 'client/api.js');
+    const apiJsPath = fs.existsSync(path.resolve(__dirname, `${legacyDir}/js/api.js`)) ? path.resolve(__dirname, `${legacyDir}/js/api.js`) : path.resolve(__dirname, 'client/js/api.js');
     const apiJsContent = fs.readFileSync(apiJsPath, 'utf8');
     assert(apiJsContent.includes('patch(') || apiJsContent.includes('patch'), 'api.js contains patch');
 
-    const provJsPath = isLegacy ? path.resolve(__dirname, 'client/provider.js') : path.resolve(__dirname, 'client/js/provider.js');
+    const provJsPath = isLegacy ? path.resolve(__dirname, `${legacyDir}/provider.js`) : path.resolve(__dirname, 'client/js/provider.js');
     const providerJsContent = fs.readFileSync(provJsPath, 'utf8');
     assert(providerJsContent.includes('/api/provider/requests'), 'provider.js contains /api/provider/requests');
 
-    const authJsPath = isLegacy ? path.resolve(__dirname, 'client/auth.js') : path.resolve(__dirname, 'client/js/auth.js');
+    const authJsPath = isLegacy ? path.resolve(__dirname, `${legacyDir}/auth.js`) : path.resolve(__dirname, 'client/js/auth.js');
     const authJsContent = fs.readFileSync(authJsPath, 'utf8');
     const hasRedirectLogic = (authJsContent.includes('customer.html') || authJsContent.includes('tracking.html')) && authJsContent.includes('provider.html');
     assert(hasRedirectLogic, 'auth.js contains role redirect logic');

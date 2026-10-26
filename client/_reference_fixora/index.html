@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>Fixora — Home Services Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#" aria-label="Fixora home"><span class="brand-mark">f<span>.</span></span><span>fixora</span></a>
+      <div class="role-label">WORKSPACE</div>
+      <div class="role-switch" aria-label="Switch workspace">
+        <button class="role-btn active" data-role="client"><span class="role-icon">⌂</span> Client</button>
+        <button class="role-btn" data-role="repairman"><span class="role-icon">✳</span> Repairman</button>
+        <button class="role-btn" data-role="admin"><span class="role-icon">▦</span> Admin</button>
+      </div>
+      <div class="nav-caption" id="navCaption">DISCOVER</div>
+      <nav class="nav-list" id="navList"></nav>
+      <div class="sidebar-bottom">
+        <div class="help-card">
+          <div class="help-icon">✦</div>
+          <strong>Need a hand?</strong>
+          <p>Our support team is here to help.</p>
+          <button class="text-button" id="supportBtn">Contact support <span>↗</span></button>
+        </div>
+        <div class="user-mini">
+          <div class="avatar avatar-lilac">AS</div>
+          <div class="user-mini-info"><strong id="miniName">Alex Morgan</strong><span id="miniRole">Client account</span></div>
+          <button class="dots" aria-label="Account menu">•••</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <button class="mobile-menu icon-btn" id="mobileMenu" aria-label="Open menu">☰</button>
+        <div class="breadcrumb"><span>Workspace</span><b>/</b><strong id="pageCrumb">Discover services</strong></div>
+        <div class="topbar-actions">
+          <div class="location-pill"><span class="pin">⌖</span><span><small>Service location</small><strong>Dhaka, Bangladesh</strong></span><span class="chevron">⌄</span></div>
+          <button class="icon-btn notification-btn" id="notificationBtn" aria-label="Notifications">♧<i></i></button>
+          <div class="avatar avatar-lilac top-avatar">AS</div>
+        </div>
+      </header>
+      <section class="content" id="content" aria-live="polite"></section>
+      <footer class="footer"><span>© 2026 Fixora Marketplace</span><span>Made for a home that works.</span></footer>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-head"><div><span class="eyebrow">FIXORA BOOKING</span><h2 id="modalTitle">Book a service</h2></div><button class="icon-btn close-modal" id="closeModal" aria-label="Close">×</button></div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

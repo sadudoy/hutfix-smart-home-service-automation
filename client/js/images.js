@@ -10,6 +10,6 @@ window.IMAGES = {
     'personal-care':     'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&auto=format&fit=crop&q=70'
   },
   categoryFallback: (slug) => `https://ui-avatars.com/api/?name=${encodeURIComponent(slug)}&background=2563eb&color=fff&size=400`,
-  providerAvatar: (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1e293b&color=fff&size=200&bold=true`,
+  providerAvatar: (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'Provider')}&background=1e293b&color=fff&size=200&bold=true`,
   category(slug) { return this.category[slug] || this.categoryFallback(slug); }
 };

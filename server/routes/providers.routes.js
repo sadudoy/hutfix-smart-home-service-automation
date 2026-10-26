@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { pool } = require('../config/db');
 const scheduling = require('../services/scheduling.service');
+const { requireAuth, requireRole } = require('../middleware/auth');
+const providersCtrl = require('../controllers/providers.controller');
+
+router.get('/:userId/profile', requireAuth, requireRole('provider', 'admin'), providersCtrl.getProviderProfileByUserId);
 
 router.get('/', async (req, res, next) => {
     try {

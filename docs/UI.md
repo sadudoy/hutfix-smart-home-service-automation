@@ -1,80 +1,89 @@
-# HutFix — Frontend & UI Component System
+# Fixora — Frontend UI & Design System Specification
 
-## 1. Overview & Brand Identity
+## 1. Overview & Reference Architecture
 
-HutFix features a clean, high-trust marketplace UI utilizing the classic Blue/Sky Blue palette, custom responsive stylesheets, and intuitive sidebar layouts for role dashboards:
-- **Primary Colors**: Deep Blue (`#003366`), Navy Blue (`#1a365d`), Royal Blue (`#0052cc`), Sky Blue (`#4a90e2`).
-- **Surfaces**: Light mode background (`#f4f7f6`), white surface (`#ffffff`), dark mode background (`#0b1120`), dark surface (`#1e293b`).
-- **Typography**: Inter / system sans-serif hierarchy.
-- **Architectural Paradigm**: Direct API connectivity via `window.API` (`client/js/api.js`), responsive flex/grid layouts with mobile adaptation.
+Fixora is the definitive UI for the HutFix Smart Home Service Automation platform. It adopts the modern, high-density dashboard design from `client/_reference_fixora/` with full real-backend API wiring, responsive mobile layouts, and strict role-based access control (RBAC).
 
----
-
-## 2. Page Specifications
-
-### `index.html` (Landing & Discovery Portal)
-- **Purpose**: Brand introduction, live service category exploration, technician marketplace, and integrated auth / booking modals.
-- **Key Sections**:
-  - Navbar with brand logo icon, services navigation, dark mode toggle (`#theme-toggle`), and dynamic user menu (`#nav-auth-area`).
-  - Hero header with search bar (`#hero-search`, `#search-btn`) and value propositions.
-  - Premium Services Grid (`.services-grid`): dynamic category cards (`.service-card.category-trigger`) populated from `GET /api/services`.
-  - Available Technicians Section (`#marketplace-section`, `#gigs-grid`): displays available specialists with ratings, prices, and "Book Now" buttons.
-  - Direct Booking Modal (`#booking-modal`, `#direct-booking-form`): date, time, location, details, and multipart booking submission via `POST /api/requests`.
-  - Auth Modal (`#auth-modal`): tabbed login (`#login-form`) and signup (`#signup-form`) with role selection.
-
-### `customer.html` (Customer Dashboard & Service Tracking)
-- **Purpose**: Dedicated customer portal replacing standalone `tracking.html` and `request.html` with a unified sidebar layout.
-- **Key Sections**:
-  - Top Navbar: Brand logo, dark mode toggle (`#theme-toggle`), notifications bell (`#notif-btn`, `#notif-badge`, `#notif-dropdown`, `#notif-list`), and customer profile avatar.
-  - Sidebar Navigation: New Request tab (`#section-book`), My Bookings history tab (`#section-history`), My Profile tab (`#section-profile`), Browse Services link, and Logout (`#logout-btn`).
-  - Smart Booking Form (`#booking-form`): category selector from `GET /api/services`, date/time picker, urgency selector (`#book-urgency`), location, and details.
-  - Match Result Box (`#match-result-container`, `#match-details`): displays best ranked provider from `POST /api/requests/match` with distance and price. "Confirm" triggers `POST /api/requests`.
-  - Booking History (`#bookings-list`): renders customer orders with a 5-stage visual stepper (`.timeline` with `Requested -> Accepted -> On the Way -> In Progress -> Completed`).
-  - Order Actions: "View Invoice" link (`/invoice.html?id=...`), "Cancel Booking" for pending jobs, and "Leave a Review" opening `#review-modal` (`POST /api/ratings/by-request/:id`).
-
-### `provider.html` (Provider Operations & Settings Dashboard)
-- **Purpose**: Service technician command center for incoming jobs, ongoing tasks, work history, and pricing/area configuration.
-- **Key Sections**:
-  - Top Navbar: Brand logo, dark mode toggle, and provider avatar (`ui-avatars.com`).
-  - Sidebar Navigation: Incoming Requests (`#section-requests`, badge `#request-badge`), Active Jobs (`#section-active`), Job History (`#section-history`), Profile (`#section-profile`), Service Settings (`#section-services`), and Logout (`#logout-btn`).
-  - Incoming Requests (`#requests-list`): cards populated from `GET /api/provider/requests?bucket=incoming`, with "Accept" (`POST /api/requests/:id/accept`) and "Reject" (`POST /api/requests/:id/reject`).
-  - Active Jobs (`#active-jobs-list`): cards populated from `GET /api/provider/requests?bucket=active`. Includes "Next Step" status progression button calling `PATCH /api/requests/:id/status` (`accepted` -> `on_the_way` -> `in_progress` -> `completed`).
-  - Job History (`#history-list`): completed and cancelled orders with invoice links.
-  - Service Settings (`#service-settings-form`): configure service charge / base rate (`#service-charge`), service area (`#service-area`), quick price presets (`.price-preset`), and live display (`#display-charge`, `#display-area`), persisted via `PATCH /api/provider/settings`.
-
-### `admin.html` (Platform Administration & Master Ledger)
-- **Purpose**: Marketplace administrator control panel for monitoring platform KPIs and master tables.
-- **Key Sections**:
-  - Top Navbar: Admin shield logo, dark mode toggle, and admin avatar.
-  - Sidebar Navigation: Overview tab, Master Ledger tab (`#section-bookings`), Providers tab (`#section-providers`), Users tab (`#section-users`), and Logout (`#logout-btn`).
-  - KPI Stat Cards: Total Bookings (`#stat-total-bookings`), Platform Revenue (`#stat-total-revenue`), Active Providers (`#stat-total-providers`), Registered Users (`#stat-total-users`), populated via `GET /api/admin/stats`.
-  - Responsive Data Tables: Master bookings ledger (`#admin-bookings-table`), provider directory (`#admin-providers-table`), and user accounts (`#admin-users-table`) wrapped in `<div class="table-responsive" style="overflow-x: auto;">` for horizontal mobile scrolling.
-
-### `invoice.html` (Print-Ready Service Invoice)
-- **Purpose**: Clean, professional printable receipt for completed service requests.
-- **Key Sections**:
-  - Printable invoice container (`.invoice-card`) with HutFix header, invoice number (`#invoice-num`), and issue date (`#invoice-date`).
-  - Customer and Provider contact information.
-  - Tabular breakdown: Service delivery subtotal (`#service-subtotal`), 5% platform tax (`#service-tax`), and total due (`#service-total`).
-  - Action footer with "Back to Dashboard" and "Print Invoice" (`window.print()`).
+- **Brand & Theme**: Deep Slate / Indigo accents (`#2563eb`), neutral grays (`#0f172a`, `#1e293b`, `#f8fafc`), clean surface borders (`#e2e8f0`).
+- **Typography**: Inter / system sans-serif hierarchy scaled strictly to $\ge 11$px to eliminate readability defects.
+- **Architectural Paradigm**: Single-page application (SPA) architecture (`client/index.html`) driven by `client/app.js`. Consolidates previous multi-page interfaces (`customer.html`, `provider.html`, `admin.html`, and `invoice.html`) into a unified reactive dashboard. Business state is strictly queried from and mutated against real PostgreSQL REST APIs; zero mock data or dummy state.
+- **Role-Based Access Control (RBAC)**: Enforced via server-side session cookies (`hutfix_token`). The sidebar navigation dynamically adapts to the authenticated role (`customer`, `provider`, or `admin`), while API endpoints strictly enforce 401 Unauthorized and 403 Forbidden guards.
 
 ---
 
-## 3. Stylesheet Organization
+## 2. Authentication Gate & Session Management
 
-- `client/global.css`: Core design variables, CSS reset, typography, navbar, button styles, modal overlays, card containers, and dark mode overrides (`[data-theme="dark"]`).
-- `client/auth.css`: Styles for the login and registration modal, input groups, role selection radio switches, and error feedback pills.
-- `client/customer.css`: Styles for the customer dashboard, sidebar layout, match results card, 5-stage `.timeline` stepper (with vertical mobile stacking `@media (max-width: 600px)`), and status badges.
-- `client/provider.css`: Styles for technician task boards, status indicators, and service settings forms.
-- `client/admin.css`: Styles for administrator KPI stat cards, metric counters, data tables, and horizontal table scroll wrappers.
+### `#auth-screen` (Modal Gateway)
+When an unauthenticated user opens Fixora, an accessible modal overlay covers the dashboard view:
+- **Form Controls**: Email input (`#auth-email`), password input (`#auth-password`), toggle between Login and Sign Up.
+- **Demo Switcher Links**: Quick-fill demo credentials buttons (`data-demo="customer"`, `data-demo="provider"`, `data-demo="admin"`).
+- **Session Verification**: On load, `boot()` queries `GET /api/auth/me`. If valid, the overlay is hidden and role-scoped dashboard views are mounted. If 401, `#auth-screen` is presented.
+- **Logout Action**: `#logoutBtn` triggers `POST /api/auth/logout`, clears memory cache, and displays the authentication screen.
 
 ---
 
-## 4. API Client & JavaScript Modules
+## 3. Role Views & Workflows
 
-- `client/js/api.js`: Unified HTTP client `window.API` supporting `request(path, opts)`, `get(path)`, `post(path, body)`, and `patch(path, body)` with credentials and FormData handling.
-- `client/global.js`: Landing page controller, category rendering, technician search, booking modal, auth state detection, and theme toggle.
-- `client/auth.js`: Authentication modal controller connecting `#login-form` and `#signup-form` to `/api/auth/login` and `/api/auth/register`.
-- `client/customer.js`: Customer dashboard controller for service matching, request creation, order history tracking, reviews, and notifications.
-- `client/provider.js`: Provider dashboard controller for incoming requests, status progression, and service settings.
-- `client/admin.js`: Administrator dashboard controller fetching stats and master tables.
+### 3.1 Customer View
+- **Browse & Discovery**:
+  - Hero banner with quick search and category highlights.
+  - 8 category cards dynamically rendered via `client/js/images.js` Unsplash CDN photography: Appliance Repair, Plumbing, Electrical, Cleaning & Pest Control, Home Maintenance, Moving & Shifting, Car Care & Repair, Personal Care.
+- **Smart Booking Modal (`#bookingModal`)**:
+  - Category selector pre-filled on card click.
+  - Location input with Dhaka area presets.
+  - Interactive Date Picker & 1-Hour Slot Scheduler (`GET /api/providers/:id/slots`).
+  - Real-time provider ranking via multi-factor matching engine (`POST /api/requests/match`).
+  - Concurrency-safe submission (`POST /api/requests`) protected by PostgreSQL advisory transaction locks (`pg_advisory_xact_lock`). If a conflict arises, 409 suggestions are presented.
+- **Live Tracking & Service History (`#view-tracking`, `#view-history`)**:
+  - 5-stage visual progress stepper:
+    $$\text{Requested} \longrightarrow \text{Accepted} \longrightarrow \text{On the Way} \longrightarrow \text{In Progress} \longrightarrow \text{Completed}$$
+  - Audit event timeline showing exact timestamps of lifecycle changes.
+  - Real-time cancellation button for pending requests.
+  - Service Invoice view (`GET /api/invoices/by-request/:id`) detailing subtotal, 5% platform tax, and total.
+  - Customer Review Modal (`#reviewModal` calling `POST /api/ratings/by-request/:id`) with 1–5 star rating and comment submission.
+
+### 3.2 Provider View
+- **Incoming Requests Tab (`#view-incoming`)**:
+  - Unclaimed jobs matching provider services.
+  - Instant **Accept** (`POST /api/requests/:id/accept`) and **Reject** (`POST /api/requests/:id/reject`).
+- **Active Jobs Tab (`#view-active`)**:
+  - Current engagements undergoing fulfillment.
+  - One-click status advancement button advancing state through the finite state machine (`PATCH /api/requests/:id/status`).
+- **Work History & Earnings Tab (`#view-earnings`, `#view-gigs`)**:
+  - Completed jobs history with gross earnings totals.
+  - Provider service catalog and hourly rate configuration.
+  - Provider profile viewer populated via `GET /api/providers/:userId/profile`.
+
+### 3.3 Admin View
+- **Overview Dashboard (`#view-admin-overview`)**:
+  - Platform metric counter cards: Total Bookings, Completed Jobs, Gross Volume (BDT), Platform Revenue (5% tax), Registered Providers, Total Users.
+  - Sourced directly from `GET /api/admin/stats`.
+- **User Management Ledger (`#view-admin-users`)**:
+  - Responsive table populated from `GET /api/admin/users` listing user names, emails, roles, phone numbers, and registration dates.
+- **Master Bookings Ledger (`#view-admin-bookings`)**:
+  - System-wide booking ledger populated from `GET /api/admin/bookings` displaying customer, assigned provider, service category, date, slot time, price, and current lifecycle status.
+
+---
+
+## 4. Typography Scaling System
+
+To ensure mathematical WCAG readability across all display resolutions, the legacy sub-11px typography was scaled up across `client/style.css`:
+
+| Original Range | Scaled Target Range | Application Context |
+| :--- | :--- | :--- |
+| `7px – 8px` | `11px` | Micro status indicators, tiny badges, fine meta captions |
+| `9px – 10px` | `12px – 13px` | Timestamps, table footer notes, helper tags |
+| `11px` | `14px` | Secondary metadata, labels, small button labels |
+| `12px – 14px` | `15px` | Standard body copy, inputs, table cell contents |
+| `15px – 16px` | `16px – 17px` | Card headers, prominent labels, navigation items |
+| Explicit Display Headers | `32px – 40px` | Page titles (`.page-head h1: 32px`), Hero banner (`.hero h1: 40px`) |
+
+**Zero Tolerance Check**: The stylesheet is guaranteed to contain 0 instances of `font-size: [0-9]px` or `font-size: 10px`.
+
+---
+
+## 5. Responsive Design & Mobile Adaptations
+
+- **Sidebar / Navigation Drawer**: Desktop renders a 260px fixed sidebar with logo, navigation links, and user card (`.user-mini`). On screens $\le 900$px, the sidebar collapses into a drawer toggled by `#menuToggle`.
+- **Data Table Overflow**: All admin and provider tabular ledgers are wrapped in scrollable containers (`overflow-x: auto`) to prevent viewport breaking on smaller devices.
+- **Card Grids**: Service cards and incoming job cards utilize CSS Grid with `repeat(auto-fill, minmax(280px, 1fr))` for fluid reflow across mobile, tablet, and desktop viewports.

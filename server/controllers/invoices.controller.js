@@ -53,6 +53,36 @@ async function getByRequest(req, res, next) {
     }
 }
 
+async function getMine(req, res, next) {
+    try {
+        const query = `
+            SELECT i.*, sc.name AS category_name, cu.full_name AS customer_name
+            FROM invoices i
+            JOIN service_requests sr ON sr.id = i.request_id
+            JOIN service_categories sc ON sc.id = sr.category_id
+            JOIN users cu ON cu.id = sr.customer_id
+            JOIN providers p ON p.id = i.provider_id
+            WHERE p.user_id = $1
+            ORDER BY i.issued_at DESC;
+        `;
+        const result = await pool.query(query, [req.user.id]);
+        const invoices = result.rows;
+        const sum_total = invoices.reduce((acc, inv) => acc + (Number(inv.total) || 0), 0);
+
+        return res.status(200).json({
+            ok: true,
+            invoices,
+            totals: {
+                count: invoices.length,
+                sum_total
+            }
+        });
+    } catch (err) {
+        return next(err);
+    }
+}
+
 module.exports = {
-    getByRequest
+    getByRequest,
+    getMine
 };

@@ -1,461 +1,82 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HutFix | Smart Home Services</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <link rel="stylesheet" href="global.css" />
-    <link rel="stylesheet" href="auth.css" />
-  </head>
-  <body>
-    <div id="loader-wrapper"><div class="loader"></div></div>
-
-    <nav class="navbar">
-      <div class="nav-container">
-        <a href="index.html" class="logo-container">
-          <div class="logo-icon">
-            <!-- FIXED: Logo with fallback icon if image fails -->
-            <i class="fa-solid fa-house-chimney-medical" style="font-size: 1.2rem;"></i>
-          </div>
-          <span class="brand-name">HutFix</span>
-        </a>
-
-        <div class="nav-links" id="nav-links">
-          <a href="#services">Services</a>
-          <button
-            id="theme-toggle"
-            class="btn-icon"
-            aria-label="Toggle Dark Mode"
-          >
-            <i class="fa-solid fa-moon"></i>
-          </button>
-          <div id="nav-auth-area">
-            <button class="btn-primary auth-trigger">Login / Sign Up</button>
-          </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>Fixora — Home Services Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="auth-screen" class="modal-backdrop open" style="backdrop-filter: blur(8px);">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal-head"><div><span class="eyebrow">FIXORA</span><h2 id="auth-title">Sign in</h2></div></div>
+      <form id="auth-form">
+        <div class="form-grid">
+          <div class="form-field full"><label>Email</label><input name="email" type="email" required /></div>
+          <div class="form-field full"><label>Password</label><input name="password" type="password" required /></div>
         </div>
-      </div>
-    </nav>
-
-    <header class="hero-slider-container">
-      <div class="slide active">
-        <div class="slide-overlay"></div>
-        <div class="hero-content">
-          <span class="badge">Fast & Reliable</span>
-          <h1>Everyday Services, Automated.</h1>
-          <p>
-            Find trusted professionals for repair, cleaning, and maintenance
-            instantly.
-          </p>
-
-          <div class="search-bar">
-            <i class="fa-solid fa-magnifying-glass search-icon"></i>
-            <input
-              type="text"
-              id="hero-search"
-              placeholder="Search for AC repair, plumbing, cleaners..."
-            />
-            <button id="search-btn" class="btn-primary">Search</button>
-          </div>
+        <div id="auth-error" style="color:var(--red); font-size:13px; margin-top:10px; display:none;"></div>
+        <div class="modal-actions" style="justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div style="font-size:13px; color:var(--muted);">Try: <a href="#" data-demo="customer">Customer</a> · <a href="#" data-demo="provider">Provider</a> · <a href="#" data-demo="admin">Admin</a></div>
+          <button class="primary-btn" type="submit">Sign in</button>
         </div>
-      </div>
-    </header>
-
-    <section id="services" class="services-section">
-      <div class="container">
-        <div class="section-header">
-          <h2>Our Premium Services</h2>
-        </div>
-        <div class="services-grid" id="services-grid">
-          <div
-            class="service-card category-trigger"
-            data-category="AC & Appliance"
-          >
-            <div
-              class="card-icon-wrapper"
-              style="background: rgba(74, 144, 226, 0.1); color: #4a90e2"
-            >
-              <i class="fa-solid fa-snowflake"></i>
-            </div>
-            <h3>AC & Appliance</h3>
-          </div>
-
-          <div class="service-card category-trigger" data-category="Plumbing">
-            <div
-              class="card-icon-wrapper"
-              style="background: rgba(16, 185, 129, 0.1); color: #10b981"
-            >
-              <i class="fa-solid fa-faucet-drip"></i>
-            </div>
-            <h3>Plumbing</h3>
-          </div>
-
-          <div class="service-card category-trigger" data-category="Electrical">
-            <div
-              class="card-icon-wrapper"
-              style="background: rgba(245, 158, 11, 0.1); color: #f59e0b"
-            >
-              <i class="fa-solid fa-bolt"></i>
-            </div>
-            <h3>Electrical</h3>
-          </div>
-
-          <div class="service-card category-trigger" data-category="Cleaning">
-            <div
-              class="card-icon-wrapper"
-              style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6"
-            >
-              <i class="fa-solid fa-spray-can-sparkles"></i>
-            </div>
-            <h3>Cleaning</h3>
-          </div>
-
-          <div class="service-card category-trigger" data-category="Carpentry">
-            <div
-              class="card-icon-wrapper"
-              style="background: rgba(249, 115, 22, 0.1); color: #f97316"
-            >
-              <i class="fa-solid fa-hammer"></i>
-            </div>
-            <h3>Carpentry</h3>
-          </div>
-
-          <div class="service-card category-trigger" data-category="Painting">
-            <div
-              class="card-icon-wrapper"
-              style="background: rgba(236, 72, 153, 0.1); color: #ec4899"
-            >
-              <i class="fa-solid fa-paintbrush"></i>
-            </div>
-            <h3>Painting</h3>
-          </div>
-
-          <div class="service-card category-trigger" data-category="Gardening">
-            <div
-              class="card-icon-wrapper"
-              style="background: rgba(34, 197, 94, 0.1); color: #22c55e"
-            >
-              <i class="fa-solid fa-seedling"></i>
-            </div>
-            <h3>Gardening</h3>
-          </div>
-
-          <div class="service-card category-trigger" data-category="Security">
-            <div
-              class="card-icon-wrapper"
-              style="background: rgba(239, 68, 68, 0.1); color: #ef4444"
-            >
-              <i class="fa-solid fa-shield-halved"></i>
-            </div>
-            <h3>Security</h3>
-          </div>
-
-          <div
-            class="service-card category-trigger"
-            data-category="IT & Networking"
-          >
-            <div
-              class="card-icon-wrapper"
-              style="background: rgba(99, 102, 241, 0.1); color: #6366f1"
-            >
-              <i class="fa-solid fa-network-wired"></i>
-            </div>
-            <h3>IT & Networking</h3>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section
-      id="marketplace-section"
-      class="services-section"
-      style="display: none; background: var(--surface-color)"
-    >
-      <div class="container">
-        <div class="section-header">
-          <h2>Available Technicians</h2>
-          <p id="marketplace-subtitle">Showing experts for your request.</p>
-        </div>
-        <div id="gigs-grid" class="gigs-grid"></div>
-      </div>
-    </section>
-
-    <div class="auth-overlay" id="booking-modal">
-      <div class="auth-box">
-        <button class="close-btn" id="close-booking">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-        <h3 style="margin-bottom: 20px; text-align: center">Book Provider</h3>
-        <form id="direct-booking-form">
-          <input type="hidden" id="book-provider-id" />
-          <input type="hidden" id="book-provider-name" />
-          <input type="hidden" id="book-provider-category" />
-          <input type="hidden" id="book-provider-price" />
-
-          <div
-            class="input-group"
-            style="position: relative; margin-bottom: 15px"
-          >
-            <i
-              class="fa-regular fa-calendar"
-              style="
-                position: absolute;
-                left: 14px;
-                top: 50%;
-                transform: translateY(-50%);
-                color: #888;
-              "
-            ></i>
-            <input
-              type="date"
-              id="book-date"
-              required
-              style="
-                width: 100%;
-                padding: 12px 14px 12px 40px;
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                background: #fff;
-                font-size: 15px;
-                outline: none;
-                box-sizing: border-box;
-              "
-            />
-          </div>
-
-          <div
-            class="input-group"
-            style="position: relative; margin-bottom: 15px"
-          >
-            <i
-              class="fa-regular fa-clock"
-              style="
-                position: absolute;
-                left: 14px;
-                top: 50%;
-                transform: translateY(-50%);
-                color: #888;
-              "
-            ></i>
-            <input
-              type="time"
-              id="book-time"
-              required
-              style="
-                width: 100%;
-                padding: 12px 14px 12px 40px;
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                background: #fff;
-                font-size: 15px;
-                outline: none;
-                box-sizing: border-box;
-              "
-            />
-          </div>
-
-          <div
-            class="input-group"
-            style="position: relative; margin-bottom: 15px"
-          >
-            <i
-              class="fa-solid fa-location-dot"
-              style="
-                position: absolute;
-                left: 14px;
-                top: 50%;
-                transform: translateY(-50%);
-                color: #888;
-              "
-            ></i>
-            <input
-              type="text"
-              id="book-location"
-              placeholder="Your Address / Area"
-              required
-              style="
-                width: 100%;
-                padding: 12px 14px 12px 40px;
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                background: #fff;
-                font-size: 15px;
-                outline: none;
-                box-sizing: border-box;
-              "
-            />
-          </div>
-
-          <div class="input-group">
-            <textarea
-              id="book-details"
-              rows="3"
-              placeholder="Briefly describe the issue..."
-              style="
-                width: 100%;
-                padding: 12px 14px;
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                background: #fff;
-                font-size: 15px;
-                outline: none;
-                box-sizing: border-box;
-                resize: vertical;
-                font-family: inherit;
-              "
-            ></textarea>
-          </div>
-
-          <button
-            type="submit"
-            class="btn-primary btn-full"
-            style="
-              width: 100%;
-              padding: 14px;
-              background: linear-gradient(135deg, #0052cc 0%, #4a90e2 100%);
-              color: #fff;
-              border: none;
-              border-radius: 8px;
-              font-size: 16px;
-              font-weight: 600;
-              cursor: pointer;
-              transition: all 0.3s ease;
-            "
-          >
-            Confirm Booking
-          </button>
-        </form>
-      </div>
+      </form>
     </div>
+  </div>
 
-    <div class="auth-overlay" id="auth-modal">
-      <div class="auth-box">
-        <button class="close-btn" id="close-auth">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-        <div class="auth-tabs">
-          <button class="auth-tab active" data-target="login-form">
-            Login
-          </button>
-          <button class="auth-tab" data-target="signup-form">Sign Up</button>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#" aria-label="Fixora home"><span class="brand-mark">f<span>.</span></span><span>fixora</span></a>
+      <div class="nav-caption" id="navCaption">DISCOVER</div>
+      <nav class="nav-list" id="navList"></nav>
+      <div class="sidebar-bottom">
+        <div class="help-card">
+          <div class="help-icon">✦</div>
+          <strong>Need a hand?</strong>
+          <p>Our support team is here to help.</p>
+          <button class="text-button" id="supportBtn">Contact support <span>↗</span></button>
         </div>
-
-        <form id="login-form" class="auth-form active">
-          <div class="input-group">
-            <i class="fa-solid fa-envelope"></i>
-            <input
-              type="email"
-              id="login-email"
-              placeholder="Email Address"
-              required
-            />
-          </div>
-          <div class="input-group">
-            <i class="fa-solid fa-lock"></i>
-            <input
-              type="password"
-              id="login-password"
-              placeholder="Password"
-              required
-            />
-          </div>
-          <div id="login-error" class="auth-error"></div>
-          <button type="submit" class="btn-primary btn-full">Login</button>
-        </form>
-
-        <form id="signup-form" class="auth-form">
-          <div class="role-selector">
-            <input
-              type="radio"
-              id="role-customer"
-              name="role"
-              value="customer"
-              checked
-            />
-            <label for="role-customer">Customer</label>
-            <input
-              type="radio"
-              id="role-provider"
-              name="role"
-              value="provider"
-            />
-            <label for="role-provider">Provider</label>
-          </div>
-
-          <div class="input-group">
-            <i class="fa-solid fa-user"></i>
-            <input
-              type="text"
-              id="signup-name"
-              placeholder="Full Name"
-              required
-            />
-          </div>
-
-          <div class="input-group">
-            <i class="fa-solid fa-envelope"></i>
-            <input
-              type="email"
-              id="signup-email"
-              placeholder="Email Address"
-              required
-            />
-          </div>
-
-          <div class="input-group">
-            <i class="fa-solid fa-lock"></i>
-            <input
-              type="password"
-              id="signup-password"
-              placeholder="Password"
-              required
-            />
-          </div>
-
-          <div
-            id="provider-category-group"
-            class="input-group"
-            style="display: none"
-          >
-            <i class="fa-solid fa-tools"></i>
-            <select id="signup-provider-category">
-              <option value="" disabled selected>
-                Select your service category
-              </option>
-              <option value="AC & Appliance">❄️ AC & Appliance Repair</option>
-              <option value="Plumbing">💧 Plumbing</option>
-              <option value="Electrical">⚡ Electrical Work</option>
-              <option value="Cleaning">✨ Cleaning & Pest Control</option>
-              <option value="Carpentry">🔨 Carpentry & Furniture</option>
-              <option value="Painting">🎨 Painting & Decoration</option>
-              <option value="Gardening">🌱 Gardening & Landscaping</option>
-              <option value="Security">🛡️ Security Systems</option>
-              <option value="IT & Networking">🌐 IT & Networking</option>
-              <option value="Other">🔧 Other Services</option>
-            </select>
-            <small class="text-muted"
-              >Please select the type of service you provide</small
-            >
-          </div>
-
-          <div id="signup-error" class="auth-error"></div>
-          <button type="submit" class="btn-primary btn-full">
-            Create Account
-          </button>
-        </form>
+        <div class="user-mini">
+          <div class="avatar avatar-lilac" id="user-avatar">--</div>
+          <div class="user-mini-info"><strong id="miniName">--</strong><span id="miniRole">--</span></div>
+          <button class="dots" id="logoutBtn" title="Sign out">⏻</button>
+        </div>
       </div>
-    </div>
+    </aside>
 
-    <script src="js/api.js"></script>
-    <script src="db.js"></script>
-    <script src="global.js"></script>
-    <script src="auth.js"></script>
-  </body>
+    <main class="main-area">
+      <header class="topbar">
+        <button class="mobile-menu icon-btn" id="mobileMenu" aria-label="Open menu">☰</button>
+        <div class="breadcrumb"><span>Workspace</span><b>/</b><strong id="pageCrumb">Discover services</strong></div>
+        <div class="topbar-actions" style="position:relative;">
+          <div class="location-pill"><span class="pin">⌖</span><span><small>Service location</small><strong>Dhaka, Bangladesh</strong></span><span class="chevron">⌄</span></div>
+          <button class="icon-btn notification-btn" id="notificationBtn" aria-label="Notifications">♧<i></i></button>
+          <div id="notificationsDropdown" style="display:none; position:absolute; top:52px; right:45px; width:320px; background:#fff; border:1px solid var(--line); border-radius:14px; box-shadow:0 12px 35px rgba(0,0,0,0.12); padding:16px; z-index:100;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #edf0f5; padding-bottom:8px;">
+              <strong style="font-size:14px;">Notifications</strong>
+              <small id="markAllReadBtn" style="color:var(--blue); cursor:pointer; font-weight:600;">Mark all read</small>
+            </div>
+            <div id="notificationsList" style="max-height:280px; overflow-y:auto; display:grid; gap:10px;"></div>
+          </div>
+          <div class="avatar avatar-lilac top-avatar" id="topAvatar">--</div>
+        </div>
+      </header>
+      <section class="content" id="content" aria-live="polite"></section>
+      <footer class="footer"><span>© 2026 Fixora Marketplace</span><span>Made for a home that works.</span></footer>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-head"><div><span class="eyebrow" id="modalEyebrow">FIXORA BOOKING</span><h2 id="modalTitle">Book a service</h2></div><button class="icon-btn close-modal" id="closeModal" aria-label="Close">×</button></div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+  <script src="/js/images.js"></script>
+  <script src="app.js"></script>
+</body>
 </html>

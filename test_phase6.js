@@ -56,6 +56,7 @@ async function runTests() {
     // --------------------------------------------------------
     console.log('--- 1. Static File & Code Structure Checks ---');
 
+    const legacyDir = fs.existsSync(path.resolve(__dirname, 'client/customer.html')) ? 'client' : 'client/_legacy_phase9';
     const requiredFiles = [
         'database/migrations/001_add_notifications.sql',
         'server/services/notifications.service.js',
@@ -65,7 +66,7 @@ async function runTests() {
         'server/routes/invoices.routes.js',
         'server/routes/ratings.routes.js',
         'server/routes/notifications.routes.js',
-        'client/invoice.html',
+        `${legacyDir}/invoice.html`,
         'test_phase6.js'
     ];
 
@@ -89,16 +90,16 @@ async function runTests() {
     assert(serverIndexContent.includes('/api/ratings'), 'server/index.js mounts /api/ratings');
     assert(serverIndexContent.includes('/api/notifications'), 'server/index.js mounts /api/notifications');
 
-    const isLegacy = fs.existsSync(path.resolve(__dirname, 'client/customer.html'));
-    const trackingHtmlPath = isLegacy ? path.resolve(__dirname, 'client/customer.html') : path.resolve(__dirname, 'client/tracking.html');
+    const isLegacy = fs.existsSync(path.resolve(__dirname, 'client/customer.html')) || fs.existsSync(path.resolve(__dirname, 'client/_legacy_phase9/customer.html'));
+    const trackingHtmlPath = isLegacy ? path.resolve(__dirname, `${legacyDir}/customer.html`) : path.resolve(__dirname, 'client/tracking.html');
     const trackingHtmlContent = fs.readFileSync(trackingHtmlPath, 'utf8');
     assert(trackingHtmlContent.includes('id="notif-btn"') || trackingHtmlContent.includes('id="notif-bell"'), 'customer/tracking page contains notification button');
     assert(trackingHtmlContent.includes('id="notif-badge"') || trackingHtmlContent.includes('id="notif-count"'), 'customer/tracking page contains notification badge');
 
-    const providerHtmlContent = fs.readFileSync(path.resolve(__dirname, 'client/provider.html'), 'utf8');
+    const providerHtmlContent = fs.readFileSync(path.resolve(__dirname, `${legacyDir}/provider.html`), 'utf8');
     assert(providerHtmlContent.includes('id="notif-bell"') || providerHtmlContent.includes('section-requests') || providerHtmlContent.includes('id="requests-list"'), 'provider.html contains requests section');
 
-    const invoiceHtmlContent = fs.readFileSync(path.resolve(__dirname, 'client/invoice.html'), 'utf8');
+    const invoiceHtmlContent = fs.readFileSync(path.resolve(__dirname, `${legacyDir}/invoice.html`), 'utf8');
     assert(invoiceHtmlContent.includes('window.print'), 'client/invoice.html contains window.print');
 
     // Docs checks
@@ -130,7 +131,7 @@ async function runTests() {
     });
 
     const uiDocContent = fs.readFileSync(path.resolve(__dirname, 'docs/UI.md'), 'utf8');
-    const isLegacy2 = fs.existsSync(path.resolve(__dirname, 'client/customer.html'));
+    const isLegacy2 = fs.existsSync(path.resolve(__dirname, 'client/customer.html')) || fs.existsSync(path.resolve(__dirname, 'client/_legacy_phase9/customer.html'));
     const expectedPages = isLegacy2 ? ['index.html', 'customer.html', 'provider.html', 'admin.html', 'invoice.html'] : ['index.html', 'login.html', 'request.html', 'tracking.html', 'provider.html', 'invoice.html'];
     expectedPages.forEach(p => {
         assert(uiDocContent.includes(p), `docs/UI.md covers page: ${p}`);

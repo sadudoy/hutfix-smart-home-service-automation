@@ -42,14 +42,15 @@ async function runTests() {
     // --------------------------------------------------------
     console.log('--- 1. Static File & Code Structure Checks ---');
 
-    const isLegacy = fs.existsSync(path.resolve(__dirname, 'client/customer.html'));
+    const isLegacy = fs.existsSync(path.resolve(__dirname, 'client/customer.html')) || fs.existsSync(path.resolve(__dirname, 'client/_legacy_phase9/customer.html'));
+    const legacyDir = fs.existsSync(path.resolve(__dirname, 'client/customer.html')) ? 'client' : 'client/_legacy_phase9';
     const requiredFiles = [
         'server/middleware/auth.js',
         'server/controllers/auth.controller.js',
         'server/routes/auth.routes.js',
-        isLegacy ? 'client/auth.js' : 'client/login.html',
-        'client/js/api.js',
-        isLegacy ? 'client/global.js' : 'client/js/auth.js',
+        isLegacy ? `${legacyDir}/auth.js` : 'client/login.html',
+        isLegacy ? `${legacyDir}/js/api.js` : 'client/js/api.js',
+        isLegacy ? `${legacyDir}/global.js` : 'client/js/auth.js',
         'test_phase2.js'
     ];
 
@@ -78,14 +79,14 @@ async function runTests() {
     const indexContent = fs.readFileSync(path.resolve(__dirname, 'server/index.js'), 'utf8');
     assert(indexContent.includes('/api/auth'), 'server/index.js mounts /api/auth');
 
-    const loginHtmlPath = isLegacy ? path.resolve(__dirname, 'client/index.html') : path.resolve(__dirname, 'client/login.html');
+    const loginHtmlPath = isLegacy ? path.resolve(__dirname, `${legacyDir}/index.html`) : path.resolve(__dirname, 'client/login.html');
     const loginHtmlContent = fs.readFileSync(loginHtmlPath, 'utf8');
     assert(loginHtmlContent.includes('id="login-form"'), 'login form present');
     assert(loginHtmlContent.includes('id="register-form"') || loginHtmlContent.includes('id="signup-form"'), 'register/signup form present');
     assert(isLegacy || loginHtmlContent.includes('id="auth-success"'), 'auth success present');
     assert(loginHtmlContent.includes('id="auth-error"') || loginHtmlContent.includes('id="login-error"'), 'auth error present');
 
-    const apiJsContent = fs.readFileSync(path.resolve(__dirname, 'client/js/api.js'), 'utf8');
+    const apiJsContent = fs.readFileSync(path.resolve(__dirname, isLegacy ? `${legacyDir}/js/api.js` : 'client/js/api.js'), 'utf8');
     assert(apiJsContent.includes("credentials: 'include'"), "client/js/api.js specifies credentials: 'include'");
 
     const gitignoreContent = fs.readFileSync(path.resolve(__dirname, '.gitignore'), 'utf8');

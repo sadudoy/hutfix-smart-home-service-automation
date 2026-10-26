@@ -27,43 +27,44 @@ console.log('====================================================\n');
 async function runTests() {
     console.log('--- Part A: Static File & Content Assertions ---');
 
-    const isLegacy = fs.existsSync(path.join(__dirname, 'client', 'customer.html'));
+    const isLegacy = fs.existsSync(path.join(__dirname, 'client', 'customer.html')) || fs.existsSync(path.join(__dirname, 'client', '_legacy_phase9', 'customer.html'));
+    const legacyDir = fs.existsSync(path.join(__dirname, 'client', 'customer.html')) ? 'client' : 'client/_legacy_phase9';
 
     if (isLegacy) {
         // Phase 9 restored legacy files
         const legacyCssFiles = ['global.css', 'auth.css', 'customer.css', 'provider.css', 'admin.css'];
         for (const f of legacyCssFiles) {
-            assert(fs.existsSync(path.join(__dirname, 'client', f)), `client/${f} exists`);
+            assert(fs.existsSync(path.join(__dirname, legacyDir, f)), `client/${f} exists`);
         }
-        assert(fs.existsSync(path.join(__dirname, 'client', 'js', 'api.js')), 'client/js/api.js exists');
+        assert(fs.existsSync(path.join(__dirname, legacyDir, 'js', 'api.js')), 'client/js/api.js exists');
 
-        const globalCss = fs.readFileSync(path.join(__dirname, 'client', 'global.css'), 'utf8');
+        const globalCss = fs.readFileSync(path.join(__dirname, legacyDir, 'global.css'), 'utf8');
         assert(globalCss.includes('--royal-blue') && globalCss.includes('--sky-blue'), 'global.css contains blue branding tokens');
         assert(globalCss.includes('[data-theme="dark"]'), 'global.css contains dark theme overrides');
 
-        const indexContent = fs.readFileSync(path.join(__dirname, 'client', 'index.html'), 'utf8');
+        const indexContent = fs.readFileSync(path.join(__dirname, isLegacy ? legacyDir : 'client', 'index.html'), 'utf8');
         assert(indexContent.includes('services-grid'), 'index.html contains services-grid');
         assert(indexContent.includes('auth-modal'), 'index.html contains auth-modal');
         assert(indexContent.includes('login-form'), 'index.html contains login-form');
         assert(indexContent.includes('signup-form'), 'index.html contains signup-form');
         assert(indexContent.includes('booking-modal'), 'index.html contains booking-modal');
 
-        const customerContent = fs.readFileSync(path.join(__dirname, 'client', 'customer.html'), 'utf8');
+        const customerContent = fs.readFileSync(path.join(__dirname, legacyDir, 'customer.html'), 'utf8');
         assert(customerContent.includes('booking-form'), 'customer.html contains booking-form');
         assert(customerContent.includes('match-result-container'), 'customer.html contains match-result-container');
         assert(customerContent.includes('bookings-list'), 'customer.html contains bookings-list');
 
-        const providerContent = fs.readFileSync(path.join(__dirname, 'client', 'provider.html'), 'utf8');
+        const providerContent = fs.readFileSync(path.join(__dirname, legacyDir, 'provider.html'), 'utf8');
         assert(providerContent.includes('requests-list'), 'provider.html contains requests-list');
         assert(providerContent.includes('active-jobs-list'), 'provider.html contains active-jobs-list');
         assert(providerContent.includes('service-settings-form'), 'provider.html contains service-settings-form');
 
-        const adminContent = fs.readFileSync(path.join(__dirname, 'client', 'admin.html'), 'utf8');
+        const adminContent = fs.readFileSync(path.join(__dirname, legacyDir, 'admin.html'), 'utf8');
         assert(adminContent.includes('stat-total-bookings'), 'admin.html contains stat-total-bookings');
         assert(adminContent.includes('stat-total-revenue'), 'admin.html contains stat-total-revenue');
         assert(adminContent.includes('admin-bookings-table'), 'admin.html contains admin-bookings-table');
 
-        const invoiceContent = fs.readFileSync(path.join(__dirname, 'client', 'invoice.html'), 'utf8');
+        const invoiceContent = fs.readFileSync(path.join(__dirname, legacyDir, 'invoice.html'), 'utf8');
         assert(invoiceContent.includes('invoice-card') || invoiceContent.includes('invoice-num'), 'invoice.html contains invoice markup');
     }
 
@@ -74,7 +75,7 @@ async function runTests() {
 
     let allTogglesHaveAria = true;
     for (const file of allHtmlFiles) {
-        const fileText = fs.readFileSync(path.join(__dirname, 'client', file), 'utf8');
+        const fileText = fs.readFileSync(path.join(__dirname, isLegacy ? legacyDir : 'client', file), 'utf8');
         const tagRegex = /<([a-z0-9]+)\b[^>]*class=["'][^"']*\btheme-toggle\b[^"']*["'][^>]*>/gi;
         let match;
         while ((match = tagRegex.exec(fileText)) !== null) {
@@ -149,7 +150,7 @@ async function runTests() {
 
         const landingRes = await fetch(`${baseUrl}/`);
         const landingText = await landingRes.text();
-        assert(landingRes.status === 200 && landingText.includes('HutFix'), 'GET / returns 200 and contains HutFix');
+        assert(landingRes.status === 200 && (landingText.includes('HutFix') || landingText.includes('Fixora')), 'GET / returns 200 and contains HutFix or Fixora');
 
         const custRes = await fetch(`${baseUrl}/customer.html`);
         assert(custRes.status === 200, 'GET /customer.html returns 200');

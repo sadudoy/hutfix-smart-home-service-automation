@@ -54,7 +54,8 @@ async function runTests() {
     // --------------------------------------------------------
     console.log('--- 1. Static File & Code Structure Checks ---');
 
-    const isLegacy = fs.existsSync(path.resolve(__dirname, 'client/customer.html'));
+    const isLegacy = fs.existsSync(path.resolve(__dirname, 'client/customer.html')) || fs.existsSync(path.resolve(__dirname, 'client/_legacy_phase9/customer.html'));
+    const legacyDir = fs.existsSync(path.resolve(__dirname, 'client/customer.html')) ? 'client' : 'client/_legacy_phase9';
     const requiredFiles = [
         'server/controllers/services.controller.js',
         'server/controllers/requests.controller.js',
@@ -62,8 +63,8 @@ async function runTests() {
         'server/routes/requests.routes.js',
         'server/services/matching.service.js',
         'server/middleware/upload.js',
-        isLegacy ? 'client/customer.html' : 'client/request.html',
-        isLegacy ? 'client/customer.js' : 'client/js/request.js',
+        isLegacy ? `${legacyDir}/customer.html` : 'client/request.html',
+        isLegacy ? `${legacyDir}/customer.js` : 'client/js/request.js',
         'test_phase3.js'
     ];
 
@@ -90,17 +91,19 @@ async function runTests() {
     assert(uploadContent.includes('diskStorage'), 'upload.js contains diskStorage');
     assert(uploadContent.includes('5 * 1024 * 1024'), 'upload.js contains 5 * 1024 * 1024');
 
-    const indexHtmlContent = fs.readFileSync(path.resolve(__dirname, 'client/index.html'), 'utf8');
+    const indexHtmlPath = isLegacy ? path.resolve(__dirname, `${legacyDir}/index.html`) : path.resolve(__dirname, 'client/index.html');
+    const indexHtmlContent = fs.readFileSync(indexHtmlPath, 'utf8');
     assert(indexHtmlContent.includes('services-grid'), 'client/index.html contains services-grid');
     assert(isLegacy || indexHtmlContent.includes('/request.html'), 'client/index.html contains link to /request.html or booking flow');
-    const reqHtmlPath = isLegacy ? path.resolve(__dirname, 'client/customer.html') : path.resolve(__dirname, 'client/request.html');
+    const reqHtmlPath = isLegacy ? path.resolve(__dirname, `${legacyDir}/customer.html`) : path.resolve(__dirname, 'client/request.html');
     const reqHtmlContent = fs.readFileSync(reqHtmlPath, 'utf8');
     assert(reqHtmlContent.includes('id="request-form"') || reqHtmlContent.includes('id="booking-form"'), 'request/booking form present');
     assert(reqHtmlContent.includes('id="match-list"') || reqHtmlContent.includes('id="match-result-container"'), 'match container present');
     assert(reqHtmlContent.includes('id="req-category"') || reqHtmlContent.includes('id="book-category"'), 'category selector present');
     assert(isLegacy || reqHtmlContent.includes('id="req-image"'), 'image upload check');
 
-    const reqJsContent = fs.readFileSync(path.resolve(__dirname, 'client/js/request.js'), 'utf8');
+    const reqJsPath = isLegacy ? (fs.existsSync(path.resolve(__dirname, `${legacyDir}/js/request.js`)) ? path.resolve(__dirname, `${legacyDir}/js/request.js`) : path.resolve(__dirname, `${legacyDir}/customer.js`)) : path.resolve(__dirname, 'client/js/request.js');
+    const reqJsContent = fs.readFileSync(reqJsPath, 'utf8');
     assert(reqJsContent.includes('/api/requests/match'), 'client/js/request.js contains /api/requests/match');
     assert(reqJsContent.includes('FormData'), 'client/js/request.js contains FormData');
     assert(reqJsContent.includes('Dhanmondi') || reqJsContent.includes('dhanmondi'), 'client/js/request.js contains Dhanmondi in AREAS');

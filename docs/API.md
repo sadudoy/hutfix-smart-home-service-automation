@@ -434,3 +434,154 @@
   "updated": 1
 }
 ```
+
+---
+
+## 10. Admin Endpoints
+### `GET /api/admin/stats`
+- **Auth**: Required
+- **Role**: `admin`
+- **Response `200 OK`**:
+```json
+{
+  "ok": true,
+  "stats": {
+    "total_bookings": 12,
+    "completed_bookings": 8,
+    "gross_volume": 12450.00,
+    "platform_revenue": 622.50,
+    "total_providers": 11,
+    "total_users": 14,
+    "pending_requests": 2
+  },
+  "providers": [
+    {
+      "id": 1,
+      "name": "Rahim Electronics",
+      "address": "Dhanmondi, Dhaka",
+      "rating": 4.8,
+      "rating_count": 115,
+      "price_per_hour": 500,
+      "category": "Appliance & Gadget Repair"
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "name": "Demo Customer",
+      "email": "customer@demo.test",
+      "role": "customer",
+      "phone": "+8801700000001",
+      "created_at": "2026-10-25T12:00:00.000Z"
+    }
+  ]
+}
+```
+- **Errors**: `401 Unauthorized` (`auth required`), `403 Forbidden` (`role required: admin`).
+
+### `GET /api/admin/users`
+- **Auth**: Required
+- **Role**: `admin`
+- **Response `200 OK`**:
+```json
+{
+  "ok": true,
+  "users": [
+    {
+      "id": 1,
+      "email": "customer@demo.test",
+      "full_name": "Demo Customer",
+      "phone": "+8801700000001",
+      "role": "customer",
+      "created_at": "2026-10-25T12:00:00.000Z"
+    }
+  ]
+}
+```
+- **Errors**: `401 Unauthorized`, `403 Forbidden`.
+
+### `GET /api/admin/bookings`
+- **Auth**: Required
+- **Role**: `admin`
+- **Response `200 OK`**:
+```json
+{
+  "ok": true,
+  "bookings": [
+    {
+      "id": 1,
+      "status": "completed",
+      "estimated_price": 950.00,
+      "preferred_date": "2026-10-31",
+      "preferred_start_minute": 960,
+      "category_name": "Appliance & Gadget Repair",
+      "customer_name": "Demo Customer",
+      "provider_name": "Rahim Electronics"
+    }
+  ]
+}
+```
+- **Errors**: `401 Unauthorized`, `403 Forbidden`.
+
+---
+
+## 11. Provider Profile & Invoices
+### `GET /api/providers/:userId/profile`
+- **Auth**: Required
+- **Role**: `provider` (own profile) or `admin`
+- **Response `200 OK`**:
+```json
+{
+  "ok": true,
+  "provider": {
+    "id": 1,
+    "user_id": 2,
+    "full_name": "Rahim Electronics & AC Care",
+    "headline": "Master HVAC & Appliance Specialist",
+    "bio": "Certified Master Technician with over 8 years experience.",
+    "rating": 4.8,
+    "rating_count": 115,
+    "address": "Dhanmondi, Dhaka",
+    "years_experience": 8,
+    "services": [
+      {
+        "category_id": 1,
+        "category_slug": "appliance-repair",
+        "category_name": "Appliance & Gadget Repair",
+        "price": 950.00
+      }
+    ]
+  }
+}
+```
+- **Errors**: `400 Bad Request` (`invalid user id`), `401 Unauthorized`, `403 Forbidden` (`cannot view other provider profile`), `404 Not Found`.
+
+### `GET /api/invoices/mine`
+- **Auth**: Required
+- **Role**: `provider`
+- **Response `200 OK`**:
+```json
+{
+  "ok": true,
+  "invoices": [
+    {
+      "id": 1,
+      "invoice_number": "INV-2026-0001",
+      "request_id": 14,
+      "subtotal": 950.00,
+      "tax": 47.50,
+      "total": 997.50,
+      "currency": "BDT",
+      "issued_at": "2026-10-25T14:30:00.000Z",
+      "category_name": "Appliance & Gadget Repair",
+      "customer_name": "Demo Customer"
+    }
+  ],
+  "totals": {
+    "count": 1,
+    "sum_total": 997.50
+  }
+}
+```
+- **Errors**: `401 Unauthorized`, `403 Forbidden` (`role required: provider`).
+

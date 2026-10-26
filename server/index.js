@@ -48,6 +48,7 @@ app.use('/api/admin', adminRouter);
 
 // Static frontend serving
 app.use(express.static(path.join(__dirname, '..', 'client')));
+app.use(express.static(path.join(__dirname, '..', 'client', '_legacy_phase9')));
 
 // Centralized error handler
 app.use(errorHandler);
