@@ -12,3 +12,9 @@ client/_legacy/node_modules/
 firebase-debug.log
 server/uploads/
 .gemini/
+
+# impeccable
+.impeccable/live/
+.impeccable/*.png
+.impeccable/detect-before.json
+.impeccable/detect-after.json
