@@ -16,5 +16,7 @@ server/uploads/
 # impeccable
 .impeccable/live/
 .impeccable/*.png
+.impeccable/*.local.json
 .impeccable/detect-before.json
 .impeccable/detect-after.json
+scratch/

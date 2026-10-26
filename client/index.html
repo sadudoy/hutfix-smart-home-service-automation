@@ -3,271 +3,240 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HutFix — Home services, automated.</title>
-  <meta name="description" content="On-demand verified home services in Dhaka with algorithmic matching and real-time tracking.">
+  <meta name="theme-color" content="#fbfbfa">
+  <title>HutFix — Home services, scheduled to the hour.</title>
+  <meta name="description" content="Verified on-demand home services in Dhaka. Direct algorithmic matching, confirmed slot scheduling, and real-time tracking.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/components.css">
   <link rel="stylesheet" href="/css/pages.css">
   <script src="/js/theme.js"></script>
-  <style>
-    .collage-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: var(--space-4);
-      position: relative;
-    }
-    .collage-img {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-md);
-      border: 2px solid var(--surface);
-      transition: transform var(--dur) var(--ease);
-    }
-    .collage-img:hover {
-      transform: scale(1.03);
-    }
-    .collage-img-rotated {
-      transform: rotate(-3deg);
-    }
-    .cta-banner {
-      background: var(--accent-gradient);
-      color: #ffffff;
-      border-radius: var(--radius-lg);
-      padding: var(--space-10) var(--space-6);
-      text-align: center;
-      box-shadow: var(--shadow-lg);
-    }
-    .btn-ghost-white {
-      background: rgba(255, 255, 255, 0.15);
-      color: #ffffff !important;
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      border-radius: var(--radius-pill);
-      padding: 10px 24px;
-      font-weight: 600;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      transition: all var(--dur) var(--ease);
-    }
-    .btn-ghost-white:hover {
-      background: #ffffff;
-      color: var(--brand-700) !important;
-    }
-  </style>
 </head>
 <body class="page-landing">
 
-  <!-- Sticky Glass Navbar -->
+  <!-- Navigation -->
   <header class="app-nav">
-    <div class="container">
-      <a href="/index.html" class="app-nav__brand">
-        <img src="assets/images/logo.jpg" alt="HutFix Logo" width="32" height="32" class="rounded-3">
+    <div class="container d-flex align-items-center justify-content-between py-3">
+      <a href="/index.html" class="navbar-brand">
+        <img src="assets/images/logo.jpg" alt="HutFix Logo" width="32" height="32" class="rounded-2">
         <span>HutFix</span>
       </a>
 
-      <div class="app-nav__links">
+      <nav class="d-flex align-items-center gap-3" aria-label="Main navigation">
         <a href="#services" class="nav-link d-none d-md-inline-block">Services</a>
         <a href="#how" class="nav-link d-none d-md-inline-block">How it works</a>
         <a href="/login.html" class="btn-ghost d-none d-sm-inline-flex">Sign In</a>
         <a href="/request.html" class="btn-brand">Book a Service</a>
-        <div class="app-nav__toggle">
-          <button type="button" class="theme-toggle" aria-label="Toggle dark mode theme">
-            <i class="bi bi-moon-stars"></i>
-          </button>
-        </div>
-      </div>
+        <button type="button" class="theme-toggle" aria-label="Toggle dark mode theme">
+          <i class="bi bi-moon-stars"></i>
+        </button>
+      </nav>
     </div>
   </header>
 
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="container">
-      <div class="row align-items-center gy-5">
-        <!-- Left: Text -->
-        <div class="col-lg-6 text-center text-lg-start">
-          <div class="mb-3">
-            <span class="chip">
-              <i class="bi bi-shield-check"></i> Verified · Insured · Same-day
+  <main>
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="container">
+        <div class="row align-items-center gy-5">
+          <div class="col-lg-7 text-center text-lg-start">
+            <span class="chip mb-3">
+              <i class="bi bi-shield-check"></i> Verified Specialists in Dhaka
             </span>
+            <h1 class="hero__title">Dependable home repairs, scheduled to the hour.</h1>
+            <p class="hero__subtitle mx-auto mx-lg-0">
+              Book certified specialists for appliance repairs, plumbing, electrical maintenance, and home care across Dhaka. Guaranteed slot availability with zero double-booking.
+            </p>
+            <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap mb-4">
+              <a href="/request.html" class="btn-brand">
+                <i class="bi bi-calendar-check"></i> Book a Service
+              </a>
+              <a href="#services" class="btn-ghost">View All 8 Categories</a>
+            </div>
+            <div class="d-flex align-items-center justify-content-center justify-content-lg-start gap-4 text-muted small pt-2">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-geo-alt-fill text-brand"></i>
+                <span>Covering 11 Dhaka areas</span>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-lock-fill text-brand"></i>
+                <span>Advisory lock scheduling</span>
+              </div>
+            </div>
           </div>
-          <h1 class="hero__title">Home services,<br>automated.</h1>
-          <p class="hero__subtitle mx-auto mx-lg-0">
-            From AC repair to pest control — find verified pros, book in seconds, track every step.
+
+          <div class="col-lg-5">
+            <div class="surface p-4">
+              <h2 class="h5 fw-bold mb-3">Quick service request</h2>
+              <p class="text-muted small mb-4">Select your service category to inspect live slot availability.</p>
+              <div class="d-grid gap-2">
+                <a href="/request.html?category=appliance-repair" class="btn btn-outline-secondary text-start d-flex justify-content-between align-items-center p-3 rounded">
+                  <span><i class="bi bi-tools me-2 text-brand"></i> Appliance & Gadget Repair</span>
+                  <i class="bi bi-arrow-right small"></i>
+                </a>
+                <a href="/request.html?category=plumbing" class="btn btn-outline-secondary text-start d-flex justify-content-between align-items-center p-3 rounded">
+                  <span><i class="bi bi-droplet me-2 text-brand"></i> Plumbing & Sanitary</span>
+                  <i class="bi bi-arrow-right small"></i>
+                </a>
+                <a href="/request.html?category=electrical" class="btn btn-outline-secondary text-start d-flex justify-content-between align-items-center p-3 rounded">
+                  <span><i class="bi bi-lightning-charge me-2 text-brand"></i> Electrical & Wiring</span>
+                  <i class="bi bi-arrow-right small"></i>
+                </a>
+                <a href="/request.html?category=cleaning-pest" class="btn btn-outline-secondary text-start d-flex justify-content-between align-items-center p-3 rounded">
+                  <span><i class="bi bi-shield-shaded me-2 text-brand"></i> Cleaning & Pest Control</span>
+                  <i class="bi bi-arrow-right small"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trust Strip -->
+    <section class="trust-strip">
+      <div class="container">
+        <div class="row g-3 text-center text-sm-start">
+          <div class="col-6 col-md-3">
+            <div class="stat-block">
+              <div class="fs-4 fw-bold text-brand mb-1">8</div>
+              <div class="text-muted small fw-semibold">Service categories</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-block">
+              <div class="fs-4 fw-bold text-brand mb-1">11</div>
+              <div class="text-muted small fw-semibold">Verified specialists</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-block">
+              <div class="fs-4 fw-bold text-brand mb-1">100%</div>
+              <div class="text-muted small fw-semibold">Slot lock guarantee</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-block">
+              <div class="fs-4 fw-bold text-brand mb-1">Auto</div>
+              <div class="text-muted small fw-semibold">Itemized invoices</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services Grid Section -->
+    <section id="services" class="py-5">
+      <div class="container py-4">
+        <div class="mb-5 text-center text-md-start">
+          <h2 class="h2 fw-bold mb-2">Verified service catalog</h2>
+          <p class="text-muted">Direct algorithmic matching against verified specialist schedules.</p>
+        </div>
+
+        <div class="categories-grid" id="services-grid">
+          <div class="text-center py-5 col-12">
+            <div class="spinner-border text-secondary" role="status"></div>
+            <p class="text-muted small mt-2">Loading verified catalog...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how" class="border-top border-bottom">
+      <div class="container py-4">
+        <div class="mb-5 text-center text-md-start">
+          <h2 class="h2 fw-bold mb-2">How HutFix works</h2>
+          <p class="text-muted">Three straightforward steps from request intake to verified billing.</p>
+        </div>
+
+        <div class="how-grid">
+          <div class="feature-card">
+            <div class="feature-card__icon">
+              <i class="bi bi-clipboard2-check"></i>
+            </div>
+            <h3 class="feature-card__title">1. Request & Pick a Slot</h3>
+            <p class="feature-card__desc">
+              Choose your service category, specify your area, and pick a guaranteed one-hour time window.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-card__icon">
+              <i class="bi bi-cpu"></i>
+            </div>
+            <h3 class="feature-card__title">2. Algorithmic Matching</h3>
+            <p class="feature-card__desc">
+              Our matching engine pairs your job with the best qualified local technician, verified by rating and capped workload.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-card__icon">
+              <i class="bi bi-receipt"></i>
+            </div>
+            <h3 class="feature-card__title">3. Track & Review</h3>
+            <p class="feature-card__desc">
+              Follow technician dispatch stage-by-stage on the tracking portal, receive an automatic invoice, and rate the job.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ready CTA Section -->
+    <section class="py-5">
+      <div class="container">
+        <div class="surface p-5 text-center">
+          <h2 class="h3 fw-bold mb-3">Ready to schedule a service visit?</h2>
+          <p class="text-muted mb-4 mx-auto" style="max-width: 520px;">
+            Book now with upfront prices, locked calendar reservations, and direct technician accountability.
           </p>
-          <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap mb-4">
-            <a href="/request.html" class="btn-brand">
-              <i class="bi bi-calendar-plus"></i> Book a Service
-            </a>
-            <a href="/login.html" class="btn-ghost">Sign In</a>
-          </div>
-          <div class="d-flex align-items-center justify-content-center justify-content-lg-start gap-2 text-muted small">
-            <span>Trusted by 2,000+ households in Dhaka</span>
-            <span class="text-warning d-inline-flex gap-1">
-              <i class="bi bi-star-fill"></i>
-              <i class="bi bi-star-fill"></i>
-              <i class="bi bi-star-fill"></i>
-              <i class="bi bi-star-fill"></i>
-              <i class="bi bi-star-fill"></i>
-            </span>
-          </div>
-        </div>
-
-        <!-- Right: Image Collage -->
-        <div class="col-lg-6">
-          <div class="collage-grid">
-            <div>
-              <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop&q=70" alt="Appliance Repair Service" class="collage-img">
-            </div>
-            <div>
-              <img src="https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800&auto=format&fit=crop&q=70" alt="Plumbing Service" class="collage-img collage-img-rotated">
-            </div>
-            <div>
-              <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&auto=format&fit=crop&q=70" alt="Electrical Service" class="collage-img">
-            </div>
-            <div>
-              <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&auto=format&fit=crop&q=70" alt="Cleaning and Pest Control" class="collage-img">
-            </div>
-          </div>
+          <a href="/request.html" class="btn-brand">
+            Schedule a Service <i class="bi bi-arrow-right ms-2"></i>
+          </a>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- Trust Strip -->
-  <section class="border-top border-bottom" style="background: var(--surface);">
-    <div class="container">
-      <div class="trust-strip">
-        <div class="stat-block">
-          <div class="stat-block__value">2,000+</div>
-          <div class="stat-block__label">Households served</div>
-        </div>
-        <div class="stat-block">
-          <div class="stat-block__value">11</div>
-          <div class="stat-block__label">Verified pros</div>
-        </div>
-        <div class="stat-block">
-          <div class="stat-block__value">4.8★</div>
-          <div class="stat-block__label">Average rating</div>
-        </div>
-        <div class="stat-block">
-          <div class="stat-block__value">24/7</div>
-          <div class="stat-block__label">Emergency support</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Services Grid Section -->
-  <section id="services" class="py-5">
-    <div class="container py-4">
-      <div class="text-center mb-5">
-        <h2 class="display-6 fw-bold mb-2">Every service your home needs</h2>
-        <p class="text-muted">Choose a category to browse specialists and reserve guaranteed slots.</p>
-      </div>
-
-      <div class="categories-grid" id="services-grid">
-        <div class="text-center py-5 col-12">
-          <div class="spinner-border text-primary" role="status"></div>
-          <p class="text-muted small mt-2">Loading verified service catalog...</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- How It Works Section -->
-  <section id="how" class="py-5" style="background: var(--surface-muted);">
-    <div class="container py-4">
-      <div class="text-center mb-5">
-        <h2 class="display-6 fw-bold mb-2">How HutFix Works</h2>
-        <p class="text-muted">Simple 3-step automation from booking to fulfillment</p>
-      </div>
-
-      <div class="how-grid">
-        <div class="feature-card">
-          <div class="feature-card__icon">
-            <i class="bi bi-pencil-square"></i>
-          </div>
-          <h3 class="feature-card__title">1. Describe your need</h3>
-          <p class="feature-card__desc">Choose your service, desired date, and preferred time window in just a few taps.</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-card__icon">
-            <i class="bi bi-stars"></i>
-          </div>
-          <h3 class="feature-card__title">2. We match the best pro</h3>
-          <p class="feature-card__desc">Our algorithmic engine scores nearby specialists by rating, price, proximity, and workload cap.</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-card__icon">
-            <i class="bi bi-geo-alt"></i>
-          </div>
-          <h3 class="feature-card__title">3. Track every step</h3>
-          <p class="feature-card__desc">Monitor technician dispatch in real-time, inspect itemized invoices, and rate your experience.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA Banner Section -->
-  <section class="py-5">
-    <div class="container">
-      <div class="cta-banner">
-        <h2 class="display-6 fw-bold text-white mb-2">Ready to book?</h2>
-        <p class="text-white-50 mb-4 mx-auto" style="max-width: 540px;">
-          Experience seamless smart home automation with certified professionals across Dhaka.
-        </p>
-        <a href="/request.html" class="btn-ghost-white">
-          Get Started <i class="bi bi-arrow-right ms-2"></i>
-        </a>
-      </div>
-    </div>
-  </section>
+    </section>
+  </main>
 
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
-      <div class="row g-4 mb-5">
+      <div class="row g-4 mb-4">
         <div class="col-md-5">
           <div class="d-flex align-items-center gap-2 mb-2">
             <img src="assets/images/logo.jpg" alt="HutFix Logo" width="28" height="28" class="rounded-2">
-            <span class="fs-5 fw-bold text-dark">HutFix</span>
+            <span class="fs-5 fw-bold">HutFix</span>
           </div>
-          <p class="text-muted small mb-0" style="max-width: 320px;">
-            Production-grade smart home service automation engineered for the BAUST CSE FEST 2026 Hackathon.
+          <p class="text-muted small mb-0" style="max-width: 340px;">
+            Smart home service automation platform engineered for the BAUST CSE FEST 2026 Hackathon.
           </p>
         </div>
         <div class="col-6 col-md-3">
-          <h3 class="h6 fw-bold text-dark mb-3">Product</h3>
+          <h3 class="h6 fw-bold mb-3">Directory</h3>
           <ul class="list-unstyled small mb-0 d-flex flex-column gap-2">
-            <li><a href="#services" class="text-decoration-none text-muted">Services Catalog</a></li>
-            <li><a href="#how" class="text-decoration-none text-muted">How It Works</a></li>
-            <li><a href="/request.html" class="text-decoration-none text-muted">Book a Specialist</a></li>
-            <li><a href="/tracking.html" class="text-decoration-none text-muted">Live Tracking</a></li>
+            <li><a href="#services">Services Catalog</a></li>
+            <li><a href="#how">How It Works</a></li>
+            <li><a href="/request.html">Book a Specialist</a></li>
+            <li><a href="/tracking.html">Track a Request</a></li>
           </ul>
         </div>
         <div class="col-6 col-md-4">
-          <h3 class="h6 fw-bold text-dark mb-3">Contact & Support</h3>
+          <h3 class="h6 fw-bold mb-3">Operations</h3>
           <p class="small text-muted mb-1"><i class="bi bi-geo-alt me-2"></i>Dhaka, Bangladesh</p>
           <p class="small text-muted mb-1"><i class="bi bi-envelope me-2"></i>support@hutfix.local</p>
-          <p class="small text-muted mb-0"><i class="bi bi-clock me-2"></i>24/7 Dispatch Desk</p>
         </div>
       </div>
 
-      <div class="pt-4 border-top d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
-        <div class="small text-muted">
-          &copy; 2026 HutFix — Smart Home Service Automation. All rights reserved.
-        </div>
-        <div class="d-flex align-items-center gap-2 small">
-          <span class="text-muted">System Status:</span>
+      <div class="d-flex justify-content-between align-items-center pt-3 border-top border-theme flex-wrap gap-2 text-muted small">
+        <div>&copy; 2026 HutFix. All rights reserved.</div>
+        <div class="d-flex align-items-center gap-2">
+          <span>Platform Status:</span>
           <span id="health-status" class="badge bg-secondary">checking...</span>
         </div>
       </div>
@@ -281,23 +250,24 @@
       .then(res => res.json())
       .then(data => {
         const grid = document.getElementById('services-grid');
-        if (!data.ok || !data.services || data.services.length === 0) {
+        const list = data.services || data.categories || [];
+        if (!data.ok || list.length === 0) {
           grid.innerHTML = '<div class="col-12 text-center text-danger">Failed to load service categories.</div>';
           return;
         }
 
-        grid.innerHTML = data.services.map(svc => `
+        grid.innerHTML = list.map(svc => `
           <div class="category-card">
             <img class="category-card__img card-img-top" src="${window.IMAGES.category(svc.slug)}" alt="${svc.name}" loading="lazy" onerror="this.src=window.IMAGES.categoryFallback('${svc.slug}')">
             <div class="category-card__body">
               <div class="d-flex align-items-center gap-2 mb-2">
-                <span class="text-primary fs-5"><i class="bi ${svc.icon || 'bi-tools'}"></i></span>
-                <h3 class="h6 fw-bold mb-0 text-dark">${svc.name}</h3>
+                <span class="text-brand fs-5"><i class="bi ${svc.icon || 'bi-tools'}"></i></span>
+                <h3 class="h6 fw-bold mb-0">${svc.name}</h3>
               </div>
               <p class="text-muted small flex-grow-1 mb-3" style="font-size: 0.85rem; line-height: 1.45;">${svc.description || ''}</p>
-              <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-auto">
-                <span class="fw-bold small" style="color: var(--brand-600);">from ৳${parseFloat(svc.base_price).toFixed(0)}</span>
-                <a href="/request.html?category=${encodeURIComponent(svc.slug)}" class="btn-ghost" style="padding: 4px 14px; font-size: 0.8rem;">Book &rarr;</a>
+              <div class="d-flex justify-content-between align-items-center pt-2 border-top border-theme mt-auto">
+                <span class="fw-bold small text-brand">from ৳${parseFloat(svc.base_price).toFixed(0)}</span>
+                <a href="/request.html?category=${encodeURIComponent(svc.slug)}" class="btn-ghost" style="padding: 4px 12px; font-size: 0.8rem;">Book &rarr;</a>
               </div>
             </div>
           </div>
@@ -318,7 +288,7 @@
           badge.textContent = 'API + DB online';
         } else {
           badge.className = 'badge bg-danger';
-          badge.textContent = 'Offline';
+          badge.textContent = 'Degraded';
         }
       })
       .catch(() => {

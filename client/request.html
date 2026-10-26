@@ -3,116 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#fbfbfa">
   <title>HutFix — Book a Service</title>
   <meta name="description" content="Book verified home specialists in Dhaka with algorithmic matching and slot-based scheduling.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/components.css">
   <link rel="stylesheet" href="/css/pages.css">
   <script src="/js/theme.js"></script>
-  <style>
-    .candidate-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: var(--space-5);
-      margin-bottom: var(--space-4);
-      transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
-    }
-    .candidate-card:hover {
-      border-color: var(--brand-500);
-      box-shadow: var(--shadow-md);
-    }
-    .category-thumb {
-      width: 76px;
-      height: 76px;
-      object-fit: cover;
-      border-radius: var(--radius-sm);
-    }
-    .provider-avatar {
-      width: 44px;
-      height: 44px;
-      object-fit: cover;
-      border-radius: 50%;
-    }
-    .score-badge {
-      font-size: 0.825rem;
-      padding: 0.35rem 0.65rem;
-      border-radius: var(--radius-pill);
-      background: var(--brand-50);
-      color: var(--brand-700);
-      font-weight: 700;
-    }
-    .slot-pill {
-      font-size: 0.85rem;
-      padding: 0.4rem 0.8rem;
-      border-radius: var(--radius-pill);
-      transition: all var(--dur) var(--ease);
-    }
-    .slot-pill.selected {
-      background: var(--brand-600);
-      color: #ffffff;
-      border-color: var(--brand-600);
-      box-shadow: var(--shadow-glow);
-    }
-    .file-drop-zone {
-      border: 2px dashed var(--border-strong);
-      border-radius: var(--radius-sm);
-      background: var(--surface-muted);
-      cursor: pointer;
-      transition: border-color var(--dur) var(--ease);
-    }
-    .file-drop-zone:hover {
-      border-color: var(--brand-500);
-    }
-  </style>
 </head>
 <body class="page-request">
 
-  <!-- Sticky Glass Navbar -->
+  <!-- Header Navigation -->
   <header class="app-nav">
-    <div class="container">
+    <div class="container d-flex align-items-center justify-content-between py-2">
       <a href="/index.html" class="app-nav__brand">
-        <img src="assets/images/logo.jpg" alt="HutFix Logo" width="32" height="32" class="rounded-3">
+        <img src="assets/images/logo.jpg" alt="HutFix Logo" width="32" height="32" class="rounded-2">
         <span>HutFix</span>
       </a>
 
-      <div class="app-nav__links">
-        <a href="/tracking.html" class="btn-ghost btn-sm">My Requests</a>
-        <a href="/login.html" id="auth-nav-btn" class="btn-ghost btn-sm">Sign In</a>
-        <div class="app-nav__toggle">
-          <button type="button" class="theme-toggle" aria-label="Toggle dark mode theme">
-            <i class="bi bi-moon-stars"></i>
-          </button>
-        </div>
+      <div class="d-flex align-items-center gap-3">
+        <a href="/tracking.html" class="nav-link">My Requests</a>
+        <a href="/login.html" id="auth-nav-btn" class="nav-link">Sign In</a>
+        <button type="button" class="theme-toggle" aria-label="Toggle dark mode theme">
+          <i class="bi bi-moon-stars"></i>
+        </button>
       </div>
     </div>
   </header>
 
-  <!-- Page Title Header -->
-  <div class="container pt-4 pb-2">
-    <h1 class="hero__title mb-1" style="font-size: clamp(1.8rem, 3vw, 2.4rem);">Book a service</h1>
-    <p class="hero__subtitle mb-0">Select your service, choose preferred timing, and instantly match with top verified specialists.</p>
+  <!-- Page Header -->
+  <div class="container pt-4 pb-3">
+    <h1 class="fw-bold mb-1">Book a service</h1>
+    <p class="text-muted mb-0">Select your service, choose preferred timing, and instantly match with top verified specialists.</p>
   </div>
 
-  <!-- Main Container -->
+  <!-- Main Content -->
   <main class="container my-3 my-md-4 flex-grow-1">
-    <!-- Non-customer guard message -->
+    <!-- Non-customer role guard warning -->
     <div id="role-warning" class="alert alert-warning d-none" role="alert">
-      <h5 class="alert-heading fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Customer Account Required</h5>
-      <p class="mb-0">You are currently signed in with a non-customer role. Service booking is available exclusively for customer accounts. Please sign in with a customer account to create requests.</p>
+      <h2 class="h6 fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>Customer Account Required</h2>
+      <p class="mb-0 small">You are currently signed in with a non-customer role. Service booking is available exclusively for customer accounts. Please sign in with a customer account to create requests.</p>
     </div>
 
     <div class="request-grid">
-      <!-- Left Column: Form -->
-      <div class="surface p-4">
-        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+      <!-- Left Column: Booking Form -->
+      <div class="surface">
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-theme">
           <h2 class="h5 fw-bold mb-0">Service Details</h2>
-          <span class="badge bg-primary-subtle text-primary border rounded-pill small">Step 1 of 2</span>
+          <span class="chip">Step 1 of 2</span>
         </div>
 
         <div id="form-error" class="alert alert-danger py-2 small d-none" role="alert"></div>
@@ -120,7 +63,7 @@
         <form id="request-form">
           <!-- Service Category -->
           <div class="mb-3">
-            <label for="req-category" class="form-label small fw-semibold text-secondary">Service Category</label>
+            <label for="req-category" class="form-label small fw-semibold text-muted">Service Category</label>
             <select id="req-category" class="form-select form-control-lg" required>
               <option value="" disabled selected>Loading service categories...</option>
             </select>
@@ -129,27 +72,27 @@
           <!-- Date & Urgency Row -->
           <div class="row g-3 mb-3">
             <div class="col-sm-6">
-              <label for="req-date" class="form-label small fw-semibold text-secondary">Preferred Date</label>
+              <label for="req-date" class="form-label small fw-semibold text-muted">Preferred Date</label>
               <input type="date" id="req-date" class="form-control form-control-lg" required>
             </div>
             <div class="col-sm-6">
-              <label for="req-urgency" class="form-label small fw-semibold text-secondary">Urgency Level</label>
+              <label for="req-urgency" class="form-label small fw-semibold text-muted">Urgency Level</label>
               <select id="req-urgency" class="form-select form-control-lg">
-                <option value="low">● Low (Flexible schedule)</option>
-                <option value="normal" selected>● Normal (Standard booking)</option>
-                <option value="high">● High (Priority dispatch)</option>
-                <option value="urgent">● Urgent (Within 15 mins)</option>
+                <option value="low">Low (Flexible schedule)</option>
+                <option value="normal" selected>Normal (Standard booking)</option>
+                <option value="high">High (Priority dispatch)</option>
+                <option value="urgent">Urgent (Within 15 mins)</option>
               </select>
             </div>
           </div>
 
           <!-- Time Window (Advanced Collapsible) -->
           <div class="mb-3">
-            <details class="p-2 rounded border" style="background: var(--surface-muted);">
-              <summary class="small fw-semibold text-secondary cursor-pointer" style="cursor: pointer;">
+            <details class="py-2">
+              <summary class="small fw-semibold text-muted">
                 <i class="bi bi-sliders me-1"></i> Advanced — pick a time manually
               </summary>
-              <div class="row g-2 mt-2 pt-2 border-top">
+              <div class="row g-2 mt-2 pt-2 border-top border-theme">
                 <div class="col-6">
                   <label for="req-start" class="form-label small text-muted">Window Start</label>
                   <input type="time" id="req-start" class="form-control form-control-sm" value="09:00">
@@ -164,29 +107,29 @@
 
           <!-- Address -->
           <div class="mb-3">
-            <label for="req-address" class="form-label small fw-semibold text-secondary">Service Address</label>
+            <label for="req-address" class="form-label small fw-semibold text-muted">Service Address</label>
             <input type="text" id="req-address" class="form-control form-control-lg" placeholder="e.g. House 12, Road 5, Dhanmondi, Dhaka" required>
             <div class="form-text small">Include your area name (e.g. Dhanmondi, Mirpur, Uttara) for accurate local matches.</div>
           </div>
 
           <!-- Description -->
           <div class="mb-3">
-            <label for="req-description" class="form-label small fw-semibold text-secondary">Task Description (Optional)</label>
+            <label for="req-description" class="form-label small fw-semibold text-muted">Task Description (Optional)</label>
             <textarea id="req-description" class="form-control form-control-lg" rows="3" placeholder="Briefly describe what needs fixing or servicing..."></textarea>
           </div>
 
           <!-- Contact Phone -->
           <div class="mb-3">
-            <label for="req-phone" class="form-label small fw-semibold text-secondary">Contact Phone</label>
+            <label for="req-phone" class="form-label small fw-semibold text-muted">Contact Phone</label>
             <input type="tel" id="req-phone" class="form-control form-control-lg" placeholder="017XXXXXXXX" required>
           </div>
 
           <!-- Optional Image Upload -->
           <div class="mb-4">
-            <label class="form-label small fw-semibold text-secondary">Attach Photo (Optional)</label>
-            <div class="file-drop-zone p-3 text-center" onclick="document.getElementById('req-image').click()">
+            <label class="form-label small fw-semibold text-muted">Attach Photo (Optional)</label>
+            <div class="file-drop-zone" onclick="document.getElementById('req-image').click()">
               <i class="bi bi-cloud-arrow-up fs-3 text-muted"></i>
-              <div class="small fw-semibold text-secondary mt-1">Drag an image or click to browse</div>
+              <div class="small fw-semibold text-muted mt-1">Drag an image or click to browse</div>
               <div class="small text-muted" id="file-name-preview">Accepted: JPG, PNG, WEBP (max 5MB)</div>
               <input type="file" id="req-image" class="d-none" accept="image/jpeg,image/png,image/webp" onchange="const f = this.files[0]; if (f) document.getElementById('file-name-preview').textContent = f.name;">
             </div>
@@ -199,55 +142,48 @@
       </div>
 
       <!-- Right Column: Results Panel (Sticky) -->
-      <div class="match-panel">
-        <div id="match-panel" class="surface p-4" data-slots-endpoint="/api/providers/">
-          <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-            <h2 class="h5 fw-bold mb-0">Matched Specialists</h2>
-            <span id="match-count" class="chip">0 found</span>
-          </div>
+      <div class="match-panel" id="match-panel" data-slots-endpoint="/api/providers/">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-theme">
+          <h2 class="h5 fw-bold mb-0">Matched Specialists</h2>
+          <span id="match-count" class="chip">0 found</span>
+        </div>
 
-          <!-- Loading State with Shimmer Skeletons -->
-          <div id="match-loading" class="d-none">
-            <div class="d-flex flex-column gap-3 py-2">
-              <div class="p-3 border rounded" style="background: var(--surface);">
-                <div class="skeleton mb-2" style="height: 22px; width: 60%;"></div>
-                <div class="skeleton mb-3" style="height: 14px; width: 40%;"></div>
-                <div class="skeleton" style="height: 38px; width: 100%;"></div>
-              </div>
-              <div class="p-3 border rounded" style="background: var(--surface);">
-                <div class="skeleton mb-2" style="height: 22px; width: 50%;"></div>
-                <div class="skeleton mb-3" style="height: 14px; width: 35%;"></div>
-                <div class="skeleton" style="height: 38px; width: 100%;"></div>
-              </div>
-              <div class="p-3 border rounded" style="background: var(--surface);">
-                <div class="skeleton mb-2" style="height: 22px; width: 55%;"></div>
-                <div class="skeleton mb-3" style="height: 14px; width: 45%;"></div>
-                <div class="skeleton" style="height: 38px; width: 100%;"></div>
-              </div>
+        <!-- Loading State with Skeletons -->
+        <div id="match-loading" class="d-none">
+          <div class="d-flex flex-column gap-3 py-2">
+            <div class="skeleton-box">
+              <div class="skeleton skeleton-line-title mb-2"></div>
+              <div class="skeleton skeleton-line-sub mb-3"></div>
+              <div class="skeleton skeleton-line-btn"></div>
+            </div>
+            <div class="skeleton-box">
+              <div class="skeleton skeleton-line-title mb-2"></div>
+              <div class="skeleton skeleton-line-sub mb-3"></div>
+              <div class="skeleton skeleton-line-btn"></div>
             </div>
           </div>
+        </div>
 
-          <!-- Empty State -->
-          <div id="match-empty" class="empty-state py-5">
-            <div class="fs-1 text-muted mb-2"><i class="bi bi-stars"></i></div>
-            <h3 class="h6 fw-semibold text-dark">No Providers Selected</h3>
-            <p class="text-muted small mb-0" id="match-empty-msg">Fill out the request form on the left and click "Find Providers" to view ranked technicians.</p>
-          </div>
+        <!-- Empty State -->
+        <div id="match-empty" class="empty-state py-5">
+          <div class="empty-state__icon"><i class="bi bi-person-lines-fill"></i></div>
+          <h3 class="h6 fw-semibold text-body">No Providers Selected</h3>
+          <p class="text-muted small mb-0" id="match-empty-msg">Fill out the request form on the left and click "Find Providers" to view ranked technicians.</p>
+        </div>
 
-          <!-- Match List Container -->
-          <div id="match-list" class="d-none">
-            <!-- Candidate cards injected via client/js/request.js -->
-          </div>
+        <!-- Match List Container -->
+        <div id="match-list" class="d-none">
+          <!-- Candidate cards injected via client/js/request.js -->
+        </div>
 
-          <!-- Success State -->
-          <div id="match-success" class="text-center py-5 d-none">
-            <div class="display-4 text-success mb-2"><i class="bi bi-check-circle-fill"></i></div>
-            <h3 class="h5 fw-bold text-dark mb-1">Booking Confirmed!</h3>
-            <p class="text-muted mb-4" id="match-success-msg">Your service request #<span id="req-id"></span> has been created and assigned.</p>
-            <div class="d-flex justify-content-center gap-2">
-              <a href="/tracking.html" id="btn-view-tracking" class="btn-brand px-3">View my requests</a>
-              <button type="button" id="btn-book-another" class="btn-ghost px-3">Book Another</button>
-            </div>
+        <!-- Success State -->
+        <div id="match-success" class="text-center py-5 d-none">
+          <div class="fs-1 text-brand mb-2"><i class="bi bi-check-circle-fill"></i></div>
+          <h3 class="h5 fw-bold text-body mb-1">Booking Confirmed!</h3>
+          <p class="text-muted mb-4" id="match-success-msg">Your service request #<span id="req-id"></span> has been created and assigned.</p>
+          <div class="d-flex justify-content-center gap-2">
+            <a href="/tracking.html" id="btn-view-tracking" class="btn-brand px-3">View my requests</a>
+            <button type="button" id="btn-book-another" class="btn-ghost px-3">Book Another</button>
           </div>
         </div>
       </div>
@@ -257,15 +193,15 @@
   <!-- Slot Picker Modal (Supporting modal-based interactions) -->
   <div class="modal fade" id="slot-modal" tabindex="-1" aria-labelledby="slotModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content surface border">
-        <div class="modal-header border-bottom">
-          <h5 class="modal-title h6 fw-bold" id="slotModalLabel">Select a Service Slot</h5>
+      <div class="modal-content surface border border-theme">
+        <div class="modal-header border-bottom border-theme">
+          <h3 class="modal-title h6 fw-bold" id="slotModalLabel">Select a Service Slot</h3>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body" id="modal-slot-body">
-          <p class="text-muted small">Choose your preferred appointment window.</p>
+        <div class="modal-body p-4" id="modal-slot-body">
+          <p class="text-muted small mb-0">Choose your preferred appointment window.</p>
         </div>
-        <div class="modal-footer border-top">
+        <div class="modal-footer border-top border-theme">
           <button type="button" class="btn-ghost btn-sm" data-bs-dismiss="modal">Cancel</button>
           <button type="button" class="btn-brand btn-sm" id="modal-confirm-slot-btn">Confirm Slot</button>
         </div>
@@ -274,7 +210,7 @@
   </div>
 
   <!-- Footer -->
-  <footer class="footer py-4 mt-auto">
+  <footer class="footer mt-auto">
     <div class="container text-center small text-muted">
       &copy; 2026 HutFix — Smart Home Service Automation. BAUST CSE FEST Hackathon.
     </div>

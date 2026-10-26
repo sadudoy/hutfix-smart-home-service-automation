@@ -331,9 +331,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="position-absolute top-0 end-0 p-3">
               <span class="status-badge status-${req.status} shadow-sm">${req.status.replace(/_/g, ' ')}</span>
             </div>
-            <div class="position-absolute bottom-0 start-0 p-3 text-white" style="background: linear-gradient(transparent, rgba(15,23,42,0.85)); width: 100%;">
-              <h2 class="h5 fw-bold mb-0 text-white">${req.category_name || 'Home Service'}</h2>
-              <span class="small text-white-50">Request #${req.id} &bull; Booked on ${new Date(req.created_at).toLocaleDateString()}</span>
+            <div class="hero-img-overlay">
+              <h2 class="h5 fw-bold mb-0 text-body">${req.category_name || 'Home Service'}</h2>
+              <span class="small text-muted">Request #${req.id} &bull; Booked on ${new Date(req.created_at).toLocaleDateString()}</span>
             </div>
           </div>
 

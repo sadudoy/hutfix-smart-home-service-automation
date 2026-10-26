@@ -272,8 +272,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                   ${r.urgency || 'Normal'}
                 </span>
               </div>
-              <div class="position-absolute bottom-0 start-0 p-2 text-white" style="background: linear-gradient(transparent, rgba(15,23,42,0.85)); width: 100%;">
-                <span class="small fw-bold text-white"><i class="bi ${r.category_icon || 'bi-tools'} me-1"></i>${r.category_name || 'Service Task'}</span>
+              <div class="hero-img-overlay py-2 px-3">
+                <span class="small fw-bold text-body"><i class="bi ${r.category_icon || 'bi-tools'} me-1"></i>${r.category_name || 'Service Task'}</span>
               </div>
             </div>
 

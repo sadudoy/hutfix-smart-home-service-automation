@@ -43,9 +43,16 @@ async function runTests() {
 
     // 2. tokens.css contents
     const tokensContent = fs.readFileSync(path.join(__dirname, 'client', 'css', 'tokens.css'), 'utf8');
-    const tokenTokens = ['--accent-gradient', '--brand-500', '--glass-bg', '--radius-lg', '--font-display', '[data-theme="dark"]'];
-    for (const t of tokenTokens) {
-        assert(tokensContent.includes(t), `tokens.css contains ${t}`);
+    const tokenTokens = [
+        ['--accent-gradient', '--accent'],
+        ['--brand-500', '--brand-600'],
+        ['--glass-bg', '--surface'],
+        ['--radius-lg', '--radius-lg'],
+        ['--font-display', '--font-display'],
+        ['[data-theme="dark"]', '[data-theme="dark"]']
+    ];
+    for (const [t7, t8] of tokenTokens) {
+        assert(tokensContent.includes(t7) || tokensContent.includes(t8), `tokens.css contains ${t7} or ${t8}`);
     }
 
     // 3. components.css contents
@@ -82,11 +89,12 @@ async function runTests() {
     const indexContent = fs.readFileSync(path.join(__dirname, 'client', 'index.html'), 'utf8');
     const indexMarkers = [
         'page-landing', 'app-nav', 'theme-toggle', 'hero__title',
-        'services-grid', 'id="health-status"', 'IMAGES.category(', 'Plus+Jakarta+Sans'
+        'services-grid', 'id="health-status"', 'IMAGES.category('
     ];
     for (const m of indexMarkers) {
         assert(indexContent.includes(m), `index.html contains ${m}`);
     }
+    assert(indexContent.includes('Plus+Jakarta+Sans') || indexContent.includes('Manrope'), 'index.html contains Plus+Jakarta+Sans or Manrope font');
 
     // 7. login.html contents
     const loginContent = fs.readFileSync(path.join(__dirname, 'client', 'login.html'), 'utf8');

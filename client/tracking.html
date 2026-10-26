@@ -3,94 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#fbfbfa">
   <title>HutFix — Service Tracking</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <meta name="description" content="Track your active and historical home service requests with live status updates.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/pages.css">
   <script src="/js/theme.js"></script>
-  <style>
-    .tracking-grid {
-      display: grid;
-      grid-template-columns: 360px 1fr;
-      gap: 1.5rem;
-      min-height: calc(100vh - 160px);
-    }
-    @media (max-width: 991px) {
-      .tracking-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-    .detail-hero-img {
-      width: 100%;
-      height: 220px;
-      object-fit: cover;
-      border-radius: var(--radius) var(--radius) 0 0;
-    }
-    .timeline-item {
-      position: relative;
-      padding-left: 2rem;
-      margin-bottom: 1.25rem;
-    }
-    .timeline-item::before {
-      content: '';
-      position: absolute;
-      left: 7px;
-      top: 6px;
-      bottom: -18px;
-      width: 2px;
-      background-color: var(--border);
-    }
-    .timeline-item:last-child::before {
-      display: none;
-    }
-    .timeline-dot {
-      position: absolute;
-      left: 0;
-      top: 4px;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: var(--brand-500);
-      border: 3px solid #ffffff;
-      box-shadow: 0 0 0 1px var(--brand-500);
-    }
-    .rating-star {
-      cursor: pointer;
-      transition: transform 0.1s ease;
-    }
-    .rating-star:hover {
-      transform: scale(1.15);
-    }
-  </style>
 </head>
-<body>
+<body class="page-tracking">
 
-  <!-- Navigation -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top border-bottom shadow-sm">
-    <div class="container-fluid px-md-4">
-      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-dark" href="/index.html">
-        <img src="assets/images/logo.jpg" alt="HutFix Logo" style="height: 38px; border-radius: 6px;">
-        <span class="fs-4 text-primary">HutFix</span>
+  <!-- Header Navigation -->
+  <header class="app-nav">
+    <div class="container-fluid px-md-4 d-flex align-items-center justify-content-between py-2">
+      <a href="/index.html" class="app-nav__brand">
+        <img src="assets/images/logo.jpg" alt="HutFix Logo" width="32" height="32" class="rounded-2">
+        <span>HutFix</span>
       </a>
 
       <div class="d-flex align-items-center gap-3">
-        <a href="/index.html" class="btn btn-outline-secondary btn-sm px-3 fw-semibold">Home</a>
-        <a href="/request.html" class="btn btn-primary btn-sm px-3 fw-semibold">
+        <a href="/index.html" class="nav-link">Home</a>
+        <a href="/request.html" class="btn-brand btn-sm">
           <i class="bi bi-plus-circle me-1"></i> New Request
         </a>
 
         <!-- Notifications Bell -->
         <div class="position-relative">
-          <button type="button" id="notif-bell" class="btn btn-outline-secondary btn-sm position-relative">
+          <button type="button" id="notif-bell" class="btn-ghost btn-sm position-relative" aria-label="Notifications">
             <i class="bi bi-bell"></i>
             <span id="notif-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
           </button>
-          <div id="notif-panel" class="dropdown-menu dropdown-menu-end p-2 shadow-lg d-none" style="width: 320px; max-height: 420px; overflow-y: auto; position: absolute; right: 0; z-index: 1050;">
-            <div class="d-flex justify-content-between align-items-center px-2 py-1 border-bottom">
-              <span class="fw-bold small text-dark">Notifications</span>
-              <button type="button" id="notif-mark-all" class="btn btn-link btn-sm p-0 text-decoration-none small">Mark all read</button>
+          <div id="notif-panel" class="dropdown-menu dropdown-menu-end p-2 shadow-lg d-none notif-dropdown">
+            <div class="d-flex justify-content-between align-items-center px-2 py-1 border-bottom border-theme">
+              <span class="fw-bold small text-body">Notifications</span>
+              <button type="button" id="notif-mark-all" class="btn btn-link btn-sm p-0 text-decoration-none small text-brand">Mark all read</button>
             </div>
             <div id="notif-list" class="py-1">
               <div class="text-center py-3 text-muted small">No notifications</div>
@@ -99,34 +50,39 @@
         </div>
 
         <!-- Theme toggle -->
-        <button type="button" class="theme-toggle btn-ghost" aria-label="Toggle dark mode theme">
+        <button type="button" class="theme-toggle" aria-label="Toggle dark mode theme">
           <i class="bi bi-moon-stars"></i>
         </button>
 
-        <span id="nav-username" class="fw-semibold text-secondary small">Customer</span>
-        <button type="button" id="logout-btn" class="btn btn-outline-danger btn-sm px-2 py-1">
+        <span id="nav-username" class="fw-semibold text-muted small">Customer</span>
+        <button type="button" id="logout-btn" class="btn-ghost btn-sm text-danger" title="Sign Out" aria-label="Sign Out">
           <i class="bi bi-box-arrow-right"></i>
         </button>
       </div>
     </div>
-  </nav>
+  </header>
+
+  <!-- Page Header -->
+  <div class="container-fluid px-md-4 pt-3 pb-2">
+    <h1 class="h3 fw-bold mb-0">Service Tracking</h1>
+  </div>
 
   <!-- Main Tracking Container -->
-  <main class="container-fluid px-md-4 py-4 flex-grow-1">
+  <main class="container-fluid px-md-4 py-3 flex-grow-1">
     <div id="role-warning" class="alert alert-warning d-none" role="alert">
-      <h5 class="alert-heading fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Customer Access Only</h5>
-      <p class="mb-0">This tracking portal is designed for customer accounts. Please log in with a customer account.</p>
+      <h2 class="h6 fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>Customer Access Only</h2>
+      <p class="mb-0 small">This tracking portal is designed for customer accounts. Please log in with a customer account.</p>
     </div>
 
     <div id="tracking-view" class="tracking-grid">
       <!-- Left Sidebar: Requests List -->
-      <aside class="surface p-3 d-flex flex-column h-100">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h2 class="h6 fw-bold text-dark mb-0"><i class="bi bi-collection me-2"></i>My Requests</h2>
-          <span id="requests-count" class="badge bg-secondary">0</span>
+      <aside class="surface d-flex flex-column h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-theme">
+          <h2 class="h6 fw-bold text-body mb-0"><i class="bi bi-collection me-2"></i>My Requests</h2>
+          <span id="requests-count" class="chip">0</span>
         </div>
 
-        <div id="request-list" class="overflow-auto flex-grow-1" style="max-height: calc(100vh - 230px);">
+        <div id="request-list" class="overflow-auto flex-grow-1 tracking-sidebar-list">
           <!-- Injected via client/js/tracking.js -->
           <div class="text-center py-4 text-muted small">Loading your requests...</div>
         </div>
@@ -136,9 +92,9 @@
       <section class="surface p-0 overflow-hidden d-flex flex-column">
         <div id="request-detail" class="h-100 d-flex flex-column">
           <!-- Injected via client/js/tracking.js or empty state -->
-          <div class="empty-state my-auto">
-            <i class="bi bi-inbox"></i>
-            <h3 class="h6 fw-semibold">No Request Selected</h3>
+          <div class="empty-state my-auto m-4">
+            <div class="empty-state__icon"><i class="bi bi-inbox"></i></div>
+            <h2 class="h6 fw-semibold text-body">No Request Selected</h2>
             <p class="small text-muted mb-0">Select a service request from the sidebar to view live fulfillment tracking.</p>
           </div>
           <!-- Timeline placeholder -->
@@ -151,12 +107,12 @@
   <!-- Rating Modal -->
   <div class="modal fade" id="ratingModal" tabindex="-1" aria-labelledby="ratingModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title h6 fw-bold" id="ratingModalLabel">Rate This Service</h5>
+      <div class="modal-content surface border border-theme">
+        <div class="modal-header border-bottom border-theme">
+          <h2 class="modal-title h6 fw-bold" id="ratingModalLabel">Rate This Service</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body p-4">
           <div class="text-center mb-3">
             <div class="fs-2 text-warning d-flex justify-content-center gap-2" id="star-picker">
               <i class="bi bi-star rating-star" data-star="1"></i>
@@ -168,17 +124,24 @@
             <span class="small text-muted" id="star-hint">Select a star rating (1–5)</span>
           </div>
           <div class="mb-3">
-            <label for="rating-comment" class="form-label small fw-semibold">Review / Comments</label>
+            <label for="rating-comment" class="form-label small fw-semibold text-muted">Review / Comments</label>
             <textarea class="form-control" id="rating-comment" rows="3" maxlength="500" placeholder="Tell us how the service was delivered..."></textarea>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" id="submit-rating-btn" class="btn btn-primary btn-sm px-3" disabled>Submit Rating</button>
+        <div class="modal-footer border-top border-theme">
+          <button type="button" class="btn-ghost btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" id="submit-rating-btn" class="btn-brand btn-sm px-3" disabled>Submit Rating</button>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Footer -->
+  <footer class="footer mt-auto py-3">
+    <div class="container-fluid px-md-4 text-center small text-muted">
+      &copy; 2026 HutFix — Smart Home Service Automation. BAUST CSE FEST Hackathon.
+    </div>
+  </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="/js/images.js"></script>

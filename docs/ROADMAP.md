@@ -12,8 +12,8 @@
 | **Phase 5** | Lifecycle & Role Dashboards | **Done** | Finite state machine, 5-stage customer stepper, 3-bucket provider management. |
 | **Phase 6** | Bonus Layer & Documentation | **Done** | Automated invoices, star ratings, notifications, workload capping, docs foundation. |
 | **Phase 7** | Design System & Public Pages Overhaul | **Done** | Indigo/violet design tokens, dark mode toggle, complete overhaul of landing, login, and request UI. |
-| **Phase 8** | Operational Dashboards & Admin Analytics | **In Progress** | Customer tracking portal overhaul, provider operations deck, print invoice refinement, and admin telemetry. |
-| **Phase 9** | Production Hardening & Cloud Deployment | **Pending** | Supabase/Cloud PostgreSQL deployment, automated CI/CD pipeline, and audit logging. |
+| **Phase 8** | Impeccable Redesign & Dark-Mode Hardening | **Done** | Purged AI tells, Manrope font, Craft Pine/Warm Terracotta palette, WCAG AAA/AA contrast, 0 detector findings. |
+| **Phase 9** | Production Hardening & Cloud Deployment | **In Progress** | Supabase/Cloud PostgreSQL deployment, automated CI/CD pipeline, and audit logging. |
 
 ---
 

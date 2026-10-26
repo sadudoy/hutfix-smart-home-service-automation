@@ -1,95 +1,230 @@
+/* ==========================================================================
+   HutFix Design Tokens — Impeccable Craft Direction (Phase 8)
+   Typography: Manrope
+   Palette: Craft Pine & Warm Terracotta (No AI purple, no gradient text)
+   ========================================================================== */
+
 :root {
-  /* Brand */
-  --brand-50:  #eef2ff;
-  --brand-100: #e0e7ff;
-  --brand-500: #6366f1;
-  --brand-600: #4f46e5;
-  --brand-700: #4338ca;
-  --violet-500: #8b5cf6;
-  --violet-600: #7c3aed;
-  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  --accent-gradient-soft: linear-gradient(135deg, rgba(99,102,241,.08) 0%, rgba(139,92,246,.08) 100%);
+  color-scheme: light;
 
-  /* Surfaces */
-  --bg: #f8fafc;
+  /* Typography */
+  --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+
+  /* Type Scale */
+  --font-size-xs: 0.75rem;     /* 12px */
+  --font-size-sm: 0.875rem;    /* 14px */
+  --font-size-base: 1rem;       /* 16px */
+  --font-size-lg: 1.125rem;    /* 18px */
+  --font-size-xl: 1.3125rem;   /* 21px */
+  --font-size-2xl: 1.625rem;   /* 26px */
+  --font-size-3xl: 2.125rem;   /* 34px */
+  --font-size-4xl: 2.75rem;    /* 44px */
+
+  /* Line Heights */
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+
+  /* Brand Palette (Craft Pine) */
+  --brand-50: #f0fdfa;
+  --brand-100: #ccfbf1;
+  --brand-200: #99f6e4;
+  --brand-500: #0d9488;
+  --brand-600: #0e6258;
+  --brand-700: #0b4f46;
+  --brand-text: #ffffff;
+
+  --color-brand-50: #f0fdfa;
+  --color-brand-100: #ccfbf1;
+  --color-brand-500: #0d9488;
+  --color-brand-600: #0e6258;
+  --color-brand-700: #0b4f46;
+  --color-brand-text: #ffffff;
+
+  /* Accent (Warm Terracotta) */
+  --accent-50: #fffbeb;
+  --accent-500: #d97706;
+  --accent-600: #b45309;
+  --accent-700: #92400e;
+  --accent-text: #ffffff;
+
+  /* Surfaces & Canvas */
+  --bg: #fbfbfa;
+  --bg-muted: #f4f4f2;
   --surface: #ffffff;
-  --surface-elevated: #ffffff;
-  --surface-muted: #f1f5f9;
-  --glass-bg: rgba(255,255,255,.72);
-  --glass-border: rgba(255,255,255,.35);
+  --surface-muted: #f3f4f3;
+  --surface-raised: #ffffff;
 
-  /* Text */
-  --text: #0f172a;
-  --text-soft: #1e293b;
-  --muted: #64748b;
-  --muted-2: #94a3b8;
+  /* Typography & Foreground */
+  --text: #181a1b;
+  --text-dark: #181a1b;
+  --text-muted: #595d62;
+  --muted: #595d62;
 
-  /* Borders / status */
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
-  --success: #16a34a;
-  --warning: #d97706;
-  --danger: #dc2626;
-  --info: #0284c7;
+  /* Borders & Dividers */
+  --border: #cbcfd4;
+  --border-subtle: #dcdfe3;
+  --border-strong: #9ca3af;
 
-  /* Radii / shadows */
-  --radius-sm: 10px;
-  --radius:    16px;
-  --radius-lg: 22px;
-  --radius-pill: 999px;
-  --shadow-sm: 0 1px 2px rgba(15,23,42,.06);
-  --shadow-md: 0 6px 20px rgba(15,23,42,.08);
-  --shadow-lg: 0 20px 45px -20px rgba(79,70,229,.35);
-  --shadow-glow: 0 0 0 4px rgba(99,102,241,.15);
+  /* Focus & Selection */
+  --focus-ring: #0e6258;
+  --selection-bg: #ccfbf1;
+  --selection-text: #0e6258;
 
-  /* Motion */
-  --ease: cubic-bezier(.4,0,.2,1);
-  --dur:  220ms;
+  /* Feedback Colors */
+  --success: #15803d;
+  --success-bg: #dcfce7;
+  --warning: #b45309;
+  --warning-bg: #fef3c7;
+  --danger: #b91c1c;
+  --danger-bg: #fee2e2;
+  --info: #0369a1;
+  --info-bg: #e0f2fe;
 
-  /* Type */
-  --font: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-display: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  /* Status Badge Tokens (Exceeds 4.5:1 contrast) */
+  --status-requested-bg: #fef3c7;
+  --status-requested-text: #78350f;
+  --status-accepted-bg: #e0f2fe;
+  --status-accepted-text: #0369a1;
+  --status-on_the_way-bg: #e0e7ff;
+  --status-on_the_way-text: #312e81;
+  --status-in_progress-bg: #fed7aa;
+  --status-in_progress-text: #7c2d12;
+  --status-completed-bg: #dcfce7;
+  --status-completed-text: #14532d;
+  --status-cancelled-bg: #fee2e2;
+  --status-cancelled-text: #991b1b;
 
-  /* Spacing scale */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
-  --space-8: 48px;
-  --space-10: 64px;
+  /* Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 9999px;
+
+  /* Elevation (Natural Soft Shadows with Offset & Blur) */
+  --shadow-sm: 0 1px 3px rgba(24, 26, 27, 0.05), 0 1px 2px rgba(24, 26, 27, 0.03);
+  --shadow-md: 0 4px 12px rgba(24, 26, 27, 0.07), 0 2px 4px rgba(24, 26, 27, 0.04);
+  --shadow-lg: 0 12px 28px rgba(24, 26, 27, 0.09), 0 4px 8px rgba(24, 26, 27, 0.04);
+
+  /* Transitions */
+  --transition-fast: 140ms ease-out;
+  --transition-base: 200ms ease-out;
 }
+
+/* ==========================================================================
+   Dark Theme Inversion ([data-theme="dark"])
+   Complete Parity with Dedicated Low-Glow Charcoal Surfaces
+   ========================================================================== */
 
 [data-theme="dark"] {
-  --bg: #0b1120;
-  --surface: #111c2e;
-  --surface-elevated: #172033;
-  --surface-muted: #1a2740;
-  --glass-bg: rgba(17,28,46,.72);
-  --glass-border: rgba(255,255,255,.06);
-  --text: #f1f5f9;
-  --text-soft: #e2e8f0;
-  --muted: #94a3b8;
-  --muted-2: #64748b;
-  --border: #1e293b;
-  --border-strong: #334155;
-  --shadow-md: 0 6px 20px rgba(0,0,0,.35);
-  --shadow-lg: 0 20px 45px -20px rgba(139,92,246,.35);
+  color-scheme: dark;
+
+  /* Brand Palette (Teal Brightened for Dark Mode) */
+  --brand-50: #042f2e;
+  --brand-100: #134e4a;
+  --brand-200: #115e59;
+  --brand-500: #2dd4bf;
+  --brand-600: #14b8a6;
+  --brand-700: #0d9488;
+  --brand-text: #042f2e;
+
+  --color-brand-50: #042f2e;
+  --color-brand-100: #134e4a;
+  --color-brand-500: #2dd4bf;
+  --color-brand-600: #14b8a6;
+  --color-brand-700: #0d9488;
+  --color-brand-text: #042f2e;
+
+  /* Accent (Warm Amber-Gold for Dark Mode) */
+  --accent-50: #451a03;
+  --accent-500: #f59e0b;
+  --accent-600: #fbbf24;
+  --accent-700: #fcd34d;
+  --accent-text: #181a1b;
+
+  /* Surfaces & Canvas */
+  --bg: #121416;
+  --bg-muted: #181b1e;
+  --surface: #1a1d20;
+  --surface-muted: #23272c;
+  --surface-raised: #22262a;
+
+  /* Typography & Foreground */
+  --text: #f3f4f6;
+  --text-dark: #f3f4f6;
+  --text-muted: #9ba1a8;
+  --muted: #9ba1a8;
+
+  /* Borders & Dividers */
+  --border: #383f47;
+  --border-subtle: #2d3238;
+  --border-strong: #4b5563;
+
+  /* Focus & Selection */
+  --focus-ring: #2dd4bf;
+  --selection-bg: #134e4a;
+  --selection-text: #f3f4f6;
+
+  /* Feedback Colors */
+  --success: #4ade80;
+  --success-bg: #052e16;
+  --warning: #fbbf24;
+  --warning-bg: #451a03;
+  --danger: #f87171;
+  --danger-bg: #450a0a;
+  --info: #38bdf8;
+  --info-bg: #082f49;
+
+  /* Status Badge Tokens (Exceeds 4.5:1 contrast) */
+  --status-requested-bg: #37280a;
+  --status-requested-text: #fde047;
+  --status-accepted-bg: #082f49;
+  --status-accepted-text: #7dd3fc;
+  --status-on_the_way-bg: #1e1b4b;
+  --status-on_the_way-text: #a5b4fc;
+  --status-in_progress-bg: #431407;
+  --status-in_progress-text: #fdba74;
+  --status-completed-bg: #052e16;
+  --status-completed-text: #86efac;
+  --status-cancelled-bg: #450a0a;
+  --status-cancelled-text: #fca5a5;
+
+  /* Elevation (Subtle Neutral Shadows without Halos) */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.55), 0 4px 8px rgba(0, 0, 0, 0.35);
 }
 
+/* Base Document Reset & Browser Surface Theming */
 html {
-  scroll-behavior: smooth;
+  font-family: var(--font-sans);
+  background-color: var(--bg);
+  color: var(--text);
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  font-family: var(--font);
-  background: var(--bg);
+  font-family: var(--font-sans);
+  background-color: var(--bg);
   color: var(--text);
-  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
 }
 
-h1, h2, h3, h4 {
-  font-family: var(--font-display);
-  letter-spacing: -.02em;
+::selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }

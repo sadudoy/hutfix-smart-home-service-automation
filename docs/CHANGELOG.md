@@ -79,5 +79,21 @@
 
 ---
 
-## Phase 8+: pending
+## Phase 8 — Impeccable-Driven Redesign & Dark-Mode Hardening
+- **Commit**: `33b3dad`
+- **Landed**:
+  - Full design system overhaul guided by the **Impeccable Design Standard** (`docs/DESIGN.md`, `PRODUCT.md`).
+  - Purged all AI visual tells: eliminated gradient text/fills, glassmorphism (`backdrop-filter`), hover bounce animations (`translateY`), glowing halo shadows, side-tab accent borders, and overused fonts.
+  - Selected **Manrope** font family across all 6 application pages with 1.25+ geometric typographic scale.
+  - Established Craft Pine (`#0e6258` light / `#14b8a6` dark) and Warm Terracotta (`#b45309` light / `#f59e0b` dark) semantic dual-theme palette.
+  - Hardened dark mode with strict mathematical WCAG AAA/AA contrast compliance: body text $\ge 16.7:1$, muted copy $\ge 6.4:1$, buttons $\ge 5.8:1$, borders $\ge 1.5:1$, and status badges $\ge 5.1:1$.
+  - 100% token symmetry between `:root` and `[data-theme="dark"]` for all color prefixes.
+  - Zero literal hex/rgb/hsl colors in `client/css/components.css` and `client/css/pages.css`.
+  - Zero inline `style=` attributes with color/background across all HTML pages, and zero dynamic style assignments in JS.
+  - Reduced Impeccable detector antipattern findings from **82 baseline** down to **0** (`.impeccable/detect-after.json`).
+  - Authored comprehensive verification test suite `test_phase8.js` (189 passing assertions) with 100% clean regression across Phases 0–7.
+
+---
+
+## Phase 9+: pending
 - Future planned enhancements outlined in `docs/ROADMAP.md`.
