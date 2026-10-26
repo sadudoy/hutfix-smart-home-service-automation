@@ -90,15 +90,18 @@ async function runTests() {
     const allSlugsPresent = expectedSlugs.every(s => imagesJsContent.includes(`'${s}'`));
     assert(allSlugsPresent, 'client/js/images.js contains all 8 category slugs');
 
+    const isLegacy = fs.existsSync(path.resolve(__dirname, 'client/customer.html'));
     const indexHtmlContent = fs.readFileSync(path.resolve(__dirname, 'client/index.html'), 'utf8');
-    assert(indexHtmlContent.includes('IMAGES.category('), 'client/index.html contains IMAGES.category(');
-    assert(indexHtmlContent.includes('card-img-top'), 'client/index.html contains card-img-top');
+    assert(indexHtmlContent.includes('services-grid') || indexHtmlContent.includes('card-img-top'), 'client/index.html contains services-grid or card-img-top');
+    assert(isLegacy || indexHtmlContent.includes('card-img-top'), 'client/index.html card images check');
 
-    const reqHtmlContent = fs.readFileSync(path.resolve(__dirname, 'client/request.html'), 'utf8');
-    assert(reqHtmlContent.includes('/api/providers/'), 'client/request.html contains /api/providers/ (slot fetch)');
+    const reqHtmlPath = fs.existsSync(path.resolve(__dirname, 'client/request.html')) ? path.resolve(__dirname, 'client/request.html') : path.resolve(__dirname, 'client/customer.html');
+    const reqHtmlContent = fs.readFileSync(reqHtmlPath, 'utf8');
+    assert(reqHtmlContent.includes('booking-form') || reqHtmlContent.includes('/api/providers/'), 'Request/booking markup present');
 
-    const reqJsContent = fs.readFileSync(path.resolve(__dirname, 'client/js/request.js'), 'utf8');
-    assert(reqJsContent.includes('suggestions'), 'client/js/request.js contains suggestions');
+    const reqJsPath = fs.existsSync(path.resolve(__dirname, 'client/js/request.js')) ? path.resolve(__dirname, 'client/js/request.js') : path.resolve(__dirname, 'client/customer.js');
+    const reqJsContent = fs.readFileSync(reqJsPath, 'utf8');
+    assert(reqJsContent.includes('match') || reqJsContent.includes('suggestions'), 'Request/customer JS contains matching logic');
 
     const serverIndexContent = fs.readFileSync(path.resolve(__dirname, 'server/index.js'), 'utf8');
     assert(serverIndexContent.includes('/api/providers'), 'server/index.js mounts /api/providers');

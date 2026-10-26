@@ -13,7 +13,7 @@
 | **Phase 6** | Bonus Layer & Documentation | **Done** | Automated invoices, star ratings, notifications, workload capping, docs foundation. |
 | **Phase 7** | Design System & Public Pages Overhaul | **Done** | Indigo/violet design tokens, dark mode toggle, complete overhaul of landing, login, and request UI. |
 | **Phase 8** | Impeccable Redesign & Dark-Mode Hardening | **Done** | Purged AI tells, Manrope font, Craft Pine/Warm Terracotta palette, WCAG AAA/AA contrast, 0 detector findings. |
-| **Phase 9** | Contrast Bugfix & Teal/Slate Palette Reset | **Done** | Teal/Slate brand palette, Instrument Serif + Geist typography, dark-mode contrast bugs fixed, zero hex in CSS. |
+| **Phase 9** | Legacy UI Restoration & Backend Rewiring | **Done** | Restored user prototype UI, purged artificial tokens, fixed mobile responsive bugs, rewired JS to Express/Postgres backend. |
 | **Phase 10** | Production Hardening & Cloud Deployment | **In Progress** | Supabase/Cloud PostgreSQL deployment, automated CI/CD pipeline, and audit logging. |
 
 ---

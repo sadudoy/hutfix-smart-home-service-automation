@@ -95,15 +95,15 @@
 
 ---
 
-## Phase 9 — Contrast Bugfix + Teal/Slate Brand Palette
+## Phase 9 — Legacy UI Restoration & Backend Rewiring
 - **Landed**:
-  - Calibrated Teal / Slate Trust brand palette reset in `client/css/tokens.css` with 100% token symmetry across `:root` and `[data-theme="dark"]`.
-  - Programmatic WCAG contrast compliance: body copy $\ge 16.8:1$ AAA, muted text $\ge 5.2:1$ AA, buttons $\ge 5.1:1$, borders $\ge 1.5:1$, and status badges $\ge 4.89:1$ across both light and dark themes.
-  - Typography reset: replaced legacy font stacks with Google Fonts **Instrument Serif** (display headings) and **Geist** (body copy & controls). Purged all references to `Manrope`, `Inter`, `Inter+Tight`, and `Plus+Jakarta+Sans`.
-  - Systematic contrast hardening across all 6 HTML pages: labels full-strength `var(--text)`, inputs visible with `var(--border-strong)` and explicit opacity-1 placeholder, visible underline link affordances, distinct disabled button states.
-  - Login page overhaul (`client/login.html`): fixed 7 dark-mode contrast bugs, added photographic warmth via `IMAGES.category('home-maintenance')`, removed developer jargon ('Advisory locks' & 'Live dispatch stepper' → direct customer benefits), simplified demo credentials row, preserved all 17 critical DOM IDs.
-  - Universal hardcoded color ban: zero literal hex colors outside of `var()` fallbacks in `components.css` and `pages.css`, zero inline `style="color:..."` attributes in any HTML page.
-  - Authored comprehensive verification test suite `test_phase9.js` (109 passing assertions) with 100% clean regression across Phases 0 through 8.
+  - Restored original user prototype UI from `client/_legacy/` (`index.html`, `customer.html`, `provider.html`, `admin.html`, and corresponding CSS files `global.css`, `auth.css`, `customer.css`, `provider.css`, `admin.css`).
+  - Purged artificial Phase 7/8 design system (`tokens.css`, `components.css`, `pages.css`, `theme.js`).
+  - Fixed original prototype bugs: trailing `k` character in `index.html`, added missing `logo.jpg`, responsive vertical stacking for `.timeline` on mobile screens (<= 600px), horizontal scroll wrapper for admin data tables, dynamic provider avatars via `ui-avatars.com`.
+  - Rewired client-side JavaScript to real PostgreSQL/Express backend endpoints via unified `client/js/api.js` (auth modal login & registration, dynamic category catalog, multi-factor smart matching, booking with advisory slot lock, customer request tracking with 5-stage stepper, notification polling, ratings submission, provider dashboard workflow progression, service settings, and admin metrics).
+  - Recreated `client/invoice.html` formatted with legacy styling tokens and dynamic invoice retrieval.
+  - Added required backend API endpoints: `GET /api/admin/stats`, `GET /api/provider/settings`, `PATCH /api/provider/settings`, and `GET /api/providers`.
+  - Authored comprehensive verification test suite `test_phase9.js` with full regression across Phases 0 through 8.
 
 ---
 

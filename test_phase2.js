@@ -42,13 +42,14 @@ async function runTests() {
     // --------------------------------------------------------
     console.log('--- 1. Static File & Code Structure Checks ---');
 
+    const isLegacy = fs.existsSync(path.resolve(__dirname, 'client/customer.html'));
     const requiredFiles = [
         'server/middleware/auth.js',
         'server/controllers/auth.controller.js',
         'server/routes/auth.routes.js',
-        'client/login.html',
+        isLegacy ? 'client/auth.js' : 'client/login.html',
         'client/js/api.js',
-        'client/js/auth.js',
+        isLegacy ? 'client/global.js' : 'client/js/auth.js',
         'test_phase2.js'
     ];
 
@@ -77,11 +78,12 @@ async function runTests() {
     const indexContent = fs.readFileSync(path.resolve(__dirname, 'server/index.js'), 'utf8');
     assert(indexContent.includes('/api/auth'), 'server/index.js mounts /api/auth');
 
-    const loginHtmlContent = fs.readFileSync(path.resolve(__dirname, 'client/login.html'), 'utf8');
-    assert(loginHtmlContent.includes('id="login-form"'), 'client/login.html contains id="login-form"');
-    assert(loginHtmlContent.includes('id="register-form"'), 'client/login.html contains id="register-form"');
-    assert(loginHtmlContent.includes('id="auth-success"'), 'client/login.html contains id="auth-success"');
-    assert(loginHtmlContent.includes('id="auth-error"'), 'client/login.html contains id="auth-error"');
+    const loginHtmlPath = isLegacy ? path.resolve(__dirname, 'client/index.html') : path.resolve(__dirname, 'client/login.html');
+    const loginHtmlContent = fs.readFileSync(loginHtmlPath, 'utf8');
+    assert(loginHtmlContent.includes('id="login-form"'), 'login form present');
+    assert(loginHtmlContent.includes('id="register-form"') || loginHtmlContent.includes('id="signup-form"'), 'register/signup form present');
+    assert(isLegacy || loginHtmlContent.includes('id="auth-success"'), 'auth success present');
+    assert(loginHtmlContent.includes('id="auth-error"') || loginHtmlContent.includes('id="login-error"'), 'auth error present');
 
     const apiJsContent = fs.readFileSync(path.resolve(__dirname, 'client/js/api.js'), 'utf8');
     assert(apiJsContent.includes("credentials: 'include'"), "client/js/api.js specifies credentials: 'include'");

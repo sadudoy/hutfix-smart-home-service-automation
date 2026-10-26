@@ -283,20 +283,48 @@ async function mine(req, res, next) {
         let params = [];
 
         if (req.user.role === 'customer') {
-            query = 'SELECT * FROM service_requests WHERE customer_id = $1 ORDER BY created_at DESC;';
+            query = `
+                SELECT sr.*, sc.name AS category_name, sc.slug AS category_slug,
+                       pu.full_name AS provider_name,
+                       r.stars AS rating_stars, r.comment AS rating_comment
+                FROM service_requests sr
+                LEFT JOIN service_categories sc ON sc.id = sr.category_id
+                LEFT JOIN providers p ON p.id = sr.assigned_provider_id
+                LEFT JOIN users pu ON pu.id = p.user_id
+                LEFT JOIN ratings r ON r.request_id = sr.id
+                WHERE sr.customer_id = $1
+                ORDER BY sr.created_at DESC;
+            `;
             params = [req.user.id];
         } else if (req.user.role === 'provider') {
             query = `
-                SELECT sr.*
+                SELECT sr.*, sc.name AS category_name, sc.slug AS category_slug,
+                       cu.full_name AS customer_name,
+                       r.stars AS rating_stars
                 FROM service_requests sr
+                LEFT JOIN service_categories sc ON sc.id = sr.category_id
+                LEFT JOIN users cu ON cu.id = sr.customer_id
                 JOIN providers p ON p.id = sr.assigned_provider_id
+                LEFT JOIN ratings r ON r.request_id = sr.id
                 WHERE p.user_id = $1
                 ORDER BY sr.created_at DESC;
             `;
             params = [req.user.id];
         } else {
             // Admin
-            query = 'SELECT * FROM service_requests ORDER BY created_at DESC;';
+            query = `
+                SELECT sr.*, sc.name AS category_name, sc.slug AS category_slug,
+                       cu.full_name AS customer_name,
+                       pu.full_name AS provider_name,
+                       r.stars AS rating_stars
+                FROM service_requests sr
+                LEFT JOIN service_categories sc ON sc.id = sr.category_id
+                LEFT JOIN users cu ON cu.id = sr.customer_id
+                LEFT JOIN providers p ON p.id = sr.assigned_provider_id
+                LEFT JOIN users pu ON pu.id = p.user_id
+                LEFT JOIN ratings r ON r.request_id = sr.id
+                ORDER BY sr.created_at DESC;
+            `;
         }
 
         const result = await pool.query(query, params);
@@ -765,6 +793,66 @@ async function providerRequests(req, res, next) {
     }
 }
 
+async function getProviderSettings(req, res, next) {
+    try {
+        const result = await pool.query(`
+            SELECT p.id, p.address AS area, u.full_name,
+                   COALESCE((SELECT ps.price FROM provider_services ps WHERE ps.provider_id = p.id LIMIT 1), 500) AS base_rate
+            FROM providers p
+            JOIN users u ON u.id = p.user_id
+            WHERE p.user_id = $1;
+        `, [req.user.id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ ok: false, error: 'provider not found' });
+        }
+        return res.json({ ok: true, settings: result.rows[0], provider: result.rows[0] });
+    } catch (err) {
+        return next(err);
+    }
+}
+
+async function updateProviderSettings(req, res, next) {
+    const client = await pool.connect();
+    try {
+        const { base_rate, service_charge, area, service_area } = req.body || {};
+        const charge = base_rate != null ? Number(base_rate) : (service_charge != null ? Number(service_charge) : null);
+        const loc = area || service_area;
+
+        await client.query('BEGIN');
+
+        const provRes = await client.query('SELECT id FROM providers WHERE user_id = $1;', [req.user.id]);
+        if (provRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            client.release();
+            return res.status(404).json({ ok: false, error: 'provider not found' });
+        }
+        const providerId = provRes.rows[0].id;
+
+        if (loc) {
+            await client.query('UPDATE providers SET address = $1 WHERE id = $2;', [loc, providerId]);
+        }
+
+        if (charge != null && !isNaN(charge)) {
+            await client.query('UPDATE provider_services SET price = $1 WHERE provider_id = $2;', [charge, providerId]);
+        }
+
+        await client.query('COMMIT');
+        client.release();
+
+        return res.status(200).json({
+            ok: true,
+            settings: {
+                base_rate: charge,
+                area: loc
+            }
+        });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        client.release();
+        return next(err);
+    }
+}
+
 module.exports = {
     match,
     create,
@@ -774,5 +862,7 @@ module.exports = {
     acceptRequest,
     rejectRequest,
     updateStatus,
-    providerRequests
+    providerRequests,
+    getProviderSettings,
+    updateProviderSettings
 };

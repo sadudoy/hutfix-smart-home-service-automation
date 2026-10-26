@@ -1,143 +1,80 @@
 # HutFix — Frontend & UI Component System
 
-## 1. Page Specifications
+## 1. Overview & Brand Identity
+
+HutFix features a clean, high-trust marketplace UI utilizing the classic Blue/Sky Blue palette, custom responsive stylesheets, and intuitive sidebar layouts for role dashboards:
+- **Primary Colors**: Deep Blue (`#003366`), Navy Blue (`#1a365d`), Royal Blue (`#0052cc`), Sky Blue (`#4a90e2`).
+- **Surfaces**: Light mode background (`#f4f7f6`), white surface (`#ffffff`), dark mode background (`#0b1120`), dark surface (`#1e293b`).
+- **Typography**: Inter / system sans-serif hierarchy.
+- **Architectural Paradigm**: Direct API connectivity via `window.API` (`client/js/api.js`), responsive flex/grid layouts with mobile adaptation.
+
+---
+
+## 2. Page Specifications
 
 ### `index.html` (Landing & Discovery Portal)
-- **Purpose**: Brand introduction, value proposition, live platform health status, and interactive 8-category exploration grid.
-- **Primary Sections**:
-  - Top navigation bar with login/dashboard shortcut and brand identity.
-  - Hero banner with headline, service search input, and dynamic quick CTA cards.
-  - Category showcase grid featuring high-definition photography loaded via `window.IMAGES.category(slug)` and base starting prices.
-  - Trust indicators, safety guarantee, and responsive footer.
-- **Components Used**: Service category cards, search filters, health pill badge.
+- **Purpose**: Brand introduction, live service category exploration, technician marketplace, and integrated auth / booking modals.
+- **Key Sections**:
+  - Navbar with brand logo icon, services navigation, dark mode toggle (`#theme-toggle`), and dynamic user menu (`#nav-auth-area`).
+  - Hero header with search bar (`#hero-search`, `#search-btn`) and value propositions.
+  - Premium Services Grid (`.services-grid`): dynamic category cards (`.service-card.category-trigger`) populated from `GET /api/services`.
+  - Available Technicians Section (`#marketplace-section`, `#gigs-grid`): displays available specialists with ratings, prices, and "Book Now" buttons.
+  - Direct Booking Modal (`#booking-modal`, `#direct-booking-form`): date, time, location, details, and multipart booking submission via `POST /api/requests`.
+  - Auth Modal (`#auth-modal`): tabbed login (`#login-form`) and signup (`#signup-form`) with role selection.
 
-### `login.html` (Unified Role Authentication)
-- **Purpose**: Role-aware login and registration portal with one-click demo role fillers.
-- **Primary Sections**:
-  - Centered auth card with tabbed switch between "Sign In" and "Create Account".
-  - One-click demo credentials bar (Customer, Provider, Admin).
-  - Post-login role redirect router (`#goto-dashboard`).
-- **Components Used**: Form controls, credential pills, feedback alerts.
+### `customer.html` (Customer Dashboard & Service Tracking)
+- **Purpose**: Dedicated customer portal replacing standalone `tracking.html` and `request.html` with a unified sidebar layout.
+- **Key Sections**:
+  - Top Navbar: Brand logo, dark mode toggle (`#theme-toggle`), notifications bell (`#notif-btn`, `#notif-badge`, `#notif-dropdown`, `#notif-list`), and customer profile avatar.
+  - Sidebar Navigation: New Request tab (`#section-book`), My Bookings history tab (`#section-history`), My Profile tab (`#section-profile`), Browse Services link, and Logout (`#logout-btn`).
+  - Smart Booking Form (`#booking-form`): category selector from `GET /api/services`, date/time picker, urgency selector (`#book-urgency`), location, and details.
+  - Match Result Box (`#match-result-container`, `#match-details`): displays best ranked provider from `POST /api/requests/match` with distance and price. "Confirm" triggers `POST /api/requests`.
+  - Booking History (`#bookings-list`): renders customer orders with a 5-stage visual stepper (`.timeline` with `Requested -> Accepted -> On the Way -> In Progress -> Completed`).
+  - Order Actions: "View Invoice" link (`/invoice.html?id=...`), "Cancel Booking" for pending jobs, and "Leave a Review" opening `#review-modal` (`POST /api/ratings/by-request/:id`).
 
-### `request.html` (Smart Matching & Slot Booking)
-- **Purpose**: Multi-step booking workflow from location/category intake to smart ranking and slot reservation.
-- **Primary Sections**:
-  - Service intake form (category select, date picker, time window, address, urgency toggle, optional image upload).
-  - Ranked recommendations list with real-time match scores and breakdown badges.
-  - Slot selector grid generated via `/api/providers/:id/slots`.
-  - Booking confirmation panel with transparent cost breakdown.
-- **Components Used**: Form steppers, candidate ranking cards, slot chips, image uploader.
+### `provider.html` (Provider Operations & Settings Dashboard)
+- **Purpose**: Service technician command center for incoming jobs, ongoing tasks, work history, and pricing/area configuration.
+- **Key Sections**:
+  - Top Navbar: Brand logo, dark mode toggle, and provider avatar (`ui-avatars.com`).
+  - Sidebar Navigation: Incoming Requests (`#section-requests`, badge `#request-badge`), Active Jobs (`#section-active`), Job History (`#section-history`), Profile (`#section-profile`), Service Settings (`#section-services`), and Logout (`#logout-btn`).
+  - Incoming Requests (`#requests-list`): cards populated from `GET /api/provider/requests?bucket=incoming`, with "Accept" (`POST /api/requests/:id/accept`) and "Reject" (`POST /api/requests/:id/reject`).
+  - Active Jobs (`#active-jobs-list`): cards populated from `GET /api/provider/requests?bucket=active`. Includes "Next Step" status progression button calling `PATCH /api/requests/:id/status` (`accepted` -> `on_the_way` -> `in_progress` -> `completed`).
+  - Job History (`#history-list`): completed and cancelled orders with invoice links.
+  - Service Settings (`#service-settings-form`): configure service charge / base rate (`#service-charge`), service area (`#service-area`), quick price presets (`.price-preset`), and live display (`#display-charge`, `#display-area`), persisted via `PATCH /api/provider/settings`.
 
-### `tracking.html` (Customer Service Tracking Portal)
-- **Purpose**: Real-time status tracking for customer service requests with live progression stepper, timeline, notifications bell, and integrated rating & invoice actions.
-- **Primary Sections**:
-  - Top navigation with real-time notifications bell dropdown (`#notif-bell`, `#notif-count`, `#notif-panel`).
-  - Left sidebar listing customer's active and historical service requests with thumbnail badges.
-  - Right detail panel featuring 5-stage progression stepper, technician profile card (`window.IMAGES.providerAvatar`), location details, and status history timeline (`#timeline`).
-  - Action footer featuring cancellation, "View invoice" link, and interactive 5-star rating modal.
-- **Components Used**: 5-stage stepper, status badges, timeline nodes, notifications dropdown, star rating picker modal.
-
-### `provider.html` (Provider Operations & Task Dashboard)
-- **Purpose**: Specialist management portal for reviewing incoming jobs, claiming assignments, and updating fulfillment stages.
-- **Primary Sections**:
-  - Top dark navigation bar with real-time notifications bell (`#notif-bell`, `#notif-count`).
-  - 3-bucket tabbed view: Incoming, Active Tasks, History.
-  - Incoming card deck sorted client-side by urgency (urgent first with red pulsing badge) and scheduled date.
-  - Task cards with customer phone, address, scheduled time, and status progression action buttons.
-- **Components Used**: Tab pills with counter badges, pulsing urgent pills (`.pulse-urgent`), task cards, action buttons.
+### `admin.html` (Platform Administration & Master Ledger)
+- **Purpose**: Marketplace administrator control panel for monitoring platform KPIs and master tables.
+- **Key Sections**:
+  - Top Navbar: Admin shield logo, dark mode toggle, and admin avatar.
+  - Sidebar Navigation: Overview tab, Master Ledger tab (`#section-bookings`), Providers tab (`#section-providers`), Users tab (`#section-users`), and Logout (`#logout-btn`).
+  - KPI Stat Cards: Total Bookings (`#stat-total-bookings`), Platform Revenue (`#stat-total-revenue`), Active Providers (`#stat-total-providers`), Registered Users (`#stat-total-users`), populated via `GET /api/admin/stats`.
+  - Responsive Data Tables: Master bookings ledger (`#admin-bookings-table`), provider directory (`#admin-providers-table`), and user accounts (`#admin-users-table`) wrapped in `<div class="table-responsive" style="overflow-x: auto;">` for horizontal mobile scrolling.
 
 ### `invoice.html` (Print-Ready Service Invoice)
-- **Purpose**: Clean, A4-styled printable invoice view for completed service requests.
-- **Primary Sections**:
-  - Top action bar with "Back to tracking" and "Download / Print" (`window.print()`).
-  - Invoice header with HutFix logo, INV number, and issue timestamp.
-  - Two-column Bill To / Service Provider details.
-  - Itemized table with description, subtotal, 5% platform tax, and total in BDT.
-- **Components Used**: Printable sheet container, tabular ledger, print stylesheet overrides (`@media print`).
+- **Purpose**: Clean, professional printable receipt for completed service requests.
+- **Key Sections**:
+  - Printable invoice container (`.invoice-card`) with HutFix header, invoice number (`#invoice-num`), and issue date (`#invoice-date`).
+  - Customer and Provider contact information.
+  - Tabular breakdown: Service delivery subtotal (`#service-subtotal`), 5% platform tax (`#service-tax`), and total due (`#service-total`).
+  - Action footer with "Back to Dashboard" and "Print Invoice" (`window.print()`).
 
 ---
 
-## 2. Design Tokens (`client/css/tokens.css` — Phase 9 Teal/Slate)
+## 3. Stylesheet Organization
 
-Every CSS token variable declared in `:root` and `[data-theme="dark"]`:
-- `--bg`: `#f7f9f9` (Light) / `#031716` (Dark)
-- `--surface`: `#ffffff` (Light) / `#032F30` (Dark)
-- `--surface-muted`: `#eef4f5` (Light) / `#0A7075` (Dark)
-- `--text`: `#031716` (Light) / `#f1f5f9` (Dark)
-- `--text-muted`: `#274D60` (Light) / `#6BA3BE` (Dark)
-- `--text-subtle`: `#5590ad` (Light) / `#4a7a8c` (Dark)
-- `--border`: `#c5d5d8` (Light) / `#205558` (Dark)
-- `--border-strong`: `#9fb8bf` (Light) / `#2a5c5e` (Dark)
-- `--accent`: `#0A7075` (Light) / `#0C969C` (Dark)
-- `--accent-hover`: `#0C969C` (Light) / `#6BA3BE` (Dark)
-- `--accent-text`: `#ffffff` (Light) / `#031716` (Dark)
-- `--font-display`: `'Instrument Serif', Georgia, 'Times New Roman', serif`
-- `--font-body`: `'Geist', system-ui, -apple-system, sans-serif`
-- `--radius`: `10px` (Default component border radius)
-- `--shadow-sm`: `0 1px 3px rgba(3, 23, 22, 0.05)` (Subtle surface shadow)
-- `--shadow-md`: `0 4px 12px rgba(3, 23, 22, 0.07)` (Elevated modal and panel shadow)
+- `client/global.css`: Core design variables, CSS reset, typography, navbar, button styles, modal overlays, card containers, and dark mode overrides (`[data-theme="dark"]`).
+- `client/auth.css`: Styles for the login and registration modal, input groups, role selection radio switches, and error feedback pills.
+- `client/customer.css`: Styles for the customer dashboard, sidebar layout, match results card, 5-stage `.timeline` stepper (with vertical mobile stacking `@media (max-width: 600px)`), and status badges.
+- `client/provider.css`: Styles for technician task boards, status indicators, and service settings forms.
+- `client/admin.css`: Styles for administrator KPI stat cards, metric counters, data tables, and horizontal table scroll wrappers.
 
 ---
 
-## 3. Status Badge Color Palette (Exceeds 4.5:1 WCAG AA)
+## 4. API Client & JavaScript Modules
 
-| Status Key | Class Name | Light Bg | Light Text | Dark Bg | Dark Text | Visual Meaning |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `requested` | `.status-requested` | `#fef3c7` | `#78350f` | `#37280a` | `#fde047` | Awaiting provider review |
-| `accepted` | `.status-accepted` | `#e0f2f2` | `#085559` | `#053438` | `#6BA3BE` | Provider confirmed assignment |
-| `on_the_way` | `.status-on_the_way` | `#e2e8f0` | `#1e293b` | `#1e293b` | `#cbd5e1` | Specialist en route |
-| `in_progress` | `.status-in_progress` | `#fed7aa` | `#7c2d12` | `#431407` | `#fdba74` | Service execution underway |
-| `completed` | `.status-completed` | `#e0f2f2` | `#032F30` | `#053438` | `#2dd4bf` | Job successfully fulfilled |
-| `cancelled` | `.status-cancelled` | `#fee2e2` | `#991b1b` | `#450a0a` | `#fca5a5` | Request terminated & slot freed |
-
----
-
-## 4. Design System (Phase 9 — Teal / Slate Trust Direction)
-
-Phase 9 established the **Teal / Slate Trust Direction**, pairing humanist **Instrument Serif** display typography with **Geist** body typography, eliminating all dark-mode contrast failures (every text element exceeds 4.5:1, body copy exceeds 13:1), and replacing flat/developer jargon copy with straightforward customer benefits. For full details, see [docs/DESIGN.md](docs/DESIGN.md).
-
-### Design Tokens (`client/css/tokens.css`)
-
-- **Color Scales**:
-  - `--brand-50` through `--brand-700`: Craft Pine primary palette (`--brand-600: #0e6258` light / `#14b8a6` dark, `--brand-text: #ffffff` light / `#042f2e` dark).
-  - `--accent-50` through `--accent-600`: Warm Terracotta / Amber palette (`--accent-500: #b45309` light / `#f59e0b` dark).
-  - High-contrast surfaces: `--bg` (`#fbfbfa` / `#0c0e12`), `--surface` (`#ffffff` / `#141820`), `--surface-muted` (`#f3f4f3` / `#1c222c`).
-  - Container borders: `--border` (`#e2e8e5` / `#262e3b`), `--border-strong` (`#c4cec9` / `#3b4759`).
-- **Radii & Shadows**:
-  - `--radius-sm` (6px), `--radius` (10px), `--radius-lg` (16px), `--radius-pill` (9999px).
-  - Crisp, subtle elevations without glowing halos: `--shadow-sm`, `--shadow-md`.
-- **Typography & Motion**:
-  - Font family: `'Manrope', system-ui, -apple-system, sans-serif` across display headings, UI controls, and body text (0 detector findings).
-  - Predictable durations: `--transition-fast` (120ms ease), `--transition-base` (200ms ease). Zero bouncing `translateY` hover lifts.
-
-### Component Library (`client/css/components.css`)
-
-- `.app-nav`: Crisp, solid navigation bar with high-contrast text and clean borders (no blurred glassmorphism).
-- `.btn-brand`: Direct pine-colored button with WCAG AA/AAA contrast and clear 2px focus ring.
-- `.hero`: Editorial typography hierarchy, contextual quick jump, and trust metrics.
-- `.category-card`: Sturdy service card with crisp image thumbnail, category metadata, and price tag.
-- `.auth-shell`: Two-column auth container with brand value proposition and direct login/register tab switcher.
-- `.theme-toggle`: Accessible circular toggle button with `aria-label` and dynamic `<meta name="theme-color">` synchronizer.
-- `.skeleton`: High-contrast content loading placeholder.
-- `.chip`: Compact pill badge for tags, ratings, and filters.
-- `.footer`: Subtle surface-muted footer with platform navigation and copyright.
-
-### Dark Mode Architecture & Contrast Hardening
-
-- **Root Attribute**: Governed by `document.documentElement.setAttribute('data-theme', 'light' | 'dark')`.
-- **Contrast Parity**: All theme tokens mathematically validated for WCAG AA/AAA compliance:
-  - Body text on background: **16.87:1** (light) / **16.78:1** (dark).
-  - Muted text on background: **6.40:1** (light) / **7.08:1** (dark).
-  - Button text on brand: **7.22:1** (light) / **5.81:1** (dark).
-  - Surface borders: **1.57:1** (light) / **1.59:1** (dark).
-- **Theme Controller (`client/js/theme.js`)**:
-  - Self-contained IIFE executed in `<head>` to prevent FOUT.
-  - Updates `<meta name="theme-color">` dynamically.
-  - Supports URL parameter override (`?theme=dark` or `?theme=light`).
-  - Persists preference in `localStorage` under `hutfix_theme`.
-
-### Responsive Breakpoints (`client/css/pages.css`)
-
-- **Desktop (> 992px)**: 4-column service grid (`categories-grid`), 2-column request booking grid (`request-grid`), side-by-side tracking workbench.
-- **Tablet (<= 992px)**: `.request-grid` and `.tracking-grid` collapse to single column with sticky panels transitioning to document flow; categories grid collapses to 2 columns.
-- **Mobile (<= 576px)**: Single-column full-width layouts with touch-friendly controls and minimum 16px internal padding to ensure 0 cramped-padding antipatterns.
+- `client/js/api.js`: Unified HTTP client `window.API` supporting `request(path, opts)`, `get(path)`, `post(path, body)`, and `patch(path, body)` with credentials and FormData handling.
+- `client/global.js`: Landing page controller, category rendering, technician search, booking modal, auth state detection, and theme toggle.
+- `client/auth.js`: Authentication modal controller connecting `#login-form` and `#signup-form` to `/api/auth/login` and `/api/auth/register`.
+- `client/customer.js`: Customer dashboard controller for service matching, request creation, order history tracking, reviews, and notifications.
+- `client/provider.js`: Provider dashboard controller for incoming requests, status progression, and service settings.
+- `client/admin.js`: Administrator dashboard controller fetching stats and master tables.
