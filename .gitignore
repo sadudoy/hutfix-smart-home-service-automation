@@ -11,3 +11,4 @@ client/_legacy/node_modules/
 .firebase/
 firebase-debug.log
 server/uploads/
+.gemini/

@@ -60,7 +60,7 @@
 ---
 
 ## Phase 6 — Bonus Layer & Documentation Protocol
-- **Commit**: *(current phase)*
+- **Commit**: `c228575`
 - **Landed**:
   - Additive notification engine (`database/migrations/001_add_notifications.sql`, `server/services/notifications.service.js`, `server/controllers/notifications.controller.js`).
   - Automated financial invoicing (`server/controllers/invoices.controller.js`, `client/invoice.html`).
@@ -70,5 +70,14 @@
 
 ---
 
-## Phase 7+: pending
+## Phase 7 — Design System & Public Pages Overhaul
+- **Commit**: `858d29b`
+- **Landed**:
+  - Comprehensive design system with Indigo/Violet token palette (`tokens.css`), surface elevation, Plus Jakarta Sans display typography, and 12 reusable components (`components.css`).
+  - Complete modern redesign of public-facing flows: landing discovery portal (`client/index.html`), split authentication gateway (`client/login.html`), and intake/matching cockpit (`client/request.html`).
+  - System-wide dark-mode controller (`client/js/theme.js`) wired to persistent storage (`localStorage.hutfix_theme`), OS preferences, and accessible toggles across all application pages.
+
+---
+
+## Phase 8+: pending
 - Future planned enhancements outlined in `docs/ROADMAP.md`.

@@ -88,3 +88,60 @@ Every CSS token variable declared in `:root`:
 | `in_progress` | `.status-in_progress` | `#fce7f3` | `#9d174d` | Service execution underway |
 | `completed` | `.status-completed` | `#d1fae5` | `#065f46` | Job successfully fulfilled |
 | `cancelled` | `.status-cancelled` | `#fee2e2` | `#991b1b` | Request terminated & slot freed |
+
+---
+
+## 4. Design System (Phase 7)
+
+Phase 7 introduces a modern visual design token scale, component library, and first-class dark-mode support layered on top of Bootstrap 5.
+
+### Design Tokens (`client/css/tokens.css`)
+
+- **Color Scales**:
+  - `--brand-50` through `--brand-700`: Indigo primary scale (`--brand-500: #6366f1`, `--brand-600: #4f46e5`, `--brand-700: #4338ca`).
+  - `--violet-500` & `--violet-600`: Rich violet secondary accent (`#8b5cf6`, `#7c3aed`).
+  - `--accent-gradient`: `linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%)` for hero gradients, buttons, and brand titles.
+  - `--accent-gradient-soft`: Soft translucent gradient for ambient backdrops and hover rings.
+- **Surfaces & Glass**:
+  - `--bg`, `--bg-muted`, `--surface`, `--surface-muted`: High-contrast semantic surface colors.
+  - `--glass-bg`: Translucent frosted backdrop (`rgba(255, 255, 255, 0.85)` / `rgba(15, 23, 42, 0.85)`).
+  - `--glass-border`: Subtle 1px frosted container outline (`rgba(255, 255, 255, 0.3)` / `rgba(255, 255, 255, 0.08)`).
+- **Radii & Shadows**:
+  - `--radius-sm` (8px), `--radius` (14px), `--radius-lg` (20px), `--radius-pill` (9999px).
+  - `--shadow-sm`, `--shadow-md`, `--shadow-lg`, `--shadow-glow` (indigo diffused glow).
+- **Typography & Motion**:
+  - `--font-display`: `'Plus Jakarta Sans', system-ui, sans-serif` for titles and display headings.
+  - `--font-sans`: `'Inter', system-ui, sans-serif` for readable body text and numeric ledgers.
+  - `--transition-fast` (150ms), `--transition-base` (200ms), `--transition-smooth` (300ms cubic-bezier).
+
+### Component Library (`client/css/components.css`)
+
+- `.app-nav`: Sticky glassmorphic navigation bar with blurred backdrop filter.
+- `.btn-brand`: Primary gradient-backed interactive button with hover elevation and active state.
+- `.hero`: Impactful hero section with typography hierarchy, search intake, and dynamic image collage.
+- `.category-card`: Rounded service card with smooth image scaling, category badge, and starting price.
+- `.auth-shell`: Two-column auth container with ambient gradient branding and centered card.
+- `.theme-toggle`: Glass circular toggle button triggering light/dark mode with icon rotation.
+- `.skeleton`: Animated shimmer loading placeholder for asynchronous queries.
+- `.chip`: Compact pill badge for tags, status highlights, and slot filters.
+- `.stat-block`: Clean metric block displaying numbers and descriptive subtext.
+- `.feature-card`: Three-stage process step card with gradient icon backing.
+- `.form-control-lg`: Elevated rounded input control with brand glow focus ring.
+- `.footer`: Modern full-bleed footer with platform navigation, copyright, and live health status badge.
+
+### Dark Mode Architecture
+
+- **Root Attribute**: Theme state is governed by `document.documentElement.setAttribute('data-theme', 'light' | 'dark')`.
+- **Controller (`client/js/theme.js`)**:
+  - Encapsulated in `window.HutTheme` IIFE.
+  - Evaluates saved theme from `localStorage.getItem('hutfix_theme')`.
+  - Falls back to OS system preference `window.matchMedia('(prefers-color-scheme: dark)')`.
+  - Automatically updates `.theme-toggle` icons across light (`bi-moon-stars`) and dark (`bi-sun`) states.
+  - Self-registers click listeners on any element with `.theme-toggle`.
+- **CSS Overrides**: `[data-theme="dark"]` in `tokens.css` swaps background canvas (`#0b0f19`), card surfaces (`#111827`), text slate (`#f8fafc`), and adjusts borders without touching business markup.
+
+### Responsive Breakpoints (`client/css/pages.css`)
+
+- **Desktop (> 992px)**: Multi-column side-by-side grids (3-column intake & match layout on request page, 4-column service cards, 3-column feature steps).
+- **Tablet (<= 992px)**: `.request-grid` stacks intake form above sticky recommendations panel; hero collage simplifies to ambient preview; categories grid collapses to 2 columns.
+- **Mobile (<= 576px)**: Single-column full-width layouts; form controls optimize for touch targets; trust-strip and stats reorient vertically; sticky match panel sits flush with safe margins.

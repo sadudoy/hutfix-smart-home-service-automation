@@ -11,9 +11,9 @@
 | **Phase 4** | Slot Scheduling & Concurrency | **Done** | 1-hour slot generation, PostgreSQL advisory locks against race conditions, suggestions. |
 | **Phase 5** | Lifecycle & Role Dashboards | **Done** | Finite state machine, 5-stage customer stepper, 3-bucket provider management. |
 | **Phase 6** | Bonus Layer & Documentation | **Done** | Automated invoices, star ratings, notifications, workload capping, docs foundation. |
-| **Phase 7** | Real-Time Live Updates & Webhooks | **Pending** | Server-Sent Events (SSE) for zero-latency live tracking and instant notifications. |
-| **Phase 8** | Admin Analytics & Provider Onboarding | **Pending** | Administrative dashboard with revenue metrics, dispute handling, and provider KYC. |
-| **Phase 9** | Production Hardening & Supabase Deployment | **Pending** | Cloud PostgreSQL deployment, automated CI/CD pipeline, and audit logging. |
+| **Phase 7** | Design System & Public Pages Overhaul | **Done** | Indigo/violet design tokens, dark mode toggle, complete overhaul of landing, login, and request UI. |
+| **Phase 8** | Operational Dashboards & Admin Analytics | **In Progress** | Customer tracking portal overhaul, provider operations deck, print invoice refinement, and admin telemetry. |
+| **Phase 9** | Production Hardening & Cloud Deployment | **Pending** | Supabase/Cloud PostgreSQL deployment, automated CI/CD pipeline, and audit logging. |
 
 ---
 

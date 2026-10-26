@@ -1,32 +1,95 @@
 :root {
-  --brand-500: #2563eb;
-  --brand-600: #1d4ed8;
-  --brand-700: #1e40af;
+  /* Brand */
+  --brand-50:  #eef2ff;
+  --brand-100: #e0e7ff;
+  --brand-500: #6366f1;
+  --brand-600: #4f46e5;
+  --brand-700: #4338ca;
+  --violet-500: #8b5cf6;
+  --violet-600: #7c3aed;
+  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --accent-gradient-soft: linear-gradient(135deg, rgba(99,102,241,.08) 0%, rgba(139,92,246,.08) 100%);
+
+  /* Surfaces */
   --bg: #f8fafc;
   --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-muted: #f1f5f9;
+  --glass-bg: rgba(255,255,255,.72);
+  --glass-border: rgba(255,255,255,.35);
+
+  /* Text */
   --text: #0f172a;
+  --text-soft: #1e293b;
   --muted: #64748b;
+  --muted-2: #94a3b8;
+
+  /* Borders / status */
   --border: #e2e8f0;
+  --border-strong: #cbd5e1;
   --success: #16a34a;
   --warning: #d97706;
   --danger: #dc2626;
-  --radius: 14px;
+  --info: #0284c7;
+
+  /* Radii / shadows */
+  --radius-sm: 10px;
+  --radius:    16px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
   --shadow-sm: 0 1px 2px rgba(15,23,42,.06);
-  --shadow-md: 0 8px 24px rgba(15,23,42,.08);
+  --shadow-md: 0 6px 20px rgba(15,23,42,.08);
+  --shadow-lg: 0 20px 45px -20px rgba(79,70,229,.35);
+  --shadow-glow: 0 0 0 4px rgba(99,102,241,.15);
+
+  /* Motion */
+  --ease: cubic-bezier(.4,0,.2,1);
+  --dur:  220ms;
+
+  /* Type */
   --font: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Inter', sans-serif;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-8: 48px;
+  --space-10: 64px;
 }
 
 [data-theme="dark"] {
-  --bg: #0f172a;
-  --surface: #1e293b;
+  --bg: #0b1120;
+  --surface: #111c2e;
+  --surface-elevated: #172033;
+  --surface-muted: #1a2740;
+  --glass-bg: rgba(17,28,46,.72);
+  --glass-border: rgba(255,255,255,.06);
   --text: #f1f5f9;
+  --text-soft: #e2e8f0;
   --muted: #94a3b8;
-  --border: #334155;
+  --muted-2: #64748b;
+  --border: #1e293b;
+  --border-strong: #334155;
+  --shadow-md: 0 6px 20px rgba(0,0,0,.35);
+  --shadow-lg: 0 20px 45px -20px rgba(139,92,246,.35);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   font-family: var(--font);
   background: var(--bg);
   color: var(--text);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  letter-spacing: -.02em;
+}
