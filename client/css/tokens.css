@@ -1,15 +1,16 @@
 /* ==========================================================================
-   HutFix Design Tokens — Impeccable Craft Direction (Phase 8)
-   Typography: Manrope
-   Palette: Craft Pine & Warm Terracotta (No AI purple, no gradient text)
+   HutFix Design Tokens — Teal / Slate Trust Direction (Phase 9)
+   Typography: Instrument Serif (Display) + Geist (Body)
+   Palette: Calibrated Teal & Slate Trust Palette (WCAG AAA/AA Contrast Guaranteed)
    ========================================================================== */
 
 :root {
   color-scheme: light;
 
   /* Typography */
-  --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-sans: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --font-body: 'Geist', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Geist', system-ui, -apple-system, sans-serif;
   --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
 
   /* Type Scale */
@@ -23,78 +24,91 @@
   --font-size-4xl: 2.75rem;    /* 44px */
 
   /* Line Heights */
-  --leading-tight: 1.2;
+  --leading-tight: 1.05;
   --leading-snug: 1.35;
   --leading-normal: 1.5;
   --leading-relaxed: 1.625;
 
-  /* Brand Palette (Craft Pine) */
-  --brand-50: #f0fdfa;
+  /* Brand Palette (Teal/Slate Trust Direction) */
+  --brand-50: #e0f2f2;
   --brand-100: #ccfbf1;
   --brand-200: #99f6e4;
-  --brand-500: #0d9488;
-  --brand-600: #0e6258;
-  --brand-700: #0b4f46;
+  --brand-400: #2dd4bf;
+  --brand-500: #0C969C;
+  --brand-600: #0A7075;
+  --brand-700: #085559;
+  --brand-950: #031716;
   --brand-text: #ffffff;
 
-  --color-brand-50: #f0fdfa;
+  --color-brand-50: #e0f2f2;
   --color-brand-100: #ccfbf1;
-  --color-brand-500: #0d9488;
-  --color-brand-600: #0e6258;
-  --color-brand-700: #0b4f46;
+  --color-brand-500: #0C969C;
+  --color-brand-600: #0A7075;
+  --color-brand-700: #085559;
   --color-brand-text: #ffffff;
 
-  /* Accent (Warm Terracotta) */
-  --accent-50: #fffbeb;
-  --accent-500: #d97706;
-  --accent-600: #b45309;
-  --accent-700: #92400e;
+  --color-white: #ffffff;
+  --color-black: #031716;
+
+  /* Accent (Teal / Slate) */
+  --accent: #0A7075;
+  --accent-hover: #0C969C;
   --accent-text: #ffffff;
+  --accent-soft: #e0f2f2;
+  --accent-50: #e0f2f2;
+  --accent-500: #0C969C;
+  --accent-600: #0A7075;
+  --accent-700: #085559;
 
   /* Surfaces & Canvas */
-  --bg: #fbfbfa;
-  --bg-muted: #f4f4f2;
+  --bg: #f7f9f9;
+  --bg-muted: #eef4f5;
   --surface: #ffffff;
-  --surface-muted: #f3f4f3;
+  --surface-muted: #eef4f5;
   --surface-raised: #ffffff;
 
   /* Typography & Foreground */
-  --text: #181a1b;
-  --text-dark: #181a1b;
-  --text-muted: #595d62;
-  --muted: #595d62;
+  --text: #031716;
+  --text-dark: #031716;
+  --text-muted: #274D60;
+  --text-subtle: #5590ad;
+  --muted: #274D60;
 
   /* Borders & Dividers */
-  --border: #cbcfd4;
-  --border-subtle: #dcdfe3;
-  --border-strong: #9ca3af;
+  --border: #c5d5d8;
+  --border-subtle: #d1dfe2;
+  --border-strong: #9fb8bf;
 
   /* Focus & Selection */
-  --focus-ring: #0e6258;
-  --selection-bg: #ccfbf1;
-  --selection-text: #0e6258;
+  --focus-ring: #0A7075;
+  --selection-bg: #e0f2f2;
+  --selection-text: #0A7075;
 
   /* Feedback Colors */
-  --success: #15803d;
-  --success-bg: #dcfce7;
-  --warning: #b45309;
+  --success: #0A7075;
+  --success-soft: #e0f2f2;
+  --success-bg: #e0f2f2;
+  --warning: #d97706;
+  --warning-soft: #fef3c7;
   --warning-bg: #fef3c7;
   --danger: #b91c1c;
+  --danger-soft: #fee2e2;
   --danger-bg: #fee2e2;
-  --info: #0369a1;
-  --info-bg: #e0f2fe;
+  --info: #274D60;
+  --info-soft: #e2e8f0;
+  --info-bg: #e2e8f0;
 
   /* Status Badge Tokens (Exceeds 4.5:1 contrast) */
   --status-requested-bg: #fef3c7;
   --status-requested-text: #78350f;
-  --status-accepted-bg: #e0f2fe;
-  --status-accepted-text: #0369a1;
-  --status-on_the_way-bg: #e0e7ff;
-  --status-on_the_way-text: #312e81;
+  --status-accepted-bg: #e0f2f2;
+  --status-accepted-text: #085559;
+  --status-on_the_way-bg: #e2e8f0;
+  --status-on_the_way-text: #1e293b;
   --status-in_progress-bg: #fed7aa;
   --status-in_progress-text: #7c2d12;
-  --status-completed-bg: #dcfce7;
-  --status-completed-text: #14532d;
+  --status-completed-bg: #e0f2f2;
+  --status-completed-text: #032F30;
   --status-cancelled-bg: #fee2e2;
   --status-cancelled-text: #991b1b;
 
@@ -106,9 +120,9 @@
   --radius-pill: 9999px;
 
   /* Elevation (Natural Soft Shadows with Offset & Blur) */
-  --shadow-sm: 0 1px 3px rgba(24, 26, 27, 0.05), 0 1px 2px rgba(24, 26, 27, 0.03);
-  --shadow-md: 0 4px 12px rgba(24, 26, 27, 0.07), 0 2px 4px rgba(24, 26, 27, 0.04);
-  --shadow-lg: 0 12px 28px rgba(24, 26, 27, 0.09), 0 4px 8px rgba(24, 26, 27, 0.04);
+  --shadow-sm: 0 1px 3px rgba(3, 23, 22, 0.05), 0 1px 2px rgba(3, 23, 22, 0.03);
+  --shadow-md: 0 4px 12px rgba(3, 23, 22, 0.07), 0 2px 4px rgba(3, 23, 22, 0.04);
+  --shadow-lg: 0 12px 28px rgba(3, 23, 22, 0.09), 0 4px 8px rgba(3, 23, 22, 0.04);
 
   /* Transitions */
   --transition-fast: 140ms ease-out;
@@ -117,79 +131,92 @@
 
 /* ==========================================================================
    Dark Theme Inversion ([data-theme="dark"])
-   Complete Parity with Dedicated Low-Glow Charcoal Surfaces
+   Complete Parity with Calibrated Teal Surfaces & Slate Accents
    ========================================================================== */
 
 [data-theme="dark"] {
   color-scheme: dark;
 
   /* Brand Palette (Teal Brightened for Dark Mode) */
-  --brand-50: #042f2e;
-  --brand-100: #134e4a;
-  --brand-200: #115e59;
+  --brand-50: #053438;
+  --brand-100: #032F30;
+  --brand-200: #085559;
+  --brand-400: #0C969C;
   --brand-500: #2dd4bf;
-  --brand-600: #14b8a6;
-  --brand-700: #0d9488;
-  --brand-text: #042f2e;
+  --brand-600: #0C969C;
+  --brand-700: #6BA3BE;
+  --brand-950: #031716;
+  --brand-text: #031716;
 
-  --color-brand-50: #042f2e;
-  --color-brand-100: #134e4a;
+  --color-brand-50: #053438;
+  --color-brand-100: #032F30;
   --color-brand-500: #2dd4bf;
-  --color-brand-600: #14b8a6;
-  --color-brand-700: #0d9488;
-  --color-brand-text: #042f2e;
+  --color-brand-600: #0C969C;
+  --color-brand-700: #6BA3BE;
+  --color-brand-text: #031716;
 
-  /* Accent (Warm Amber-Gold for Dark Mode) */
-  --accent-50: #451a03;
-  --accent-500: #f59e0b;
-  --accent-600: #fbbf24;
-  --accent-700: #fcd34d;
-  --accent-text: #181a1b;
+  --color-white: #031716;
+  --color-black: #f1f5f9;
+
+  /* Accent (Bright Teal for Dark Mode) */
+  --accent: #0C969C;
+  --accent-hover: #6BA3BE;
+  --accent-text: #031716;
+  --accent-soft: #053438;
+  --accent-50: #053438;
+  --accent-500: #0C969C;
+  --accent-600: #2dd4bf;
+  --accent-700: #6BA3BE;
 
   /* Surfaces & Canvas */
-  --bg: #121416;
-  --bg-muted: #181b1e;
-  --surface: #1a1d20;
-  --surface-muted: #23272c;
-  --surface-raised: #22262a;
+  --bg: #031716;
+  --bg-muted: #032F30;
+  --surface: #032F30;
+  --surface-muted: #0A7075;
+  --surface-raised: #085559;
 
   /* Typography & Foreground */
-  --text: #f3f4f6;
-  --text-dark: #f3f4f6;
-  --text-muted: #9ba1a8;
-  --muted: #9ba1a8;
+  --text: #f1f5f9;
+  --text-dark: #f1f5f9;
+  --text-muted: #6BA3BE;
+  --text-subtle: #4a7a8c;
+  --muted: #6BA3BE;
 
   /* Borders & Dividers */
-  --border: #383f47;
-  --border-subtle: #2d3238;
-  --border-strong: #4b5563;
+  --border: #205558;
+  --border-subtle: #1a4547;
+  --border-strong: #2a5c5e;
 
   /* Focus & Selection */
-  --focus-ring: #2dd4bf;
-  --selection-bg: #134e4a;
-  --selection-text: #f3f4f6;
+  --focus-ring: #0C969C;
+  --selection-bg: #0A7075;
+  --selection-text: #f1f5f9;
 
   /* Feedback Colors */
-  --success: #4ade80;
-  --success-bg: #052e16;
-  --warning: #fbbf24;
+  --success: #0C969C;
+  --success-soft: #053438;
+  --success-bg: #053438;
+  --warning: #f59e0b;
+  --warning-soft: #451a03;
   --warning-bg: #451a03;
   --danger: #f87171;
+  --danger-soft: #450a0a;
   --danger-bg: #450a0a;
-  --info: #38bdf8;
-  --info-bg: #082f49;
+  --info: #6BA3BE;
+  --info-soft: #1e3a8a;
+  --info-bg: #1e3a8a;
 
   /* Status Badge Tokens (Exceeds 4.5:1 contrast) */
   --status-requested-bg: #37280a;
   --status-requested-text: #fde047;
-  --status-accepted-bg: #082f49;
-  --status-accepted-text: #7dd3fc;
-  --status-on_the_way-bg: #1e1b4b;
-  --status-on_the_way-text: #a5b4fc;
+  --status-accepted-bg: #053438;
+  --status-accepted-text: #6BA3BE;
+  --status-on_the_way-bg: #1e293b;
+  --status-on_the_way-text: #cbd5e1;
   --status-in_progress-bg: #431407;
   --status-in_progress-text: #fdba74;
-  --status-completed-bg: #052e16;
-  --status-completed-text: #86efac;
+  --status-completed-bg: #053438;
+  --status-completed-text: #2dd4bf;
   --status-cancelled-bg: #450a0a;
   --status-cancelled-text: #fca5a5;
 
@@ -201,7 +228,7 @@
 
 /* Base Document Reset & Browser Surface Theming */
 html {
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   background-color: var(--bg);
   color: var(--text);
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
@@ -211,7 +238,7 @@ html {
 }
 
 body {
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   background-color: var(--bg);
   color: var(--text);
   margin: 0;

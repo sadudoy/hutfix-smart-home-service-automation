@@ -94,7 +94,7 @@ async function runTests() {
     for (const m of indexMarkers) {
         assert(indexContent.includes(m), `index.html contains ${m}`);
     }
-    assert(indexContent.includes('Plus+Jakarta+Sans') || indexContent.includes('Manrope'), 'index.html contains Plus+Jakarta+Sans or Manrope font');
+    assert(indexContent.includes('Plus+Jakarta+Sans') || indexContent.includes('Manrope') || indexContent.includes('Instrument+Serif'), 'index.html contains Plus+Jakarta+Sans, Manrope, or Instrument+Serif font');
 
     // 7. login.html contents
     const loginContent = fs.readFileSync(path.join(__dirname, 'client', 'login.html'), 'utf8');

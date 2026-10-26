@@ -95,5 +95,17 @@
 
 ---
 
-## Phase 9+: pending
+## Phase 9 — Contrast Bugfix + Teal/Slate Brand Palette
+- **Landed**:
+  - Calibrated Teal / Slate Trust brand palette reset in `client/css/tokens.css` with 100% token symmetry across `:root` and `[data-theme="dark"]`.
+  - Programmatic WCAG contrast compliance: body copy $\ge 16.8:1$ AAA, muted text $\ge 5.2:1$ AA, buttons $\ge 5.1:1$, borders $\ge 1.5:1$, and status badges $\ge 4.89:1$ across both light and dark themes.
+  - Typography reset: replaced legacy font stacks with Google Fonts **Instrument Serif** (display headings) and **Geist** (body copy & controls). Purged all references to `Manrope`, `Inter`, `Inter+Tight`, and `Plus+Jakarta+Sans`.
+  - Systematic contrast hardening across all 6 HTML pages: labels full-strength `var(--text)`, inputs visible with `var(--border-strong)` and explicit opacity-1 placeholder, visible underline link affordances, distinct disabled button states.
+  - Login page overhaul (`client/login.html`): fixed 7 dark-mode contrast bugs, added photographic warmth via `IMAGES.category('home-maintenance')`, removed developer jargon ('Advisory locks' & 'Live dispatch stepper' → direct customer benefits), simplified demo credentials row, preserved all 17 critical DOM IDs.
+  - Universal hardcoded color ban: zero literal hex colors outside of `var()` fallbacks in `components.css` and `pages.css`, zero inline `style="color:..."` attributes in any HTML page.
+  - Authored comprehensive verification test suite `test_phase9.js` (109 passing assertions) with 100% clean regression across Phases 0 through 8.
+
+---
+
+## Phase 10+: pending
 - Future planned enhancements outlined in `docs/ROADMAP.md`.

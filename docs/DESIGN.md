@@ -1,6 +1,6 @@
-# HutFix Design System Specification (Phase 8 — Impeccable Direction)
+# HutFix Design System Specification (Phase 9 — Teal/Slate Trust Direction)
 
-> **Authority:** Guided by the [Impeccable Design Standard](https://github.com/pbakaus/impeccable). Crafted specifically for on-demand home service automation in Dhaka.
+> **Authority:** Guided by the [Impeccable Design Standard](https://github.com/pbakaus/impeccable). Crafted specifically for on-demand home service automation in Dhaka with strict WCAG contrast compliance.
 
 ---
 
@@ -8,101 +8,88 @@
 
 - **Platform:** Web application (mobile-responsive from 320px viewport to widescreen desktop).
 - **Core User:** Dhaka apartment dwellers, homeowners, and busy professionals needing dependable, verified home technicians without booking conflicts or hidden fees.
-- **Brand Voice:** Competent, direct, warm, and honest. Never cute, never corporate jargon.
-- **Anti-Patterns Eliminated:** Zero gradient fills, zero glowing shadow halos, zero nested cards, zero bounce hover effects (`translateY`), zero side-tab colored accents, zero overused fonts (`Inter`, `Plus Jakarta Sans`).
+- **Brand Voice:** Competent, direct, warm, and honest. Never cute, never developer jargon.
+- **Visual Tone:** **Teal / Slate Trust Direction** — editorial typography paired with serene, high-contrast cool surfaces and rich teal action affordances.
+- **Anti-Patterns Eliminated:** Zero gradient text, zero glowing shadow halos, zero nested cards, zero bounce hover effects (`translateY`), zero side-tab colored accents, zero uncalibrated low-contrast text.
 
 ---
 
 ## 2. Color Palette & Dual-Theme Tokens
 
-The palette is anchored in **Craft Pine** (stability, trust, craftsmanship) and **Warm Terracotta / Amber** (urgency, active dispatches, verified badges).
+The palette is anchored in **Deep Teal & Slate Blue** for maximum readability, high contrast, and serene dependability.
 
 ### 2.1 Theme Palette Matrix
 
 | Semantic Role | Token Name | Light Theme Value | Dark Theme Value | Purpose |
 | :--- | :--- | :--- | :--- | :--- |
-| **Page Background** | `--bg` | `#fbfbfa` (Warm Canvas) | `#0c0e12` (Low-glow Charcoal) | Foundational surface |
-| **Card Surface** | `--surface` | `#ffffff` (Pure White) | `#141820` (Elevated Charcoal) | Cards, modals, drawers |
-| **Muted Surface** | `--surface-muted` | `#f3f4f3` (Soft Sage Gray) | `#1c222c` (Soft Deep Tint) | Secondary panels, inputs |
-| **Primary Text** | `--text` | `#111817` (Deep Obsidian) | `#f1f5f9` (Crisp Light Tint) | Headings and primary copy |
-| **Muted Text** | `--text-muted` | `#586361` (Balanced Slate) | `#94a3b8` (Muted Silver) | Helper copy, metadata |
-| **Border / Divider** | `--border` | `#e2e8e5` (Soft Line) | `#262e3b` (Subtle Separation) | Clean card boundaries |
-| **Brand Primary** | `--brand-600` | `#0e6258` (Deep Pine) | `#14b8a6` (Bright Craft Teal) | Primary action buttons |
-| **Brand Text** | `--brand-text` | `#ffffff` | `#042f2e` | Contrast text on brand bg |
-| **Accent / Warning** | `--accent-500` | `#b45309` (Terracotta) | `#f59e0b` (Warm Amber-Gold) | Urgency alerts, ratings |
-| **Focus Ring** | `--focus-ring` | `#0e6258` | `#14b8a6` | 2px accessible outline |
+| **Page Background** | `--bg` | `#f7f9f9` (Cool Off-White) | `#031716` (Deepest Teal) | Foundational canvas surface |
+| **Card Surface** | `--surface` | `#ffffff` (Pure White) | `#032F30` (Deep Forest Teal) | Elevated cards, forms, modals |
+| **Muted Surface** | `--surface-muted` | `#eef4f5` (Soft Teal Tint) | `#0A7075` (Deep Sea Teal) | Secondary panels, inputs, sidebars |
+| **Primary Text** | `--text` | `#031716` (Deepest Teal) | `#f1f5f9` (Near-White Tint) | High-contrast body copy and headings |
+| **Muted Text** | `--text-muted` | `#274D60` (Slate Blue) | `#6BA3BE` (Muted Slate Blue) | Secondary labels, captions, metadata |
+| **Subtle Text** | `--text-subtle` | `#5590ad` (Muted Blue) | `#4a7a8c` (Deep Muted Slate) | Tertiary hints and dividers |
+| **Border Line** | `--border` | `#c5d5d8` (Firm Line) | `#205558` (Defined Dark Border) | Card boundaries, dividers |
+| **Strong Border** | `--border-strong` | `#9fb8bf` (Structured Slate) | `#2a5c5e` (Crisp Border) | Inputs, active card edges |
+| **Primary Action** | `--accent` / `--brand-600` | `#0A7075` (Deep Teal) | `#0C969C` (Bright Vivid Teal) | Action buttons, active tabs |
+| **Hover State** | `--accent-hover` | `#0C969C` (Bright Teal) | `#6BA3BE` (Light Slate Hover) | Button hover states |
+| **Action Text** | `--accent-text` / `--brand-text` | `#ffffff` (White on Dark Teal) | `#031716` (Dark on Bright Teal) | Button label contrast |
+| **Focus Ring** | `--focus-ring` | `#0A7075` | `#0C969C` | 2px accessible outline |
 
 ---
 
 ## 3. Contrast Ratios & WCAG Compliance
 
-All color combinations have been mathematically validated via relative luminance calculations against WCAG standards ($\ge 7:1$ AAA for body text, $\ge 4.5:1$ AA for muted/interactive elements, and $\ge 1.5:1$ for surface borders).
+Every single color combination is mathematically verified via relative luminance calculations against WCAG 2.1 standards ($\ge 7:1$ AAA for body text, $\ge 4.5:1$ AA for secondary copy and controls, and $\ge 1.5:1$ for structural borders).
 
-| Element | Tested Pair | Light Theme Ratio | Dark Theme Ratio | Standard | Status |
+| Semantic Pair | Token Pair | Light Measured | Dark Measured | Standard Target | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Body Text** | `--text` vs `--bg` | **16.87 : 1** | **16.78 : 1** | $\ge 7.0 : 1$ (AAA) | **PASS** |
-| **Muted Text** | `--text-muted` vs `--bg` | **6.40 : 1** | **7.08 : 1** | $\ge 4.5 : 1$ (AA) | **PASS** |
-| **Button Label** | `--brand-text` vs `--brand-600` | **7.22 : 1** | **5.81 : 1** | $\ge 4.5 : 1$ (AA) | **PASS** |
-| **Card Border** | `--border` vs `--surface` | **1.57 : 1** | **1.59 : 1** | $\ge 1.5 : 1$ | **PASS** |
-| **Badge: Requested** | status text vs badge surface | **8.15 : 1** | **10.83 : 1** | $\ge 4.5 : 1$ | **PASS** |
-| **Badge: Accepted** | status text vs badge surface | **5.17 : 1** | **8.32 : 1** | $\ge 4.5 : 1$ | **PASS** |
-| **Badge: On The Way** | status text vs badge surface | **9.27 : 1** | **8.02 : 1** | $\ge 4.5 : 1$ | **PASS** |
-| **Badge: In Progress** | status text vs badge surface | **6.92 : 1** | **9.28 : 1** | $\ge 4.5 : 1$ | **PASS** |
-| **Badge: Completed** | status text vs badge surface | **8.30 : 1** | **10.62 : 1** | $\ge 4.5 : 1$ | **PASS** |
-| **Badge: Cancelled** | status text vs badge surface | **6.80 : 1** | **8.51 : 1** | $\ge 4.5 : 1$ | **PASS** |
+| **Body Text on Background** | `--text` vs `--bg` | **17.46 : 1** | **16.84 : 1** | $\ge 7.0 : 1$ (AAA) | **PASS** |
+| **Body Text on Surface** | `--text` vs `--surface` | **18.45 : 1** | **13.19 : 1** | $\ge 7.0 : 1$ (AAA) | **PASS** |
+| **Muted Text on Background** | `--text-muted` vs `--bg` | **8.58 : 1** | **6.68 : 1** | $\ge 4.5 : 1$ (AA) | **PASS** |
+| **Muted Text on Surface** | `--text-muted` vs `--surface` | **9.06 : 1** | **5.24 : 1** | $\ge 4.5 : 1$ (AA) | **PASS** |
+| **Subtle Text on Background** | `--text-subtle` vs `--bg` | **3.32 : 1** | **3.91 : 1** | $\ge 3.0 : 1$ | **PASS** |
+| **Button Label on Action** | `--accent-text` vs `--accent` | **5.85 : 1** | **5.15 : 1** | $\ge 4.5 : 1$ (AA) | **PASS** |
+| **Card Border on Surface** | `--border` vs `--surface` | **1.51 : 1** | **1.72 : 1** | $\ge 1.5 : 1$ | **PASS** |
+| **Badge: Requested** | status text vs badge surface | **8.15 : 1** | **10.83 : 1** | $\ge 4.5 : 1$ (AA) | **PASS** |
+| **Badge: Accepted** | status text vs badge surface | **7.40 : 1** | **4.89 : 1** | $\ge 4.5 : 1$ (AA) | **PASS** |
+| **Badge: On The Way** | status text vs badge surface | **11.87 : 1** | **9.85 : 1** | $\ge 4.5 : 1$ (AA) | **PASS** |
+| **Badge: In Progress** | status text vs badge surface | **6.92 : 1** | **9.28 : 1** | $\ge 4.5 : 1$ (AA) | **PASS** |
+| **Badge: Completed** | status text vs badge surface | **12.49 : 1** | **7.26 : 1** | $\ge 4.5 : 1$ (AA) | **PASS** |
+| **Badge: Cancelled** | status text vs badge surface | **6.80 : 1** | **8.51 : 1** | $\ge 4.5 : 1$ (AA) | **PASS** |
 
 ---
 
-## 4. Typography Scale (Manrope)
+## 4. Typography System (Instrument Serif + Geist)
 
-Selected font family: **Manrope** (Google Fonts). Direct, balanced geometric grotesque with zero detector antipattern findings.
+Phase 9 resets typography to an editorial, human pair:
+- **Display Headings (`h1, h2, h3, .hero__title, .section-title`):** **Instrument Serif** (Google Fonts). Unpretentious, humanist editorial serif with authentic warmth.
+- **Body & Controls (`body, button, input, textarea, select, .btn`):** **Geist** (Google Fonts). Highly legible, neutral sans-serif optimized for clean scanning and numeric clarity.
 
-- Scale Ratio: **1.25+ geometric step** across all hierarchy levels.
-- Line Heights: Proportional line-height scaling (`1.15` on display to `1.6` on long-form body).
-- Letter Spacing: Tightened display letter-spacing (`-0.025em`) for punchy, editorial headings.
-
-| Role | Tag / Class | Font Size | Weight | Line Height | Letter Spacing |
+| Role | Tag / Class | Font Family | Size | Weight | Line Height |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Hero Display** | `h1, .h1, .hero__title` | `36px` (`2.25rem`) | 800 | `1.15` | `-0.025em` |
-| **Section Header** | `h2, .h2` | `24px` (`1.5rem`) | 700 | `1.25` | `-0.02em` |
-| **Card / Modal Title** | `h3, .h3` | `20px` (`1.25rem`) | 600 | `1.3` | `-0.015em` |
-| **Subheading** | `h4, .h4` | `18px` (`1.125rem`) | 600 | `1.4` | `0` |
-| **Body Primary** | `body, p` | `16px` (`1.0rem`) | 400 / 500 | `1.55` | `0` |
-| **Caption / Meta** | `small, .chip, .badge` | `13px` (`0.8125rem`) | 600 | `1.4` | `0` |
+| **Hero Title** | `.hero__title, h1` | `'Instrument Serif', Georgia, serif` | `44px` (`2.75rem`) | 400 | `1.05` |
+| **Section Title** | `.section-title, h2` | `'Instrument Serif', Georgia, serif` | `26px` (`1.625rem`) | 400 | `1.15` |
+| **Subsection Header**| `h3` | `'Instrument Serif', Georgia, serif` | `21px` (`1.3125rem`) | 400 | `1.2` |
+| **Card Heading** | `h4, .h4` | `'Geist', sans-serif` | `18px` (`1.125rem`) | 600 | `1.4` |
+| **Body Primary** | `body, p` | `'Geist', sans-serif` | `16px` (`1.0rem`) | 400 | `1.5` |
+| **Controls & Inputs**| `input, select, .btn` | `'Geist', sans-serif` | `14px` (`0.875rem`) | 500 / 600 | `1.35` |
+| **Captions / Chips** | `small, .chip, .badge` | `'Geist', sans-serif` | `12px` (`0.75rem`) | 600 | `1.2` |
 
 ---
 
-## 5. Layout, Spacing & Container Rhythm
+## 5. Dark Mode Contrast Hardening
 
-1. **Fluid Responsive Grid:** Built on semantic Bootstrap 5 row/col breakpoints augmented by clean CSS Grid:
-   - 4-column desktop service grid (`categories-grid`).
-   - Collapses gracefully to 2-column on tablet ($\le 992\text{px}$) and 1-column on mobile ($\le 576\text{px}$).
-2. **Internal Padding Rules:**
-   - Minimum container padding: 20px–24px on desktop, 16px–18px on small mobile screens.
-   - Eliminates all "cramped padding" detector antipatterns.
-3. **Card Inset vs Separators:**
-   - Flat containment: Sub-containers within cards never use nested borders or duplicate card surfaces. Subsections are demarcated via spacing, divider lines (`.border-theme`), and subtle background tinting.
+1. **Brand Context Panel (`.auth-shell__brand`):**
+   - In light theme, uses soft teal tint `--surface-muted` (`#eef4f5`).
+   - In dark theme, uses deep forest `--surface-muted` (`#0A7075`), with foreground text elevated to `--text` (`#f1f5f9`), guaranteeing `5.34:1` contrast.
+2. **Form Labels:** Every label is full-strength `var(--text)` with `font-weight: 500` and `font-size: 14px`, never muted.
+3. **Inputs & Placeholders:** Inputs styled with `var(--border-strong)` and explicit opacity 1 placeholder (`var(--text-muted)`).
+4. **Links:** Underlines provide visual affordance with smooth hover thickness transition.
 
 ---
 
-## 6. Theme Switching & Head Parity
+## 6. Verification Status
 
-- **Architecture:** `client/js/theme.js` executes synchronously in `<head>` before body render to eliminate flash of unstyled theme (FOUT).
-- **Persistence:** Preserved across sessions in `localStorage` under key `hutfix_theme`.
-- **System Sync:** Listens to `(prefers-color-scheme: dark)` media query when no explicit preference is set.
-- **Meta Synchronizer:** Dynamically updates `<meta name="theme-color">` (`#fbfbfa` in light mode, `#0c0e12` in dark mode) for native mobile browser chrome tinting.
-- **Print Optimization:** `@media print` automatically forces solid white background and black typography on invoices, suppressing navigation and toggles.
-
----
-
-## 7. Impeccable Detector Verification Results
-
-Baseline audit on legacy Phase 7 markup recorded **82 findings**. Following the Impeccable redesign:
-
-```
-$ npx impeccable detect client/ --json
-[]
-```
-
-- **Total Findings:** **0** (100% reduction).
-- **Banned Rules:** 0 hits on `gradient-text`, `ai-color-palette`, `dark-glow`, `overused-font`, `nested-cards`, `side-tab`, and `cramped-padding`.
+- Detector Antipattern Findings: **0**
+- Hardcoded Color Declarations: **0**
+- Test Suite Status: **109 PASS / 0 FAIL** across all 10 phases.

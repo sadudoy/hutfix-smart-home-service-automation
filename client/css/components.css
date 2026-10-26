@@ -1,32 +1,37 @@
 /* ==========================================================================
-   HutFix Components — Impeccable Craft Direction (Phase 8)
+   HutFix Components — Teal / Slate Trust Direction (Phase 9)
    Zero literal hex colors. All values use var(--...).
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   Typography Hierarchy
+   Typography Hierarchy & Base Application
    -------------------------------------------------------------------------- */
+body, button, input, textarea, select, .btn {
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, .hero__title, .section-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+}
+
 h1, .h1 {
   font-size: var(--font-size-4xl);
-  font-weight: 800;
   line-height: var(--leading-tight);
-  letter-spacing: -0.025em;
   color: var(--text);
 }
 
 h2, .h2 {
   font-size: var(--font-size-2xl);
-  font-weight: 700;
   line-height: var(--leading-snug);
-  letter-spacing: -0.02em;
   color: var(--text);
 }
 
 h3, .h3 {
   font-size: var(--font-size-xl);
-  font-weight: 600;
   line-height: var(--leading-snug);
-  letter-spacing: -0.015em;
   color: var(--text);
 }
 
@@ -49,6 +54,58 @@ h6, .h6 {
   font-weight: 600;
   line-height: var(--leading-normal);
   color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Universal Contrast Bugfix Overrides (WCAG AA/AAA Standard)
+   -------------------------------------------------------------------------- */
+/* Every label is full-strength text, not muted */
+label, .form-label, .field-label {
+  color: var(--text);
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* Muted text must be readable, not invisible */
+.text-muted, .auth-hint, .auth-footnote, .copyright, .footer,
+.help-text, .caption, small, .meta {
+  color: var(--text-muted);
+}
+
+/* Links always visible; underline is the affordance */
+a, .link {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-thickness 0.15s ease;
+}
+a:hover, .link:hover { text-decoration-thickness: 2px; }
+
+/* Control element link overrides (buttons, badges, pills, nav) */
+.btn, .btn-brand, .btn-ghost, .navbar-brand, .app-nav__brand, .app-nav .nav-link,
+.nav-link, .chip, .demo-account-chip, .slot-pill, .badge, .status-badge {
+  text-decoration: none !important;
+}
+
+/* Inputs: both placeholder AND text must be visible */
+input, textarea, select, .form-control, .form-control-lg, .form-select {
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+}
+input::placeholder, textarea::placeholder, .form-control::placeholder, .form-control-lg::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+input:focus, textarea:focus, select:focus, .form-control:focus, .form-control-lg:focus, .form-select:focus {
+  border-color: var(--focus-ring);
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+  background-color: var(--surface);
+  color: var(--text);
 }
 
 /* --------------------------------------------------------------------------
@@ -127,6 +184,9 @@ h6, .h6 {
 .btn-brand:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+  color: var(--text-muted) !important;
+  background-color: var(--surface-muted) !important;
+  border-color: var(--border) !important;
 }
 
 .btn-ghost {
@@ -313,6 +373,24 @@ h6, .h6 {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  color: var(--text);
+}
+
+.auth-shell__brand .text-muted,
+.auth-shell__brand .auth-brand-desc,
+.auth-shell__brand small {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .auth-shell__brand {
+  color: var(--text);
+}
+
+[data-theme="dark"] .auth-shell__brand .text-muted,
+[data-theme="dark"] .auth-shell__brand .auth-brand-desc,
+[data-theme="dark"] .auth-shell__brand .copyright,
+[data-theme="dark"] .auth-shell__brand small {
+  color: var(--text); /* Hardened contrast >= 5.3:1 against dark surface-muted */
 }
 
 .auth-card {
@@ -321,6 +399,58 @@ h6, .h6 {
   flex-direction: column;
   justify-content: center;
   background-color: var(--surface);
+}
+
+/* Auth Tabs (Clearer Affordance) */
+.auth-tabs {
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.auth-tabs button,
+.auth-tabs .btn {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+  cursor: pointer;
+}
+
+.auth-tabs button:hover,
+.auth-tabs .btn:hover {
+  color: var(--text);
+}
+
+.auth-tabs button.active,
+.auth-tabs .btn.active {
+  color: var(--text) !important;
+  border-bottom: 2px solid var(--accent) !important;
+  background: transparent !important;
+}
+
+/* Demo Credentials Row */
+.demo-credentials-row {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.demo-credentials-row a {
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.demo-credentials-row a:hover {
+  color: var(--accent);
 }
 
 /* --------------------------------------------------------------------------

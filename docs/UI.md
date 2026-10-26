@@ -57,43 +57,44 @@
 
 ---
 
-## 2. Design Tokens (`client/css/tokens.css`)
+## 2. Design Tokens (`client/css/tokens.css` — Phase 9 Teal/Slate)
 
-Every CSS token variable declared in `:root`:
-- `--brand-500`: `#2dd4bf` (Bright Craft Teal)
-- `--brand-600`: `#0e6258` (Craft Pine primary)
-- `--brand-700`: `#073832` (Deep Forest Pine)
-- `--bg`: `#fbfbfa` (Application canvas background)
-- `--surface`: `#ffffff` (Card and panel surface)
-- `--text`: `#111817` (Primary typography obsidian)
-- `--muted`: `#586361` (Secondary / muted text)
-- `--border`: `#e2e8e5` (Neutral container border)
-- `--success`: `#16a34a` (Success emerald green)
-- `--warning`: `#b45309` (Warning amber / terracotta)
-- `--danger`: `#dc2626` (Danger / urgent crimson)
+Every CSS token variable declared in `:root` and `[data-theme="dark"]`:
+- `--bg`: `#f7f9f9` (Light) / `#031716` (Dark)
+- `--surface`: `#ffffff` (Light) / `#032F30` (Dark)
+- `--surface-muted`: `#eef4f5` (Light) / `#0A7075` (Dark)
+- `--text`: `#031716` (Light) / `#f1f5f9` (Dark)
+- `--text-muted`: `#274D60` (Light) / `#6BA3BE` (Dark)
+- `--text-subtle`: `#5590ad` (Light) / `#4a7a8c` (Dark)
+- `--border`: `#c5d5d8` (Light) / `#205558` (Dark)
+- `--border-strong`: `#9fb8bf` (Light) / `#2a5c5e` (Dark)
+- `--accent`: `#0A7075` (Light) / `#0C969C` (Dark)
+- `--accent-hover`: `#0C969C` (Light) / `#6BA3BE` (Dark)
+- `--accent-text`: `#ffffff` (Light) / `#031716` (Dark)
+- `--font-display`: `'Instrument Serif', Georgia, 'Times New Roman', serif`
+- `--font-body`: `'Geist', system-ui, -apple-system, sans-serif`
 - `--radius`: `10px` (Default component border radius)
-- `--shadow-sm`: `0 1px 2px rgba(0,0,0,0.05)` (Subtle surface shadow)
-- `--shadow-md`: `0 4px 12px rgba(0,0,0,0.07)` (Elevated modal and panel shadow)
-- `--font`: `'Manrope', system-ui, -apple-system, sans-serif` (Primary font stack)
+- `--shadow-sm`: `0 1px 3px rgba(3, 23, 22, 0.05)` (Subtle surface shadow)
+- `--shadow-md`: `0 4px 12px rgba(3, 23, 22, 0.07)` (Elevated modal and panel shadow)
 
 ---
 
-## 3. Status Badge Color Palette
+## 3. Status Badge Color Palette (Exceeds 4.5:1 WCAG AA)
 
-| Status Key | Class Name | Background Color | Text Color | Visual Meaning |
-| :--- | :--- | :--- | :--- | :--- |
-| `requested` | `.status-requested` | `#fef3c7` | `#92400e` | Awaiting provider review |
-| `accepted` | `.status-accepted` | `#dbeafe` | `#1e40af` | Provider confirmed assignment |
-| `on_the_way` | `.status-on_the_way` | `#e0e7ff` | `#3730a3` | Specialist en route |
-| `in_progress` | `.status-in_progress` | `#fce7f3` | `#9d174d` | Service execution underway |
-| `completed` | `.status-completed` | `#d1fae5` | `#065f46` | Job successfully fulfilled |
-| `cancelled` | `.status-cancelled` | `#fee2e2` | `#991b1b` | Request terminated & slot freed |
+| Status Key | Class Name | Light Bg | Light Text | Dark Bg | Dark Text | Visual Meaning |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `requested` | `.status-requested` | `#fef3c7` | `#78350f` | `#37280a` | `#fde047` | Awaiting provider review |
+| `accepted` | `.status-accepted` | `#e0f2f2` | `#085559` | `#053438` | `#6BA3BE` | Provider confirmed assignment |
+| `on_the_way` | `.status-on_the_way` | `#e2e8f0` | `#1e293b` | `#1e293b` | `#cbd5e1` | Specialist en route |
+| `in_progress` | `.status-in_progress` | `#fed7aa` | `#7c2d12` | `#431407` | `#fdba74` | Service execution underway |
+| `completed` | `.status-completed` | `#e0f2f2` | `#032F30` | `#053438` | `#2dd4bf` | Job successfully fulfilled |
+| `cancelled` | `.status-cancelled` | `#fee2e2` | `#991b1b` | `#450a0a` | `#fca5a5` | Request terminated & slot freed |
 
 ---
 
-## 4. Design System (Phase 8 — Impeccable Direction)
+## 4. Design System (Phase 9 — Teal / Slate Trust Direction)
 
-Phase 8 overhauled the visual language following the **Impeccable Design Standard**, eliminating all AI-generated antipatterns (gradients, glassmorphism, bouncing hover animations, glowing halo shadows, and overused font choices) and replacing them with a disciplined, craft-oriented palette and typography. For full details, see [docs/DESIGN.md](docs/DESIGN.md).
+Phase 9 established the **Teal / Slate Trust Direction**, pairing humanist **Instrument Serif** display typography with **Geist** body typography, eliminating all dark-mode contrast failures (every text element exceeds 4.5:1, body copy exceeds 13:1), and replacing flat/developer jargon copy with straightforward customer benefits. For full details, see [docs/DESIGN.md](docs/DESIGN.md).
 
 ### Design Tokens (`client/css/tokens.css`)
 

@@ -223,6 +223,9 @@
 }
 
 @media print {
+  :root {
+    color-scheme: light !important;
+  }
   body.page-invoice,
   .page-invoice {
     background-color: var(--color-white) !important;
