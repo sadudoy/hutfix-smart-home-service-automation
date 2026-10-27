@@ -172,11 +172,76 @@ async function me(req, res, next) {
     }
 }
 
+async function updateProfile(req, res, next) {
+    try {
+        const userId = req.user.id;
+        const { full_name, email, phone, password } = req.body || {};
+
+        let normalizedEmail = null;
+        if (email && typeof email === 'string' && email.trim()) {
+            normalizedEmail = email.trim().toLowerCase();
+            const existing = await pool.query('SELECT id FROM users WHERE email = $1 AND id != $2;', [normalizedEmail, userId]);
+            if (existing.rows.length > 0) {
+                return res.status(409).json({
+                    ok: false,
+                    error: 'email already in use'
+                });
+            }
+        }
+
+        let newPassword = null;
+        if (password && typeof password === 'string' && password.trim()) {
+            if (password.length < 6) {
+                return res.status(400).json({
+                    ok: false,
+                    error: 'password must be at least 6 characters long'
+                });
+            }
+            newPassword = password;
+        }
+
+        const trimmedName = (full_name && typeof full_name === 'string' && full_name.trim()) ? full_name.trim() : null;
+        const trimmedPhone = (phone && typeof phone === 'string' && phone.trim()) ? phone.trim() : null;
+
+        const query = `
+            UPDATE users 
+            SET full_name = COALESCE($1, full_name),
+                email = COALESCE($2, email),
+                phone = COALESCE($3, phone),
+                password_hash = COALESCE(crypt($4, gen_salt('bf')), password_hash)
+            WHERE id = $5
+            RETURNING id, email, full_name, phone, role;
+        `;
+        const result = await pool.query(query, [
+            trimmedName,
+            normalizedEmail,
+            trimmedPhone,
+            newPassword,
+            userId
+        ]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                ok: false,
+                error: 'user not found'
+            });
+        }
+
+        return res.status(200).json({
+            ok: true,
+            user: result.rows[0]
+        });
+    } catch (err) {
+        return next(err);
+    }
+}
+
 module.exports = {
     TOKEN_NAME,
     TOKEN_OPTS,
     register,
     login,
     logout,
-    me
+    me,
+    updateProfile
 };

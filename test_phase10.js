@@ -161,7 +161,7 @@ async function runTests() {
         // Static Files Serving
         const indexRes = await makeRequest('/');
         assert(indexRes.status === 200, 'GET / returns 200 OK');
-        assert(indexRes.body.includes('Fixora') && indexRes.body.includes('auth-screen'), 'Root HTML renders Fixora UI with auth overlay');
+        assert((indexRes.body.includes('FixHut') || indexRes.body.includes('Fixora')) && indexRes.body.includes('auth-screen'), 'Root HTML renders FixHut/Fixora UI with auth overlay');
 
         const styleRes = await makeRequest('/style.css');
         assert(styleRes.status === 200, 'GET /style.css returns 200 OK');

@@ -1,5 +1,5 @@
 /**
- * Fixora — Single Page Application Frontend
+ * FixHut — Single Page Application Frontend
  * Connected to Real Express & PostgreSQL Backend
  */
 
@@ -8,7 +8,7 @@ const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 
 const state = {
   user: null,
-  role: 'client', // 'client' | 'repairman' | 'admin'
+  role: 'guest', // 'guest' | 'client' | 'repairman' | 'admin'
   page: 'discover',
   query: '',
   category: 'All services',
@@ -97,36 +97,41 @@ function normalizeStatus(raw) {
 }
 
 // Navigation Definitions
+const guestNav = [
+  ['discover', '<i class="bi bi-search"></i>', 'Discover services']
+];
+
 const clientNav = [
-  ['discover', '⌕', 'Discover services'],
-  ['bookings', '▤', 'My bookings'],
-  ['tracking', '⌖', 'Track a service'],
-  ['favorites', '♡', 'Saved services'],
-  ['profile', '◎', 'My profile']
+  ['discover', '<i class="bi bi-search"></i>', 'Discover services'],
+  ['bookings', '<i class="bi bi-calendar-check"></i>', 'My bookings'],
+  ['tracking', '<i class="bi bi-geo-alt"></i>', 'Track a service'],
+  ['favorites', '<i class="bi bi-heart"></i>', 'Saved services'],
+  ['profile', '<i class="bi bi-person"></i>', 'My profile']
 ];
 
 const repairNav = [
-  ['overview', '▦', 'Overview'],
-  ['my-gigs', '✳', 'My service gigs'],
-  ['requests', '▤', 'Booking requests'],
-  ['earnings', '৳', 'Earnings'],
-  ['repair-profile', '◎', 'My profile']
+  ['overview', '<i class="bi bi-speedometer2"></i>', 'Overview'],
+  ['my-gigs', '<i class="bi bi-briefcase"></i>', 'My service gigs'],
+  ['requests', '<i class="bi bi-calendar-check"></i>', 'Booking requests'],
+  ['earnings', '<i class="bi bi-cash-coin"></i>', 'Earnings'],
+  ['repair-profile', '<i class="bi bi-person"></i>', 'My profile']
 ];
 
 const adminNav = [
-  ['admin-overview', '▦', 'Overview'],
-  ['users', '♙', 'Users & repairmen'],
-  ['moderation', '◈', 'Gig moderation'],
-  ['all-bookings', '▤', 'All bookings'],
-  ['reports', '▥', 'Reports & analytics']
+  ['admin-overview', '<i class="bi bi-speedometer2"></i>', 'Overview'],
+  ['users', '<i class="bi bi-people"></i>', 'Users & repairmen'],
+  ['moderation', '<i class="bi bi-shield-check"></i>', 'Gig moderation'],
+  ['all-bookings', '<i class="bi bi-calendar-check"></i>', 'All bookings'],
+  ['reports', '<i class="bi bi-graph-up"></i>', 'Reports & analytics']
 ];
 
 function navItems() {
+  if (state.role === 'guest') return guestNav;
   return state.role === 'client' ? clientNav : state.role === 'repairman' ? repairNav : adminNav;
 }
 
 function roleName() {
-  return state.role === 'client' ? 'Client' : state.role === 'repairman' ? 'Repairman' : 'Admin';
+  return state.role === 'client' ? 'Client' : state.role === 'repairman' ? 'Repairman' : state.role === 'admin' ? 'Admin' : 'Guest';
 }
 
 function renderNav() {
@@ -149,7 +154,16 @@ function renderNav() {
     </button>
   `).join('');
 
-  $('#navCaption').textContent = state.role === 'client' ? 'DISCOVER' : state.role === 'repairman' ? 'YOUR BUSINESS' : 'MANAGE PLATFORM';
+  $('#navCaption').textContent = (state.role === 'client' || state.role === 'guest') ? 'DISCOVER' : state.role === 'repairman' ? 'YOUR BUSINESS' : 'MANAGE PLATFORM';
+
+  const userMini = $('.user-mini');
+  if (userMini) userMini.style.display = state.user ? 'flex' : 'none';
+  const helpCard = $('.help-card');
+  if (helpCard) helpCard.style.display = state.user ? 'block' : 'none';
+  const topAv = $('#topAvatar');
+  if (topAv) topAv.style.display = state.user ? 'grid' : 'none';
+  const loginBtn = $('#login-btn');
+  if (loginBtn) loginBtn.style.display = state.user ? 'none' : 'inline-flex';
   if (state.user) {
     $('#miniName').textContent = state.user.full_name || 'User';
     $('#miniRole').textContent = ({ customer: 'Client account', provider: 'Provider account', admin: 'Admin account' })[state.user.role] || 'Account';
@@ -171,7 +185,7 @@ function stat(label, value, icon, foot) {
 }
 
 // Modal handling
-function openModal(title, body, eyebrow = 'FIXORA BOOKING') {
+function openModal(title, body, eyebrow = 'FIXHUT BOOKING') {
   $('#modalEyebrow').textContent = eyebrow;
   $('#modalTitle').textContent = title;
   $('#modalBody').innerHTML = body;
@@ -193,14 +207,14 @@ async function loadServices() {
     if (data.ok && Array.isArray(data.services)) {
       const covers = ['cover-wash', 'cover-cool', 'cover-warm', 'cover-lavender', 'cover-rose', 'cover-sky'];
       const icons = {
-        'appliance-repair': '❄️',
-        'plumbing': '🚿',
-        'electrical': '💡',
-        'cleaning-pest': '🫧',
-        'home-maintenance': '🛠️',
-        'moving-shifting': '📦',
-        'car-care': '🚗',
-        'personal-care': '✂️'
+        'appliance-repair': '<i class="bi bi-tools"></i>',
+        'plumbing': '<i class="bi bi-droplet"></i>',
+        'electrical': '<i class="bi bi-lightning-charge"></i>',
+        'cleaning-pest': '<i class="bi bi-brush"></i>',
+        'home-maintenance': '<i class="bi bi-house-gear"></i>',
+        'moving-shifting': '<i class="bi bi-truck"></i>',
+        'car-care': '<i class="bi bi-car-front"></i>',
+        'personal-care': '<i class="bi bi-person-heart"></i>'
       };
       state.services = data.services.map((s, idx) => ({
         id: s.slug,
@@ -208,7 +222,7 @@ async function loadServices() {
         title: s.name,
         desc: s.description || 'Professional home service with verified background check and upfront pricing.',
         price: Number(s.base_price) || 800,
-        icon: icons[s.slug] || '✦',
+        icon: icons[s.slug] || '<i class="bi bi-tools"></i>',
         cover: covers[idx % covers.length],
         category: s.name.split(' ')[0] || 'General',
         rating: '4.9',
@@ -216,7 +230,7 @@ async function loadServices() {
         provider: 'Verified Specialist',
         initials: s.name.slice(0, 2).toUpperCase(),
         avatar: 'avatar-blue',
-        subtitle: 'HutFix Certified Pro',
+        subtitle: 'FixHut Certified Pro',
         verified: true,
         tag: idx === 0 ? 'POPULAR' : idx === 1 ? 'TOP RATED' : 'CERTIFIED'
       }));
@@ -227,6 +241,7 @@ async function loadServices() {
 }
 
 async function loadMyBookings() {
+  if (!state.user) return;
   try {
     const res = await fetch('/api/requests/mine', { credentials: 'include' });
     if (!res.ok) return;
@@ -239,7 +254,7 @@ async function loadMyBookings() {
           rawId: r.id,
           displayId: 'FX-' + (1000 + Number(r.id)),
           service: r.category_name || 'Home Service',
-          icon: '🛠️',
+          icon: '<i class="bi bi-tools"></i>',
           provider: r.provider_name || 'Assigned Specialist',
           date: `${r.preferred_date || 'Upcoming'} · ${timeStr}`,
           price: Number(r.estimated_price || 800),
@@ -343,7 +358,7 @@ function serviceCard(s) {
   const imageUrl = window.IMAGES?.category ? window.IMAGES.category(s.slug) : '';
   const coverHtml = imageUrl
     ? `<div class="service-cover ${s.cover}" style="background-image:url('${imageUrl}'); background-size:cover; background-position:center;"><span class="cover-badge">${s.tag || 'SERVICE'}</span></div>`
-    : `<div class="service-cover ${s.cover}"><span class="cover-badge">${s.tag || 'SERVICE'}</span><span class="cover-emoji">${s.icon}</span></div>`;
+    : `<div class="service-cover ${s.cover}"><span class="cover-badge">${s.tag || 'SERVICE'}</span><span class="cover-emoji" style="font-size:2.5rem; color:var(--blue);">${s.icon}</span></div>`;
 
   return `
     <article class="service-card">
@@ -377,12 +392,12 @@ function renderDiscover() {
   );
 
   const categories = [
-    ['All services', '✦', 'bg-blue', 'All'],
-    ['Appliance', '❄️', 'bg-blue', 'Appliance & Gadget'],
-    ['Plumbing', '🚿', 'bg-green', 'Water & Pipes'],
-    ['Electrical', '💡', 'bg-orange', 'Wiring & Power'],
-    ['Cleaning', '🫧', 'bg-purple', 'Cleaning & Pest'],
-    ['Maintenance', '🛠️', 'bg-yellow', 'Home Maintenance']
+    ['All services', '<i class="bi bi-grid"></i>', 'bg-blue', 'All'],
+    ['Appliance', '<i class="bi bi-tools"></i>', 'bg-blue', 'Appliance & Gadget'],
+    ['Plumbing', '<i class="bi bi-droplet"></i>', 'bg-green', 'Water & Pipes'],
+    ['Electrical', '<i class="bi bi-lightning-charge"></i>', 'bg-orange', 'Wiring & Power'],
+    ['Cleaning', '<i class="bi bi-brush"></i>', 'bg-purple', 'Cleaning & Pest'],
+    ['Maintenance', '<i class="bi bi-house-gear"></i>', 'bg-yellow', 'Home Maintenance']
   ];
 
   return `
@@ -399,14 +414,14 @@ function renderDiscover() {
       </div>
       <div class="hero-art">
         <div class="art-card main">
-          <div class="art-icon">🛠️</div>
+          <div class="art-icon"><i class="bi bi-tools" style="color:var(--blue); font-size:24px;"></i></div>
           <strong>Trusted professionals</strong>
           <small>Vetted experts, at your door.</small>
           <div class="rating">★★★★★ <span style="color:#9aa2b0">4.9 average</span></div>
         </div>
         <div class="art-card float">
           <div class="float-line">
-            <div class="tiny-avatar">✓</div>
+            <div class="tiny-avatar"><i class="bi bi-check-lg"></i></div>
             <div><strong>Instant dispatch</strong><small>Advisory lock verified</small></div>
           </div>
         </div>
@@ -604,26 +619,30 @@ function renderFavorites() {
 function renderProfile() {
   const u = state.user || {};
   return `
-    ${pageHead('ACCOUNT SETTINGS', 'My profile', 'Manage your contact details and service preferences.', '<button class="primary-btn" id="saveProfileBtn">Save changes</button>')}
+    ${pageHead('ACCOUNT SETTINGS', 'My profile', 'Manage your contact details and service preferences.', '<button class="primary-btn" id="saveProfileTopBtn">Save changes</button>')}
     <div class="profile-banner">
       <div class="avatar avatar-lilac" style="width:58px;height:58px;font-size:18px">
         ${(u.full_name || 'U').slice(0, 2).toUpperCase()}
       </div>
       <div>
         <h2>${escapeHtml(u.full_name || 'Customer')}</h2>
-        <p>${u.role === 'customer' ? 'Client account' : u.role === 'provider' ? 'Provider account' : 'Administrator'} · ${u.email || ''}</p>
+        <p>${u.role === 'customer' ? 'Client account' : u.role === 'provider' ? 'Provider account' : 'Administrator'} · ${escapeHtml(u.email || '')}</p>
       </div>
       <div class="banner-actions"><span class="status completed">Verified</span></div>
     </div>
     <div class="panel">
       <div class="panel-head"><h3>Personal information</h3></div>
-      <div class="form-grid">
-        <div class="form-field"><label>Full name</label><input id="profFullName" value="${escapeHtml(u.full_name || '')}"></div>
-        <div class="form-field"><label>Email address</label><input value="${escapeHtml(u.email || '')}" type="email" readonly style="background:#f4f6fa;"></div>
-        <div class="form-field"><label>Phone number</label><input id="profPhone" value="${escapeHtml(u.phone || '+880 1712-345678')}"></div>
-        <div class="form-field"><label>Preferred area</label><select><option>Dhanmondi, Dhaka</option><option>Gulshan, Dhaka</option><option>Uttara, Dhaka</option></select></div>
-        <div class="form-field full"><label>Default service address</label><textarea id="profAddress">House 18, Road 7, Dhanmondi, Dhaka</textarea></div>
-      </div>
+      <form id="profileForm">
+        <div class="form-grid">
+          <div class="form-field"><label>Full name</label><input id="profFullName" name="full_name" value="${escapeHtml(u.full_name || '')}" required></div>
+          <div class="form-field"><label>Email address</label><input id="profEmail" name="email" value="${escapeHtml(u.email || '')}" type="email" required></div>
+          <div class="form-field"><label>Phone number</label><input id="profPhone" name="phone" value="${escapeHtml(u.phone || '')}" placeholder="+8801700000000"></div>
+          <div class="form-field"><label>New password</label><input id="profPassword" name="password" type="password" placeholder="Leave blank to keep current"></div>
+          <div class="form-field full" style="margin-top:15px;">
+            <button class="primary-btn" type="submit" id="saveProfileBtn">Save changes</button>
+          </div>
+        </div>
+      </form>
     </div>
   `;
 }
@@ -632,6 +651,16 @@ function renderProfile() {
 // Booking Flow & Smart Match Wiring
 // -------------------------------------------------------------
 function openBooking(categorySlug) {
+  if (!state.user || state.role === 'guest') {
+    const authScreen = document.getElementById('auth-screen');
+    if (authScreen) authScreen.classList.add('open');
+    const errEl = document.getElementById('auth-error');
+    if (errEl) {
+      errEl.textContent = 'Please sign in to book this service.';
+      errEl.style.display = 'block';
+    }
+    return;
+  }
   const s = state.services.find(x => x.slug === categorySlug) || state.services[0] || {
     slug: 'appliance-repair',
     title: 'Appliance Repair',
@@ -646,7 +675,7 @@ function openBooking(categorySlug) {
     `Book ${s.title}`,
     `
       <div class="modal-summary">
-        <div class="category-icon bg-blue">${s.icon || '🛠️'}</div>
+        <div class="category-icon bg-blue" style="font-size:22px; color:var(--blue);">${s.icon || '<i class="bi bi-tools"></i>'}</div>
         <div>
           <strong>${s.title}</strong>
           <small>Base rate: ${money(s.price)} · Verified matching</small>
@@ -1137,6 +1166,16 @@ async function render() {
 }
 
 function goPage(page) {
+  if (state.role === 'guest' && page !== 'discover') {
+    const authScreen = document.getElementById('auth-screen');
+    if (authScreen) authScreen.classList.add('open');
+    const errEl = document.getElementById('auth-error');
+    if (errEl) {
+      errEl.textContent = 'Please sign in to access this page.';
+      errEl.style.display = 'block';
+    }
+    return;
+  }
   state.page = page;
   $('#sidebar').classList.remove('open');
   render();
@@ -1151,6 +1190,31 @@ document.addEventListener('click', async (e) => {
   const pageBtn = e.target.closest('[data-page]');
   if (pageBtn) {
     goPage(pageBtn.dataset.page);
+    return;
+  }
+
+  // Sign in button in topbar
+  const loginBtn = e.target.closest('#login-btn');
+  if (loginBtn) {
+    const authScreen = document.getElementById('auth-screen');
+    if (authScreen) authScreen.classList.add('open');
+    const errEl = document.getElementById('auth-error');
+    if (errEl) errEl.style.display = 'none';
+    return;
+  }
+
+  // Close auth screen modal
+  const closeAuth = e.target.closest('#closeAuthScreen');
+  if (closeAuth) {
+    document.getElementById('auth-screen')?.classList.remove('open');
+    return;
+  }
+
+  // Save profile top button
+  const saveProfileTopBtn = e.target.closest('#saveProfileTopBtn');
+  if (saveProfileTopBtn) {
+    const pf = document.getElementById('profileForm');
+    if (pf) pf.requestSubmit();
     return;
   }
 
@@ -1464,6 +1528,39 @@ document.addEventListener('change', (e) => {
 // Form Submissions
 // -------------------------------------------------------------
 document.addEventListener('submit', async (e) => {
+  // Profile update form submission
+  if (e.target.id === 'profileForm') {
+    e.preventDefault();
+    const form = e.target;
+    const full_name = form.querySelector('#profFullName')?.value?.trim();
+    const email = form.querySelector('#profEmail')?.value?.trim();
+    const phone = form.querySelector('#profPhone')?.value?.trim();
+    const password = form.querySelector('#profPassword')?.value;
+
+    const payload = { full_name, email, phone };
+    if (password) payload.password = password;
+
+    try {
+      const res = await fetch('/api/auth/profile', {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        toast(data.error || 'Failed to update profile');
+        return;
+      }
+      state.user = data.user;
+      toast('Profile updated successfully');
+      render();
+    } catch (err) {
+      toast('Error updating profile: ' + err.message);
+    }
+    return;
+  }
+
   // 1. Smart Matching Form Submission (Step 1)
   if (e.target.id === 'matchForm') {
     e.preventDefault();
@@ -1647,7 +1744,9 @@ document.addEventListener('submit', async (e) => {
 // App Boot Sequence & Auth Wiring
 // -------------------------------------------------------------
 async function bootRoleData() {
-  if (state.role === 'client') {
+  if (state.role === 'guest') {
+    await loadServices();
+  } else if (state.role === 'client') {
     await Promise.all([loadServices(), loadMyBookings(), loadNotifications()]);
   } else if (state.role === 'repairman') {
     await Promise.all([loadProviderData(), loadNotifications()]);
@@ -1669,6 +1768,18 @@ async function boot() {
     state.page = state.role === 'client' ? 'discover' : state.role === 'repairman' ? 'overview' : 'admin-overview';
 
     document.getElementById('auth-screen')?.classList.remove('open');
+    const loginBtn = document.getElementById('login-btn');
+    if (loginBtn) loginBtn.style.display = 'none';
+
+    const helpCard = document.querySelector('.help-card');
+    if (helpCard) helpCard.style.display = 'block';
+
+    const userMini = document.querySelector('.user-mini');
+    if (userMini) userMini.style.display = 'flex';
+
+    const topAv = document.getElementById('topAvatar');
+    if (topAv) topAv.style.display = 'grid';
+
     document.getElementById('miniName').textContent = me.user.full_name;
     document.getElementById('miniRole').textContent = ({
       customer: 'Client account',
@@ -1678,13 +1789,31 @@ async function boot() {
 
     const initials = (me.user.full_name || '?').split(' ').map(x => x[0]).slice(0, 2).join('').toUpperCase();
     document.getElementById('user-avatar').textContent = initials;
-    const topAv = document.getElementById('topAvatar');
     if (topAv) topAv.textContent = initials;
 
     await bootRoleData();
     render();
   } catch {
-    // Keep auth modal open
+    state.user = null;
+    state.role = 'guest';
+    state.page = 'discover';
+
+    document.getElementById('auth-screen')?.classList.remove('open');
+
+    const helpCard = document.querySelector('.help-card');
+    if (helpCard) helpCard.style.display = 'none';
+
+    const userMini = document.querySelector('.user-mini');
+    if (userMini) userMini.style.display = 'none';
+
+    const loginBtn = document.getElementById('login-btn');
+    if (loginBtn) loginBtn.style.display = 'inline-flex';
+
+    const topAv = document.getElementById('topAvatar');
+    if (topAv) topAv.style.display = 'none';
+
+    await bootRoleData();
+    render();
   }
 }
 

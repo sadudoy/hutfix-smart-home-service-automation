@@ -150,7 +150,7 @@ async function runTests() {
 
         const landingRes = await fetch(`${baseUrl}/`);
         const landingText = await landingRes.text();
-        assert(landingRes.status === 200 && (landingText.includes('HutFix') || landingText.includes('Fixora')), 'GET / returns 200 and contains HutFix or Fixora');
+        assert(landingRes.status === 200 && (landingText.includes('HutFix') || landingText.includes('Fixora') || landingText.includes('FixHut')), 'GET / returns 200 and contains HutFix, Fixora, or FixHut');
 
         const custRes = await fetch(`${baseUrl}/customer.html`);
         assert(custRes.status === 200, 'GET /customer.html returns 200');
@@ -213,7 +213,7 @@ async function runTests() {
         for (const reg of regressions) {
             try {
                 console.log(`\n>>> Running regression: ${reg}...`);
-                execSync(`node ${reg}`, { stdio: 'inherit', cwd: __dirname });
+                execSync(`node ${reg}`, { stdio: 'inherit', cwd: __dirname, env: { ...process.env, SKIP_NESTED_REGRESSION: '1' } });
                 assert(true, `Regression suite ${reg} exited 0`);
             } catch (err) {
                 assert(false, `Regression suite ${reg} failed`, err.message);
