@@ -10,6 +10,7 @@ const state = {
   user: null,
   role: 'guest', // 'guest' | 'client' | 'repairman' | 'admin'
   page: 'discover',
+  userLocation: 'Dhaka, Bangladesh',
   query: '',
   category: 'All services',
   bookingFilter: 'All',
@@ -244,6 +245,9 @@ async function loadServices() {
         tag: idx === 0 ? 'POPULAR' : idx === 1 ? 'TOP RATED' : 'CERTIFIED'
       }));
     }
+    try {
+      await fetch(`/api/providers/search?category_slug=all&location=${state.userLocation}`);
+    } catch (_) {}
   } catch (err) {
     console.error('loadServices error:', err);
   }
@@ -426,7 +430,7 @@ async function filterServicesGrid() {
   if (state.query) params.append('search', state.query);
 
   try {
-    const res = await fetch('/api/providers/search?' + params.toString());
+    const res = await fetch(`/api/providers/search?${params.toString()}&location=${state.userLocation}`);
     const data = await res.json();
     if (data.ok && Array.isArray(data.providers)) {
       if (data.providers.length === 0) {
@@ -520,7 +524,7 @@ function renderDiscover() {
     <div class="section-head">
       <div>
         <h2>${state.query ? 'Search results' : state.category === 'All services' ? 'Available services' : state.category + ' services'}</h2>
-        <p>${list.length} verified services ready in Dhaka</p>
+        <p>${list.length} verified services ready in ${escapeHtml(state.userLocation || 'Dhaka')}</p>
       </div>
       <button class="link-btn" data-page="bookings">My bookings ↗</button>
     </div>
@@ -1083,7 +1087,7 @@ async function openBooking(categorySlug, preselectedProviderId) {
           </div>
           <div class="form-field"><label>Contact phone</label><input name="phone" value="${state.user?.phone || '+880 1712-345678'}" required></div>
           ${savedAddrSelectHtml}
-          <div class="form-field full"><label>Service address</label><input name="address" value="${escapeHtml(initialAddr)}" required></div>
+          <div class="form-field full"><label>Service address</label><input name="address" value="${state.userLocation}" required></div>
           <div class="form-field full"><label>Describe issue (optional)</label><textarea name="description" placeholder="Briefly describe what needs attention..."></textarea></div>
           <div class="form-field full"><label>Attach photo (optional)</label><input type="file" name="image" accept="image/*"></div>
         </div>
@@ -1843,6 +1847,46 @@ document.addEventListener('click', async (e) => {
   const closeAuth = e.target.closest('#closeAuthScreen');
   if (closeAuth) {
     document.getElementById('auth-screen')?.classList.remove('open');
+    return;
+  }
+
+  // Location pill click -> Open area modal
+  const locPill = e.target.closest('#location-pill') || e.target.closest('.location-pill');
+  if (locPill) {
+    const areas = ['Dhanmondi', 'Mirpur', 'Gulshan', 'Uttara', 'Banani', 'Mohammadpur'];
+    openModal(
+      'Select your area',
+      `
+        <div style="font-size:14px; margin-bottom:16px; color:var(--muted);">Select your neighborhood in Dhaka to find verified local specialists nearby:</div>
+        <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:12px;">
+          ${areas.map(a => `
+            <button type="button" class="secondary-btn" data-select-area="${a}" style="padding:14px; font-weight:600; font-size:14px; text-align:center; justify-content:center; cursor:pointer; display:flex; align-items:center; gap:8px; border-radius:10px; ${state.userLocation && state.userLocation.includes(a) ? 'border-color:var(--blue); color:var(--blue); background:rgba(37,99,235,0.08); font-weight:700;' : ''}">
+              <i class="bi bi-geo-alt"></i> ${a}
+            </button>
+          `).join('')}
+        </div>
+      `,
+      'SERVICE LOCATION'
+    );
+    return;
+  }
+
+  // Area Selection in Location Modal
+  const selectAreaBtn = e.target.closest('[data-select-area]');
+  if (selectAreaBtn) {
+    const area = selectAreaBtn.dataset.selectArea;
+    state.userLocation = area;
+    closeModal();
+    const locText = document.getElementById('currentLocationText');
+    if (locText) {
+      locText.textContent = `${area}, Dhaka`;
+    }
+    const locPillStrong = document.querySelector('.location-pill strong');
+    if (locPillStrong) {
+      locPillStrong.textContent = `${area}, Dhaka`;
+    }
+    render();
+    toast(`Location updated to ${area}`);
     return;
   }
 
