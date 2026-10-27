@@ -29,6 +29,9 @@ const state = {
   adminStats: {},
   adminUsers: [],
   adminBookings: [],
+  adminPayments: [],
+  adminPayouts: [],
+  disputes: [],
   notifications: [],
   activeRequestId: null,
   viewingGigId: 2,
@@ -357,23 +360,38 @@ async function loadProviderData() {
 
 async function loadAdminData() {
   try {
-    const [statsRes, usersRes, bookingsRes] = await Promise.all([
-      fetch('/api/admin/stats', { credentials: 'include' }),
-      fetch('/api/admin/users', { credentials: 'include' }),
-      fetch('/api/admin/bookings', { credentials: 'include' })
+    const [statsRes, usersRes, bookingsRes, paymentsRes, payoutsRes, disputesRes] = await Promise.all([
+      fetch('/api/admin/stats', { credentials: 'include' }).catch(() => null),
+      fetch('/api/admin/users', { credentials: 'include' }).catch(() => null),
+      fetch('/api/admin/bookings', { credentials: 'include' }).catch(() => null),
+      fetch('/api/admin/payments', { credentials: 'include' }).catch(() => null),
+      fetch('/api/admin/payouts', { credentials: 'include' }).catch(() => null),
+      fetch('/api/admin/disputes', { credentials: 'include' }).catch(() => null)
     ]);
 
-    if (statsRes.ok) {
+    if (statsRes && statsRes.ok) {
       const d = await statsRes.json();
       state.adminStats = d.stats || {};
     }
-    if (usersRes.ok) {
+    if (usersRes && usersRes.ok) {
       const d = await usersRes.json();
       state.adminUsers = d.users || [];
     }
-    if (bookingsRes.ok) {
+    if (bookingsRes && bookingsRes.ok) {
       const d = await bookingsRes.json();
       state.adminBookings = d.bookings || [];
+    }
+    if (paymentsRes && paymentsRes.ok) {
+      const d = await paymentsRes.json();
+      state.adminPayments = d.payments || [];
+    }
+    if (payoutsRes && payoutsRes.ok) {
+      const d = await payoutsRes.json();
+      state.adminPayouts = d.payouts || [];
+    }
+    if (disputesRes && disputesRes.ok) {
+      const d = await disputesRes.json();
+      state.disputes = d.disputes || [];
     }
   } catch (err) {
     console.error('loadAdminData error:', err);
@@ -1475,39 +1493,122 @@ function renderRepairProfile() {
   `;
 }
 
+function renderAdminOverview() {
+  const st = state.adminStats || {};
+  const totalBookings = st.total_bookings ?? 0;
+  const grossVolume = money(st.gross_volume ?? st.total_revenue ?? 0);
+  const totalUsers = st.total_users ?? 0;
+  const totalProviders = st.total_providers ?? 0;
+
+  const recentBookings = (state.adminBookings || []).slice(0, 5);
+  const recentPayments = (state.adminPayments || []).slice(0, 5);
+
+  return `
+    ${pageHead('PLATFORM CONTROL CENTER', 'Marketplace overview', 'A live snapshot of platform activity.')}
+    <div class="stats-grid">
+      ${stat('Total Bookings', totalBookings, '▤', 'All time bookings')}
+      ${stat('Gross Volume', grossVolume, '৳', 'Platform transaction total')}
+      ${stat('Total Users', totalUsers, '♙', 'Registered accounts')}
+      ${stat('Total Providers', totalProviders, '✓', 'Active specialists')}
+    </div>
+    <div class="dashboard-grid">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Recent Bookings</h3>
+            <p>Latest requests across all categories</p>
+          </div>
+          <button class="link-btn" data-page="all-bookings">View all ↗</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>BOOKING</th><th>CLIENT</th><th>SERVICE</th><th>AMOUNT</th><th>STATUS</th></tr>
+            </thead>
+            <tbody>
+              ${recentBookings.map(b => `
+                <tr>
+                  <td><strong>#${b.id}</strong></td>
+                  <td>${escapeHtml(b.customer_name || 'Customer')}</td>
+                  <td>${escapeHtml(b.category_name || 'Service')}</td>
+                  <td><strong>${money(b.estimated_price)}</strong></td>
+                  <td><span class="status ${statusClass(b.status)}">${normalizeStatus(b.status)}</span></td>
+                </tr>
+              `).join('') || '<tr><td colspan="5">No recent bookings.</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Pending Payments</h3>
+            <p>Recent manual payment proofs requiring review</p>
+          </div>
+          <button class="link-btn" data-page="payments">View all ↗</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>TRX ID</th><th>CUSTOMER</th><th>AMOUNT</th><th>ACTION</th></tr>
+            </thead>
+            <tbody>
+              ${recentPayments.map(p => `
+                <tr>
+                  <td><code>${escapeHtml(p.trx_id || 'N/A')}</code><br><small style="text-transform:uppercase; color:var(--muted); font-weight:700;">${escapeHtml(p.payment_method || 'bkash')}</small></td>
+                  <td><strong>${escapeHtml(p.customer_name || 'Customer')}</strong></td>
+                  <td><strong>${money(p.estimated_price)}</strong></td>
+                  <td>
+                    ${p.payment_status === 'pending' ? `
+                      <div class="admin-actions">
+                        <button class="small-action" data-payment-action="verify" data-req-id="${p.id}" style="color:var(--green); border-color:var(--green);">Verify</button>
+                        <button class="small-action" data-payment-action="reject" data-req-id="${p.id}" style="color:var(--red); border-color:var(--red);">Reject</button>
+                      </div>
+                    ` : `<small style="color:var(--muted);">${p.payment_status || 'cleared'}</small>`}
+                  </td>
+                </tr>
+              `).join('') || '<tr><td colspan="4">No pending payment proofs.</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 async function renderAdminPayments() {
-  let payments = [];
   try {
     const res = await fetch('/api/admin/payments', { credentials: 'include' });
     const data = await res.json();
-    if (data.ok) payments = data.payments || [];
+    if (data.ok) state.adminPayments = data.payments || [];
   } catch (err) {
     console.error(err);
   }
 
+  const payments = state.adminPayments || [];
+
   return `
-    ${pageHead('FINANCE & CLEARING', 'Manual payments', 'Verify manual bKash & Nagad payments submitted by clients.')}
+    ${pageHead('FINANCE', 'Payment Verifications', 'Verify manual bKash/Nagad transactions.')}
     <div class="panel">
       <div class="panel-head"><h3>Transaction proofs ledger (${payments.length})</h3></div>
       <div class="table-wrap">
         <table class="data-table">
           <thead>
-            <tr><th>BOOKING</th><th>CLIENT</th><th>METHOD</th><th>TRX ID</th><th>SENDER</th><th>AMOUNT</th><th>STATUS</th><th>ACTIONS</th></tr>
+            <tr><th>TRX ID</th><th>CUSTOMER</th><th>AMOUNT</th><th>ACTION</th></tr>
           </thead>
           <tbody>
             ${payments.map(p => `
               <tr>
-                <td><strong>#${p.id}</strong><br><small style="color:var(--muted);">${p.category_name || 'Service'}</small></td>
-                <td><strong>${escapeHtml(p.customer_name || 'Customer')}</strong><br><small style="color:var(--muted);">${p.customer_phone || p.customer_email || ''}</small></td>
-                <td><span style="font-weight:700; text-transform:uppercase;">${escapeHtml(p.payment_method || 'bkash')}</span></td>
-                <td><code>${escapeHtml(p.trx_id || 'N/A')}</code></td>
-                <td>${escapeHtml(p.sender_number || 'N/A')}</td>
-                <td><strong>${money(p.estimated_price)}</strong></td>
                 <td>
-                  <span class="status ${p.payment_status === 'verified' ? 'completed' : p.payment_status === 'rejected' ? 'danger' : 'progress'}">
-                    ${p.payment_status || 'pending'}
-                  </span>
+                  <code>${escapeHtml(p.trx_id || 'N/A')}</code>
+                  <br><small style="font-weight:700; text-transform:uppercase; color:var(--muted);">${escapeHtml(p.payment_method || 'bkash')}</small>
+                  <small style="color:var(--muted);"> · #${p.id}</small>
                 </td>
+                <td>
+                  <strong>${escapeHtml(p.customer_name || 'Customer')}</strong>
+                  <br><small style="color:var(--muted);">${escapeHtml(p.sender_number || p.customer_phone || p.customer_email || '')}</small>
+                </td>
+                <td><strong>${money(p.estimated_price)}</strong></td>
                 <td>
                   ${p.payment_status === 'pending' ? `
                     <div class="admin-actions">
@@ -1515,11 +1616,11 @@ async function renderAdminPayments() {
                       <button class="small-action" data-payment-action="reject" data-req-id="${p.id}" style="color:var(--red); border-color:var(--red);">Reject</button>
                     </div>
                   ` : `
-                    <small style="color:var(--muted);">${p.payment_status === 'verified' ? 'Cleared' : 'Rejected'}</small>
+                    <span class="status ${p.payment_status === 'verified' ? 'completed' : 'danger'}">${p.payment_status === 'verified' ? 'Verified' : 'Rejected'}</span>
                   `}
                 </td>
               </tr>
-            `).join('') || '<tr><td colspan="8">No payment proofs logged.</td></tr>'}
+            `).join('') || '<tr><td colspan="4">No payment proofs logged.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -1528,48 +1629,45 @@ async function renderAdminPayments() {
 }
 
 async function renderAdminPayouts() {
-  let payouts = [];
   try {
     const res = await fetch('/api/admin/payouts', { credentials: 'include' });
     const data = await res.json();
-    if (data.ok) payouts = data.payouts || [];
+    if (data.ok) state.adminPayouts = data.payouts || [];
   } catch (err) {
     console.error(err);
   }
 
+  const payouts = state.adminPayouts || [];
+
   return `
-    ${pageHead('SETTLEMENTS & DISBURSEMENTS', 'Provider payouts', 'Manage specialist balance disbursements and withdrawals.')}
+    ${pageHead('FINANCE', 'Payout Requests', 'Approve specialist withdrawals.')}
     <div class="panel">
       <div class="panel-head"><h3>Disbursement requests (${payouts.length})</h3></div>
       <div class="table-wrap">
         <table class="data-table">
           <thead>
-            <tr><th>PAYOUT ID</th><th>SPECIALIST</th><th>CONTACT</th><th>AMOUNT</th><th>REQUESTED AT</th><th>STATUS</th><th>ACTIONS</th></tr>
+            <tr><th>PROVIDER</th><th>AMOUNT</th><th>DATE</th><th>ACTION</th></tr>
           </thead>
           <tbody>
             ${payouts.map(po => `
               <tr>
-                <td><strong>#${po.id}</strong></td>
-                <td><strong>${escapeHtml(po.provider_name || 'Specialist')}</strong></td>
-                <td>${escapeHtml(po.provider_phone || po.provider_email || '')}</td>
+                <td>
+                  <strong>${escapeHtml(po.provider_name || 'Specialist')}</strong>
+                  <br><small style="color:var(--muted);">Payout #${po.id} · ${escapeHtml(po.provider_phone || po.provider_email || '')}</small>
+                </td>
                 <td><strong>${money(po.amount)}</strong></td>
                 <td>${new Date(po.created_at).toLocaleString()}</td>
                 <td>
-                  <span class="status ${po.status === 'completed' ? 'completed' : po.status === 'rejected' ? 'danger' : 'progress'}">
-                    ${po.status || 'pending'}
-                  </span>
-                </td>
-                <td>
                   ${po.status === 'pending' ? `
                     <div class="admin-actions">
-                      <button class="small-action" data-payout-action="approve" data-payout-id="${po.id}" style="color:var(--green); border-color:var(--green);">Approve ↗</button>
+                      <button class="small-action" data-payout-action="approve" data-payout-id="${po.id}" style="color:var(--green); border-color:var(--green);">Approve</button>
                     </div>
                   ` : `
-                    <small style="color:var(--muted);">${po.status === 'completed' ? 'Paid' : 'Rejected'}</small>
+                    <span class="status ${po.status === 'completed' ? 'completed' : 'danger'}">${po.status === 'completed' ? 'Approved' : po.status}</span>
                   `}
                 </td>
               </tr>
-            `).join('') || '<tr><td colspan="7">No payout requests logged.</td></tr>'}
+            `).join('') || '<tr><td colspan="4">No payout requests logged.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -1776,32 +1874,43 @@ function renderReports() {
 async function render() {
   renderNav();
   const pages = {
-    discover: renderDiscover,
-    bookings: renderBookings,
-    tracking: renderTracking,
-    favorites: renderFavorites,
-    profile: renderProfile,
-    'gig-details': renderGigDetails,
-    overview: renderRepairOverview,
-    'my-gigs': renderGigs,
-    requests: renderRequests,
-    availability: renderProviderAvailability,
-    earnings: renderEarnings,
-    'repair-profile': renderRepairProfile,
-    'admin-overview': renderAdminOverview,
-    payments: renderAdminPayments,
-    payouts: renderAdminPayouts,
-    users: renderUsers,
-    moderation: renderModeration,
-    'all-bookings': renderAllBookings,
-    reports: renderReports
+    discover: typeof renderDiscover === 'function' ? renderDiscover : null,
+    bookings: typeof renderBookings === 'function' ? renderBookings : null,
+    tracking: typeof renderTracking === 'function' ? renderTracking : null,
+    favorites: typeof renderFavorites === 'function' ? renderFavorites : null,
+    profile: typeof renderProfile === 'function' ? renderProfile : null,
+    'gig-details': typeof renderGigDetails === 'function' ? renderGigDetails : null,
+    overview: typeof renderRepairOverview === 'function' ? renderRepairOverview : null,
+    'my-gigs': typeof renderGigs === 'function' ? renderGigs : null,
+    requests: typeof renderRequests === 'function' ? renderRequests : null,
+    availability: typeof renderProviderAvailability === 'function' ? renderProviderAvailability : null,
+    earnings: typeof renderEarnings === 'function' ? renderEarnings : null,
+    'repair-profile': typeof renderRepairProfile === 'function' ? renderRepairProfile : null,
+    'admin-overview': typeof renderAdminOverview === 'function' ? renderAdminOverview : null,
+    payments: typeof renderAdminPayments === 'function' ? renderAdminPayments : null,
+    payouts: typeof renderAdminPayouts === 'function' ? renderAdminPayouts : null,
+    users: typeof renderUsers === 'function' ? renderUsers : null,
+    moderation: typeof renderModeration === 'function' ? renderModeration : null,
+    'all-bookings': typeof renderAllBookings === 'function' ? renderAllBookings : null,
+    reports: typeof renderReports === 'function' ? renderReports : null
   };
 
-  const renderer = pages[state.page] || renderDiscover;
-  const content = $('#content');
-  const res = await renderer();
-  if (res != null) {
-    content.innerHTML = res;
+  const contentArea = document.getElementById('content');
+  if (!contentArea) return;
+
+  const currentPage = pages[state.page];
+  if (typeof currentPage === 'function') {
+    try {
+      const res = await currentPage();
+      if (res != null) {
+        contentArea.innerHTML = res;
+      }
+    } catch (e) {
+      console.error('Render error on page:', state.page, e);
+      contentArea.innerHTML = `<div class="empty-state" style="color:red; padding: 20px;">Error rendering ${state.page}: ${e.message}</div>`;
+    }
+  } else {
+    contentArea.innerHTML = `<div class="empty-state" style="padding: 20px;">Page "${state.page}" is not implemented yet.</div>`;
   }
 }
 
