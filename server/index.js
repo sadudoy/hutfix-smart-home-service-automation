@@ -54,7 +54,6 @@ app.use('/api/gigs', gigsRouter);
 
 // Static frontend serving
 app.use(express.static(path.join(__dirname, '..', 'client')));
-app.use(express.static(path.join(__dirname, '..', 'client', '_legacy_phase9')));
 
 // Centralized error handler
 app.use(errorHandler);

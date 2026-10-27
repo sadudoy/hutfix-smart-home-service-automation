@@ -73,7 +73,8 @@ async function getUsers(req, res, next) {
 
         let query = `
             SELECT u.id, u.email, u.full_name, u.phone, u.role, u.created_at,
-                   p.id AS provider_id, p.is_active AS provider_active
+                   p.id AS provider_id, p.is_active AS provider_active,
+                   COALESCE(p.is_active, true) AS is_active
             FROM users u
             LEFT JOIN providers p ON p.user_id = u.id
             ORDER BY u.created_at DESC
@@ -292,7 +293,7 @@ async function getPayments(req, res, next) {
             FROM service_requests sr
             JOIN users cu ON cu.id = sr.customer_id
             JOIN service_categories sc ON sc.id = sr.category_id
-            WHERE sr.payment_method IS NOT NULL
+            WHERE sr.payment_status = 'pending'
             ORDER BY sr.created_at DESC;
         `);
         return res.status(200).json({
@@ -397,6 +398,7 @@ async function getPayouts(req, res, next) {
             FROM payout_requests pr
             JOIN providers p ON p.id = pr.provider_id
             JOIN users u ON u.id = p.user_id
+            WHERE pr.status = 'pending'
             ORDER BY pr.created_at DESC;
         `);
         return res.status(200).json({

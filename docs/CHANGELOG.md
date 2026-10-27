@@ -176,5 +176,22 @@
 
 ---
 
-## Phase 13+: pending
-- Future planned enhancements outlined in `docs/ROADMAP.md`.
+## Phase 14 — Final Release: Admin Sync, Rich Demo Data & Presentation Prep
+- **Tag**: `v1.0.0-hackathon`
+- **Landed**:
+  - **Admin UI Real-Time Sync**:
+    - Backend: Added `WHERE payment_status = 'pending'` filter to `GET /api/admin/payments` and `WHERE status = 'pending'` filter to `GET /api/admin/payouts`.
+    - Frontend: Refactored global handlers `window.verifyPayment`, `window.approvePayout`, and `window.verifyUser` to `await loadAdminData()` and re-render instantly on action completion.
+    - Updated `renderUsers()` to dynamically flip action buttons between "Verify" and "Suspend" reflecting real-time `is_active` database status.
+  - **Rich Demo Seed Data (`database/seed_demo.sql`)**:
+    - Seeded pending bKash mobile banking payment (`TRX998877`) for Admin to verify.
+    - Seeded pending provider withdrawal payout request (৳4,500) for Admin approval.
+    - Seeded active customer dispute for Admin arbitration.
+    - Seeded 5 authentic specialist reviews and rating breakdown for Provider 2.
+  - **Automated E2E Smoke Test (`scripts/e2e_smoke.js`)**:
+    - Full end-to-end lifecycle verification test exercising: Customer Login -> bKash Booking -> Admin Login -> Payment Verification -> Provider Login -> Job Acceptance -> On The Way -> In Progress -> Completion -> Customer Invoicing Check.
+  - **Hackathon Presentation Script (`DEMO.md`)**:
+    - Authored structured 3-minute pitch covering credentials, Minute 1 (Discovery & bKash), Minute 2 (Admin audit & dispatch), Minute 3 (SSE live tracking & payouts), and judge talking points (advisory locks, SSE, mobile banking).
+  - **Repository Polish & Cleanup**:
+    - Cleaned up obsolete legacy prototype directories (`client/_legacy_phase9/` and `client/_reference_fixora/`).
+    - Updated documentation and README with final release specifications.

@@ -2,7 +2,9 @@
 
 > On-demand, slot-scheduled home services with algorithmic matching, concurrency-safe booking, and automated invoice delivery for the BAUST CSE FEST 2026 Hackathon.
 
-**Status: Phase 12 / 13 complete**
+**Status: Phase 14 Complete — Final Hackathon Release (`v1.0.0-hackathon`)**
+
+🎤 **[3-Minute Hackathon Presentation Script & Pitch (DEMO.md)](DEMO.md)**
 
 ---
 
@@ -27,6 +29,8 @@ Follow these 4 steps to run the complete platform locally:
    psql "$DATABASE_URL" -f database/seed.sql
    psql "$DATABASE_URL" -f database/migrations/001_add_notifications.sql
    psql "$DATABASE_URL" -f database/migrations/002_add_addresses.sql
+   psql "$DATABASE_URL" -f database/migrations/003_provider_ops.sql
+   psql "$DATABASE_URL" -f database/seed_demo.sql
    ```
 4. **Launch Dev Server**:
    ```bash
@@ -58,12 +62,17 @@ All demo accounts use password `demo1234`:
 - [x] ✅ Finite state machine request lifecycle (requested &rarr; accepted &rarr; on the way &rarr; in progress &rarr; completed).
 - [x] ✅ Live customer fulfillment tracking with 5-stage stepper and 3-bucket provider dashboard.
 
-### Bonus Features
+### Operational & Financial Features (Phases 10–14)
+- [x] ✅ Direct specialist booking from Gig Details with instant slot picker & upfront pricing.
+- [x] ✅ Customer Saved Address Book with default address tagging and booking pre-fill.
+- [x] ✅ Authentic Bangladeshi Mobile Banking (bKash & Nagad) manual payment proof flow with TrxID.
+- [x] ✅ Real-time Admin UI synchronization on payment verifications and specialist payout approvals.
+- [x] ✅ Server-Sent Events (SSE) real-time streaming for live dispatch and milestone progress.
 - [x] ✅ Automated financial invoice generation on job completion with 5% platform tax.
 - [x] ✅ Printable A4-styled customer invoice page (`client/invoice.html`).
-- [x] ✅ Verified 5-star customer review & provider aggregate rating recalculation.
+- [x] ✅ Verified customer reviews & specialist rating breakdown recalculation.
 - [x] ✅ In-transaction event notification feed with unread count and real-time navbar bells.
-- [x] ✅ Workload capping ($\ge 4$ busy-day filter) and urgent priority sorting in provider view.
+- [x] ✅ Automated E2E smoke test suite (`scripts/e2e_smoke.js`) verifying entire platform lifecycle.
 
 ---
 

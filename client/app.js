@@ -2021,7 +2021,9 @@ function renderUsers() {
             <tr><th>USER</th><th>ROLE</th><th>EMAIL / CONTACT</th><th>REGISTERED</th><th>ACTIONS</th></tr>
           </thead>
           <tbody>
-            ${list.map(u => `
+            ${list.map(u => {
+              const isActive = u.is_active !== undefined ? Boolean(u.is_active) : (u.provider_active !== false);
+              return `
               <tr>
                 <td>
                   <div class="admin-user">
@@ -2036,13 +2038,13 @@ function renderUsers() {
                 <td>${new Date(u.created_at).toLocaleDateString()}</td>
                 <td>
                   <div class="admin-actions">
-                    <button class="small-action" data-user-action="verify" data-user-id="${u.id}" data-user="${escapeHtml(u.full_name)}">
-                      ${u.provider_active === false ? 'Activate' : 'Toggle Active'}
+                    <button class="${isActive ? 'danger-btn' : 'primary-btn'}" style="padding:4px 10px; font-size:12px; min-height:30px;" onclick="verifyUser(${u.id}, ${isActive})">
+                      ${isActive ? 'Suspend' : 'Verify'}
                     </button>
                   </div>
                 </td>
               </tr>
-            `).join('') || '<tr><td colspan="5">No users found.</td></tr>'}
+            `;}).join('') || '<tr><td colspan="5">No users found.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -2742,6 +2744,7 @@ document.addEventListener('click', async (e) => {
       const d = await res.json();
       if (d.ok) {
         toast(`Payment #${reqId} ${act === 'verify' ? 'verified' : 'rejected'}`);
+        await loadAdminData();
         render();
       } else {
         toast(d.error || 'Failed to update payment');
@@ -2766,6 +2769,7 @@ document.addEventListener('click', async (e) => {
       const d = await res.json();
       if (d.ok) {
         toast(`Payout #${poId} approved!`);
+        await loadAdminData();
         render();
       } else {
         toast(d.error || 'Failed to approve payout');
@@ -3573,33 +3577,16 @@ document.getElementById('logoutBtn')?.addEventListener('click', async () => {
 
 // Global Admin Action Handlers
 window.verifyPayment = async function(id, action) {
-  try {
-    const res = await fetch('/api/admin/payments/' + id + '/verify', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action })
-    });
-    if (res.ok) {
-      toast(`Payment ${action === 'verify' ? 'verified' : 'rejected'}.`);
-      await loadAdminData();
-      render();
-    } else {
-      toast('Failed to update payment.');
-    }
-  } catch (e) { console.error(e); }
+  const res = await fetch('/api/admin/payments/' + id + '/verify', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action }) });
+  if (res.ok) { toast('Payment updated'); await loadAdminData(); render(); }
 };
-
 window.approvePayout = async function(id) {
-  try {
-    const res = await fetch('/api/admin/payouts/' + id + '/approve', { method: 'PATCH' });
-    if (res.ok) {
-      toast('Payout approved.');
-      await loadAdminData();
-      render();
-    } else {
-      toast('Failed to approve payout.');
-    }
-  } catch (e) { console.error(e); }
+  const res = await fetch('/api/admin/payouts/' + id + '/approve', { method: 'PATCH' });
+  if (res.ok) { toast('Payout approved'); await loadAdminData(); render(); }
+};
+window.verifyUser = async function(id, isActive) {
+  const res = await fetch('/api/admin/users/' + id + '/verify', { method: 'PATCH' });
+  if (res.ok) { toast(isActive ? 'User suspended' : 'User verified'); await loadAdminData(); render(); }
 };
 
 boot();
