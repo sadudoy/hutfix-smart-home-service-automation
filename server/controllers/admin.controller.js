@@ -152,7 +152,10 @@ async function toggleVerifyUser(req, res, next) {
             return res.status(400).json({ ok: false, error: 'invalid user id' });
         }
 
-        const check = await pool.query('SELECT id, is_active FROM providers WHERE user_id = $1 OR id = $1;', [id]);
+        let check = await pool.query('SELECT id, is_active FROM providers WHERE user_id = $1;', [id]);
+        if (check.rows.length === 0) {
+            check = await pool.query('SELECT id, is_active FROM providers WHERE id = $1;', [id]);
+        }
         if (check.rows.length > 0) {
             const newStatus = !check.rows[0].is_active;
             const updated = await pool.query(

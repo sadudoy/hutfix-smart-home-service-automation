@@ -324,6 +324,22 @@ async function run() {
         });
         assert(putAvailRes.status === 200, 'PUT /api/provider/availability returns 200');
 
+        // Restore full week availability for regression safety
+        await makeRequest('/api/provider/availability', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', Cookie: provCookie },
+            body: {
+                availability: [
+                    { weekday: 1, start_minute: 540, end_minute: 1080 },
+                    { weekday: 2, start_minute: 540, end_minute: 1080 },
+                    { weekday: 3, start_minute: 540, end_minute: 1080 },
+                    { weekday: 4, start_minute: 540, end_minute: 1080 },
+                    { weekday: 5, start_minute: 540, end_minute: 1080 },
+                    { weekday: 6, start_minute: 600, end_minute: 1200 }
+                ]
+            }
+        });
+
         // 2.8 Provider Operations: Blackout Dates
         const blackoutDate = '2026-11-20';
         const postBlackoutRes = await makeRequest('/api/provider/blackouts', {
