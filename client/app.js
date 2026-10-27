@@ -129,12 +129,12 @@ const repairNav = [
 
 const adminNav = [
   ['admin-overview', '<i class="bi bi-speedometer2"></i>', 'Overview'],
-  ['payments', '<i class="bi bi-credit-card"></i>', 'Payments'],
-  ['payouts', '<i class="bi bi-cash-stack"></i>', 'Payouts'],
   ['users', '<i class="bi bi-people"></i>', 'Users & repairmen'],
-  ['moderation', '<i class="bi bi-shield-check"></i>', 'Disputes & moderation'],
+  ['moderation', '<i class="bi bi-shield-check"></i>', 'Gig moderation'],
   ['all-bookings', '<i class="bi bi-calendar-check"></i>', 'All bookings'],
-  ['reports', '<i class="bi bi-graph-up"></i>', 'Reports & analytics']
+  ['payouts', '<i class="bi bi-cash-stack"></i>', 'Payouts'],
+  ['payments', '<i class="bi bi-credit-card"></i>', 'Payments'],
+  ['reports', '<i class="bi bi-graph-up"></i>', 'Reports']
 ];
 
 function navItems() {
@@ -776,7 +776,6 @@ async function renderProfile() {
           <div class="form-field"><label>Full name</label><input id="profFullName" name="full_name" value="${escapeHtml(u.full_name || '')}" required></div>
           <div class="form-field"><label>Email address</label><input id="profEmail" name="email" value="${escapeHtml(u.email || '')}" type="email" required></div>
           <div class="form-field"><label>Phone number</label><input id="profPhone" name="phone" value="${escapeHtml(u.phone || '')}" placeholder="+8801700000000"></div>
-          <div class="form-field"><label>Old password (required to change password)</label><input id="profOldPassword" name="old_password" type="password" placeholder="Enter current password"></div>
           <div class="form-field"><label>New password</label><input id="profPassword" name="password" type="password" placeholder="Leave blank to keep current"></div>
           <div class="form-field full" style="margin-top:15px;">
             <button class="primary-btn" type="submit" id="saveProfileBtn">Save changes</button>
@@ -938,8 +937,8 @@ async function renderGigDetails() {
                 Includes initial diagnosis, standard visit dispatch, and HutFix service guarantee.
               </p>
             </div>
-            <button class="primary-btn" id="bookGigNowBtn" data-provider-id="${provider.id}" data-category-slug="${firstService.category_slug}" data-price="${basePrice}" style="width:100%; justify-content:center; padding:14px; font-size:14px; font-weight:700;">
-              Check Availability & Book ↗
+            <button class="primary-btn" id="bookGigNowBtn" onclick="openBooking(${provider.id}, '${firstService.category_slug}')" data-provider-id="${provider.id}" data-category-slug="${firstService.category_slug}" data-price="${basePrice}" style="width:100%; justify-content:center; padding:14px; font-size:14px; font-weight:700;">
+              Book this Pro ↗
             </button>
             <div style="font-size:12px; color:var(--muted); text-align:center; margin-top:12px;">
               ⚡ Concurrency protected · No double booking
@@ -1006,9 +1005,15 @@ async function renderGigDetails() {
 }
 
 // -------------------------------------------------------------
-// Booking Flow & Smart Match Wiring
+// Booking Flow & Direct Booking / Smart Match Wiring
 // -------------------------------------------------------------
-async function openBooking(categorySlug, preselectedProviderId) {
+async function openBooking(providerId = null, categorySlug = null) {
+  // If first parameter is a category slug string (from Discover)
+  if (typeof providerId === 'string' && isNaN(Number(providerId)) && !categorySlug) {
+    categorySlug = providerId;
+    providerId = null;
+  }
+
   if (!state.user || state.role === 'guest') {
     const authScreen = document.getElementById('auth-screen');
     if (authScreen) authScreen.classList.add('open');
@@ -1023,10 +1028,10 @@ async function openBooking(categorySlug, preselectedProviderId) {
   await loadAddresses();
   const addresses = state.addresses || [];
   const defaultAddrObj = addresses.find(a => a.is_default) || addresses[0];
-  const initialAddr = defaultAddrObj ? defaultAddrObj.address_line : 'House 18, Road 7, Dhanmondi, Dhaka';
+  const initialAddr = defaultAddrObj ? defaultAddrObj.address_line : (state.userLocation || 'House 18, Road 7, Dhanmondi, Dhaka');
 
   const s = state.services.find(x => x.slug === categorySlug) || state.services[0] || {
-    slug: 'appliance-repair',
+    slug: categorySlug || 'appliance-repair',
     title: 'Appliance Repair',
     price: 1000
   };
@@ -1034,7 +1039,342 @@ async function openBooking(categorySlug, preselectedProviderId) {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const tomorrowStr = tomorrow.toISOString().split('T')[0];
+  const todayStr = new Date().toISOString().split('T')[0];
 
+  // -------------------------------------------------------------
+  // 1. Direct Booking Flow (When providerId is specified from Gig Details)
+  // -------------------------------------------------------------
+  if (providerId) {
+    const catSlug = categorySlug || s.slug;
+    let selectedSlot = null;
+    let chosenDate = tomorrowStr;
+
+    const savedAddrSelectHtml = addresses.length > 0 ? `
+      <div class="form-field full">
+        <label><i class="bi bi-geo-alt"></i> Choose from Saved Addresses</label>
+        <select id="directSavedAddressSelect">
+          <option value="">-- Select a saved address --</option>
+          ${addresses.map(a => `
+            <option value="${escapeHtml(a.address_line)}" ${a.is_default ? 'selected' : ''}>
+              ${escapeHtml(a.label)}: ${escapeHtml(a.address_line)} ${a.is_default ? '(Default)' : ''}
+            </option>
+          `).join('')}
+        </select>
+      </div>
+    ` : '';
+
+    openModal(
+      `Book Specialist Directly`,
+      `
+        <div class="modal-summary">
+          <div class="category-icon bg-blue" style="font-size:22px; color:var(--primary);"><i class="bi bi-person-check"></i></div>
+          <div>
+            <strong>Direct Booking with Specialist</strong>
+            <small>Direct scheduling · Guaranteed dispatch · Concurrency protected</small>
+          </div>
+        </div>
+        <form id="directBookingForm">
+          <input type="hidden" name="category_slug" value="${escapeHtml(catSlug)}">
+          <input type="hidden" name="provider_id" value="${providerId}">
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Service Date</label>
+              <input type="date" id="directDateInput" name="preferred_date" value="${tomorrowStr}" min="${todayStr}" required>
+            </div>
+            <div class="form-field">
+              <label>Urgency</label>
+              <select name="urgency" id="directUrgencyInput">
+                <option value="normal">Standard (Normal)</option>
+                <option value="urgent">Urgent priority (+20%)</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Contact phone</label>
+              <input name="phone" id="directPhoneInput" value="${state.user?.phone || '+880 1712-345678'}" required>
+            </div>
+            ${savedAddrSelectHtml}
+            <div class="form-field full">
+              <label>Service address</label>
+              <input name="address" id="directAddressInput" value="${escapeHtml(initialAddr)}" required>
+            </div>
+            <div class="form-field full">
+              <label>Select a Time Slot</label>
+              <div id="directSlotsContainer" style="display:flex; gap:8px; flex-wrap:wrap; min-height:40px; align-items:center;">
+                <span style="font-size:13px; color:var(--text-muted);"><i class="bi bi-hourglass-split"></i> Loading available slots...</span>
+              </div>
+            </div>
+            <div class="form-field full">
+              <label>Describe issue (optional)</label>
+              <textarea name="description" id="directDescInput" placeholder="Briefly describe what needs attention..."></textarea>
+            </div>
+            <div class="form-field full">
+              <label>Attach photo (optional)</label>
+              <input type="file" name="image" id="directImgInput" accept="image/*">
+            </div>
+          </div>
+          <div id="directCheckoutContainer" style="margin-top:16px;"></div>
+          <div class="modal-actions" id="directModalActions">
+            <button type="button" class="secondary-btn" id="cancelModal">Cancel</button>
+            <button class="primary-btn" type="submit" id="continueDirectBookingBtn" disabled>Select a Time Slot ↗</button>
+          </div>
+        </form>
+      `,
+      'DIRECT SPECIALIST BOOKING'
+    );
+
+    const addrSel = $('#directSavedAddressSelect');
+    if (addrSel) {
+      addrSel.addEventListener('change', (e) => {
+        const addrInput = $('#directAddressInput');
+        if (addrInput && e.target.value) {
+          addrInput.value = e.target.value;
+        }
+      });
+    }
+
+    async function loadDirectSlots(dateVal) {
+      const slotsContainer = $('#directSlotsContainer');
+      const submitBtn = $('#continueDirectBookingBtn');
+      if (!slotsContainer) return;
+
+      selectedSlot = null;
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Select a Time Slot ↗';
+      }
+
+      slotsContainer.innerHTML = '<span style="font-size:13px; color:var(--text-muted);"><i class="bi bi-hourglass-split"></i> Loading available slots...</span>';
+
+      try {
+        const res = await fetch(`/api/providers/${providerId}/slots?date=${dateVal}&category_slug=${encodeURIComponent(catSlug)}`);
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok || !data.ok) {
+          slotsContainer.innerHTML = `<span style="font-size:13px; color:var(--red);">${escapeHtml(data.error || 'Failed to load slots')}</span>`;
+          return;
+        }
+
+        const slots = data.slots || [];
+        const availableSlots = slots.filter(sl => sl.available);
+
+        if (slots.length === 0 || availableSlots.length === 0) {
+          slotsContainer.innerHTML = '<span style="font-size:13px; color:var(--text-muted);">No available slots for this specialist on this date. Please try another date.</span>';
+          return;
+        }
+
+        slotsContainer.innerHTML = slots.map(sl => {
+          if (!sl.available) {
+            return `<button type="button" class="pill-filter disabled" disabled style="opacity:0.35; text-decoration:line-through; cursor:not-allowed;" title="Booked or unavailable">${sl.label || minutesToTime(sl.start_minute)}</button>`;
+          }
+          return `<button type="button" class="pill-filter direct-slot-btn" data-start="${sl.start_minute}" data-end="${sl.end_minute}" data-label="${escapeHtml(sl.label || '')}">${sl.label || (minutesToTime(sl.start_minute) + ' – ' + minutesToTime(sl.end_minute))}</button>`;
+        }).join('');
+
+        slotsContainer.querySelectorAll('.direct-slot-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            slotsContainer.querySelectorAll('.direct-slot-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedSlot = {
+              start_minute: parseInt(btn.dataset.start, 10),
+              end_minute: parseInt(btn.dataset.end, 10),
+              label: btn.dataset.label
+            };
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Proceed to Payment ↗';
+            }
+          });
+        });
+      } catch (err) {
+        slotsContainer.innerHTML = `<span style="font-size:13px; color:var(--red);">Error: ${escapeHtml(err.message)}</span>`;
+      }
+    }
+
+    const dateInput = $('#directDateInput');
+    if (dateInput) {
+      dateInput.addEventListener('change', (e) => {
+        chosenDate = e.target.value;
+        loadDirectSlots(chosenDate);
+      });
+    }
+
+    await loadDirectSlots(chosenDate);
+
+    const directForm = $('#directBookingForm');
+    if (directForm) {
+      directForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!selectedSlot) {
+          toast('Please choose an available time slot.');
+          return;
+        }
+
+        const address = $('#directAddressInput')?.value?.trim();
+        const phone = $('#directPhoneInput')?.value?.trim();
+        const urgency = $('#directUrgencyInput')?.value || 'normal';
+        const description = $('#directDescInput')?.value?.trim() || '';
+        const imgFile = $('#directImgInput')?.files?.[0];
+
+        if (!address) {
+          toast('Please enter a service address.');
+          return;
+        }
+
+        const baseRate = Number(s.price || 1000);
+        const tax = Math.round(baseRate * 0.05);
+        const totalPrice = baseRate + tax;
+
+        const formGrid = $('#directBookingForm .form-grid');
+        const modalActions = $('#directModalActions');
+        if (formGrid) formGrid.style.display = 'none';
+        if (modalActions) modalActions.style.display = 'none';
+
+        const checkoutContainer = $('#directCheckoutContainer');
+        checkoutContainer.innerHTML = `
+          <div id="mockPaymentStep" style="margin-top:10px;">
+            <div style="background:var(--bg-body); border:1px solid var(--border-color); border-radius:12px; padding:16px; margin-bottom:16px;">
+              <div style="font-size:14px; font-weight:700; color:var(--text-main); margin-bottom:12px;">Booking & Payment Summary</div>
+              <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--text-main); margin-bottom:6px;">
+                <span>Specialist Base Rate</span>
+                <strong>${money(baseRate)}</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--text-muted); margin-bottom:8px;">
+                <span>Service Tax & Platform Fee (5%)</span>
+                <span>${money(tax)}</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:800; color:var(--primary); border-top:1px solid var(--border-color); padding-top:10px;">
+                <span>Total Amount</span>
+                <span>${money(totalPrice)}</span>
+              </div>
+            </div>
+
+            <div style="background:#fff9eb; border:1px solid #f6d289; border-radius:10px; padding:12px; margin-bottom:16px; font-size:13px; color:#854d0e;">
+              <strong>Payment Instructions:</strong><br>
+              Please send <strong>${money(totalPrice)}</strong> to bKash/Nagad: <strong>01712345678</strong> (Merchant) and enter your transaction details below.
+            </div>
+
+            <form id="directPaymentProofForm">
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>Payment Method</label>
+                  <select id="directPayMethodInput" name="payment_method">
+                    <option value="bkash">bKash (Merchant: 01712345678)</option>
+                    <option value="nagad">Nagad (Merchant: 01712345678)</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label>Sender Mobile Number</label>
+                  <input type="text" id="directSenderNumberInput" name="sender_number" placeholder="e.g. 01712345678" value="${escapeHtml(phone || state.user?.phone || '')}" required />
+                </div>
+                <div class="form-field full">
+                  <label>bKash / Nagad Transaction ID (TrxID)</label>
+                  <input type="text" id="directTrxIdInput" name="trx_id" placeholder="e.g. 9B8A7C6D5E" required />
+                </div>
+              </div>
+              <div class="modal-actions" style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+                <button type="button" class="secondary-btn" id="directCancelPaymentBtn">Back</button>
+                <button type="submit" class="primary-btn" id="directPaySubmitBtn">Submit Payment Proof ↗</button>
+              </div>
+            </form>
+          </div>
+        `;
+
+        checkoutContainer.querySelector('#directCancelPaymentBtn')?.addEventListener('click', () => {
+          if (formGrid) formGrid.style.display = 'grid';
+          if (modalActions) modalActions.style.display = 'flex';
+          checkoutContainer.innerHTML = '';
+        });
+
+        const payForm = checkoutContainer.querySelector('#directPaymentProofForm');
+        payForm?.addEventListener('submit', async (pEv) => {
+          pEv.preventDefault();
+          const payMethod = payForm.querySelector('#directPayMethodInput')?.value || 'bkash';
+          const senderNum = payForm.querySelector('#directSenderNumberInput')?.value?.trim();
+          const trxVal = payForm.querySelector('#directTrxIdInput')?.value?.trim();
+
+          if (!senderNum || !trxVal) {
+            toast('Please enter both sender mobile number and Transaction ID (TrxID)');
+            return;
+          }
+
+          const bookFd = new FormData();
+          bookFd.append('category_slug', catSlug);
+          bookFd.append('provider_id', String(providerId));
+          bookFd.append('preferred_date', chosenDate);
+          bookFd.append('preferred_start_minute', String(selectedSlot.start_minute));
+          bookFd.append('preferred_end_minute', String(selectedSlot.end_minute));
+          bookFd.append('urgency', urgency);
+          bookFd.append('address', address);
+          bookFd.append('description', description);
+          bookFd.append('contact_phone', phone);
+          bookFd.append('payment_method', payMethod);
+          bookFd.append('sender_number', senderNum);
+          bookFd.append('trx_id', trxVal);
+          if (imgFile) bookFd.append('image', imgFile);
+
+          const submitBtn = payForm.querySelector('#directPaySubmitBtn');
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span style="display:inline-block; animation:spin 1s linear infinite;">⏳</span> Submitting proof...';
+          }
+
+          try {
+            const bookRes = await fetch('/api/requests', {
+              method: 'POST',
+              credentials: 'include',
+              body: bookFd
+            });
+            const bookData = await bookRes.json().catch(() => ({}));
+
+            if (bookRes.status === 409) {
+              const suggestions = bookData.suggestions || [];
+              checkoutContainer.innerHTML = `
+                <div style="padding:15px; background:#fff0f0; border-radius:10px; color:var(--red); font-size:13px; margin-bottom:12px;">
+                  ${escapeHtml(bookData.error || 'This slot was just booked by another client.')}
+                </div>
+                ${suggestions.length > 0 ? `
+                  <div style="font-size:13px; font-weight:700; margin-bottom:8px;">Suggested alternative slots:</div>
+                  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    ${suggestions.map(sg => `
+                      <button type="button" class="pill-filter active" data-pick-direct-suggested="${sg.start_minute}-${sg.end_minute}">
+                        ${minutesToTime(sg.start_minute)} – ${minutesToTime(sg.end_minute)}
+                      </button>
+                    `).join('')}
+                  </div>
+                ` : ''}
+              `;
+              return;
+            }
+
+            if (!bookRes.ok || !bookData.ok) {
+              toast(bookData.error || 'Failed to place direct booking.');
+              if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Payment Proof ↗';
+              }
+              return;
+            }
+
+            closeModal();
+            toast('Booking placed successfully! Specialist assigned.');
+            await loadBookings();
+            goPage('bookings');
+          } catch (netErr) {
+            toast('Network error creating booking: ' + netErr.message);
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Submit Payment Proof ↗';
+            }
+          }
+        });
+      });
+    }
+
+    return;
+  }
+
+  // -------------------------------------------------------------
+  // 2. Generic Multi-Factor Matching Booking Flow (when providerId is null)
+  // -------------------------------------------------------------
   const savedAddrSelectHtml = addresses.length > 0 ? `
     <div class="form-field full">
       <label><i class="bi bi-geo-alt"></i> Choose from Saved Addresses</label>
@@ -1053,7 +1393,7 @@ async function openBooking(categorySlug, preselectedProviderId) {
     `Book ${s.title}`,
     `
       <div class="modal-summary">
-        <div class="category-icon bg-blue" style="font-size:22px; color:var(--blue);">${s.icon || '<i class="bi bi-tools"></i>'}</div>
+        <div class="category-icon bg-blue" style="font-size:22px; color:var(--primary);">${s.icon || '<i class="bi bi-tools"></i>'}</div>
         <div>
           <strong>${s.title}</strong>
           <small>Base rate: ${money(s.price)} · Verified matching</small>
@@ -1061,9 +1401,8 @@ async function openBooking(categorySlug, preselectedProviderId) {
       </div>
       <form id="matchForm">
         <input type="hidden" name="category_slug" value="${s.slug}">
-        ${preselectedProviderId ? `<input type="hidden" name="preselected_provider_id" value="${preselectedProviderId}">` : ''}
         <div class="form-grid">
-          <div class="form-field"><label>Preferred date</label><input type="date" name="preferred_date" value="${tomorrowStr}" min="${new Date().toISOString().split('T')[0]}" required></div>
+          <div class="form-field"><label>Preferred date</label><input type="date" name="preferred_date" value="${tomorrowStr}" min="${todayStr}" required></div>
           <div class="form-field"><label>Time window</label>
             <select name="time_window">
               <option value="09:00-11:00">09:00 AM – 11:00 AM</option>
@@ -1080,7 +1419,7 @@ async function openBooking(categorySlug, preselectedProviderId) {
           </div>
           <div class="form-field"><label>Contact phone</label><input name="phone" value="${state.user?.phone || '+880 1712-345678'}" required></div>
           ${savedAddrSelectHtml}
-          <div class="form-field full"><label>Service address</label><input name="address" value="${state.userLocation}" required></div>
+          <div class="form-field full"><label>Service address</label><input name="address" value="${escapeHtml(initialAddr)}" required></div>
           <div class="form-field full"><label>Describe issue (optional)</label><textarea name="description" placeholder="Briefly describe what needs attention..."></textarea></div>
           <div class="form-field full"><label>Attach photo (optional)</label><input type="file" name="image" accept="image/*"></div>
         </div>
@@ -1103,6 +1442,8 @@ async function openBooking(categorySlug, preselectedProviderId) {
     });
   }
 }
+
+window.openBooking = openBooking;
 
 // -------------------------------------------------------------
 // Provider / Repairman Renderers
@@ -1465,6 +1806,22 @@ function renderRepairProfile() {
         <div class="form-field full"><label>About your work & bio</label><textarea>${escapeHtml(p.bio || 'Reliable home service with clear communication and guaranteed workmanship.')}</textarea></div>
       </div>
     </div>
+
+    <!-- Account Credentials & Password -->
+    <div class="panel" style="margin-top:20px;">
+      <div class="panel-head"><h3>Account security & credentials</h3></div>
+      <form id="repairProfileForm">
+        <div class="form-grid">
+          <div class="form-field"><label>Full name</label><input id="repairFullName" name="full_name" value="${escapeHtml(state.user?.full_name || p.full_name || '')}" required></div>
+          <div class="form-field"><label>Email address</label><input id="repairEmail" name="email" value="${escapeHtml(state.user?.email || '')}" type="email" required></div>
+          <div class="form-field"><label>Phone number</label><input id="repairPhone" name="phone" value="${escapeHtml(state.user?.phone || '')}" placeholder="+8801700000000"></div>
+          <div class="form-field"><label>New password</label><input id="repairPassword" name="password" type="password" placeholder="Leave blank to keep current"></div>
+          <div class="form-field full" style="margin-top:15px;">
+            <button class="primary-btn" type="submit" id="saveRepairSecurityBtn">Update account</button>
+          </div>
+        </div>
+      </form>
+    </div>
   `;
 }
 
@@ -1782,6 +2139,17 @@ function renderReports() {
 // Core View Router
 // -------------------------------------------------------------
 async function render() {
+  // Role-based view guard
+  const allowed = navItems().map(n => n[0]);
+  if (state.role === 'client' || state.role === 'guest') {
+    allowed.push('gig-details');
+  }
+  const homePage = (state.role === 'client' || state.role === 'guest') ? 'discover' : (state.role === 'repairman' ? 'overview' : 'admin-overview');
+
+  if (!allowed.includes(state.page)) {
+    state.page = homePage;
+  }
+
   renderNav();
   const pages = {
     discover: typeof renderDiscover === 'function' ? renderDiscover : null,
@@ -1835,8 +2203,15 @@ function goPage(page) {
     }
     return;
   }
-  state.page = page;
-  $('#sidebar').classList.remove('open');
+
+  const allowed = navItems().map(n => n[0]);
+  if (state.role === 'client' || state.role === 'guest') {
+    allowed.push('gig-details');
+  }
+  const homePage = (state.role === 'client' || state.role === 'guest') ? 'discover' : (state.role === 'repairman' ? 'overview' : 'admin-overview');
+
+  state.page = allowed.includes(page) ? page : homePage;
+  $('#sidebar')?.classList.remove('open');
   render();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -2460,9 +2835,19 @@ document.addEventListener('click', async (e) => {
     return;
   }
 
-  // Fallback toasts for un-implemented / demo buttons
-  if (e.target.closest('#saveProfileBtn') || e.target.closest('#saveRepairProfile')) {
-    toast('Profile saved locally.');
+  // Theme toggle button
+  if (e.target.closest('#themeToggle')) {
+    toggleTheme();
+    return;
+  }
+
+  // Top save buttons dispatch submit to their respective forms
+  if (e.target.closest('#saveProfileTopBtn')) {
+    $('#profileForm')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    return;
+  }
+  if (e.target.closest('#saveRepairProfile')) {
+    $('#repairProfileForm')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
     return;
   }
   if (e.target.closest('#newGigBtn') || e.target.closest('[data-edit-gig]')) {
@@ -2512,24 +2897,21 @@ document.addEventListener('change', (e) => {
 // Form Submissions
 // -------------------------------------------------------------
 document.addEventListener('submit', async (e) => {
-  // Profile update form submission
-  if (e.target.id === 'profileForm') {
+  // Profile & Repair Profile update form submission (no old password required)
+  if (e.target.id === 'profileForm' || e.target.id === 'repairProfileForm') {
     e.preventDefault();
     const form = e.target;
-    const full_name = form.querySelector('#profFullName')?.value?.trim();
-    const email = form.querySelector('#profEmail')?.value?.trim();
-    const phone = form.querySelector('#profPhone')?.value?.trim();
-    const old_password = form.querySelector('#profOldPassword')?.value;
-    const password = form.querySelector('#profPassword')?.value;
+    const full_name = form.querySelector('#profFullName, #repairFullName')?.value?.trim();
+    const email = form.querySelector('#profEmail, #repairEmail')?.value?.trim();
+    const phone = form.querySelector('#profPhone, #repairPhone')?.value?.trim();
+    const password = form.querySelector('#profPassword, #repairPassword')?.value;
 
-    const payload = { full_name, email, phone };
-    if (password) {
-      if (!old_password) {
-        toast('Old password required to change password');
-        return;
-      }
-      payload.old_password = old_password;
-      payload.password = password;
+    const payload = {};
+    if (full_name) payload.full_name = full_name;
+    if (email) payload.email = email;
+    if (phone) payload.phone = phone;
+    if (password && password.trim()) {
+      payload.password = password.trim();
     }
 
     try {
@@ -3006,7 +3388,33 @@ async function bootRoleData() {
   }
 }
 
+// Theme Handling (Light / Dark)
+function initTheme() {
+  const currentTheme = localStorage.getItem('hutfix_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  const btn = document.getElementById('themeToggle');
+  if (btn) {
+    btn.innerHTML = currentTheme === 'dark' ? '☀️' : '🌙';
+    btn.title = currentTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+  }
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('hutfix_theme', next);
+  const btn = document.getElementById('themeToggle');
+  if (btn) {
+    btn.innerHTML = next === 'dark' ? '☀️' : '🌙';
+    btn.title = next === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+  }
+}
+
+window.toggleTheme = toggleTheme;
+
 async function boot() {
+  initTheme();
   try {
     const r = await fetch('/api/auth/me', { credentials: 'include' });
     if (!r.ok) throw 0;

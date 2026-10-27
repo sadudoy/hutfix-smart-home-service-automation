@@ -10,6 +10,12 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
   <link rel="stylesheet" href="style.css" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('hutfix_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
 </head>
 <body>
   <div id="auth-screen" class="modal-backdrop" style="backdrop-filter: blur(8px);">
@@ -60,6 +66,7 @@
         <div class="topbar-actions" style="position:relative;">
           <button class="primary-btn" id="login-btn" style="padding: 8px 16px; min-height: 36px; display: none;">Sign in</button>
           <div class="location-pill" id="location-pill" style="cursor: pointer;"><span class="pin">⌖</span><span><small>Service location</small><strong id="currentLocationText">Dhaka, Bangladesh</strong></span><span class="chevron">⌄</span></div>
+          <button class="icon-btn theme-toggle-btn" id="themeToggle" aria-label="Toggle dark/light theme" title="Toggle theme">🌙</button>
           <button class="icon-btn notification-btn" id="notificationBtn" aria-label="Notifications">♧<i></i></button>
           <div id="notificationsDropdown" style="display:none; position:absolute; top:52px; right:45px; width:320px; background:#fff; border:1px solid var(--line); border-radius:14px; box-shadow:0 12px 35px rgba(0,0,0,0.12); padding:16px; z-index:100;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #edf0f5; padding-bottom:8px;">
