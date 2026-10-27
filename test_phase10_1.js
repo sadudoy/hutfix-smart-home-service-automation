@@ -33,7 +33,7 @@ async function runTests() {
 
     const indexHtml = fs.readFileSync(path.join(__dirname, 'client', 'index.html'), 'utf8');
     assert(indexHtml.includes('assets/images/logo.jpg'), 'client/index.html contains assets/images/logo.jpg');
-    assert(indexHtml.includes('FixHut'), 'client/index.html contains FixHut branding');
+    assert(indexHtml.includes('HutFix') || indexHtml.includes('FixHut'), 'client/index.html contains HutFix branding');
     assert(indexHtml.includes('id="login-btn"'), 'client/index.html contains id="login-btn" in topbar');
     assert(indexHtml.includes('bootstrap-icons'), 'client/index.html includes Bootstrap Icons stylesheet');
 
@@ -105,7 +105,7 @@ async function runTests() {
         // 2.2 GET / (as guest) -> 200
         const rootRes = await makeRequest('/');
         assert(rootRes.status === 200, 'GET / (as guest) returns 200');
-        assert(rootRes.body.includes('FixHut'), 'Root HTML renders FixHut brand for guests');
+        assert(rootRes.body.includes('HutFix') || rootRes.body.includes('FixHut'), 'Root HTML renders HutFix brand for guests');
 
         // 2.3 Customer login & profile update
         const custLogin = await makeRequest('/api/auth/login', {
@@ -147,7 +147,7 @@ async function runTests() {
         const patchAdmin = await makeRequest('/api/auth/profile', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', Cookie: adminCookie },
-            body: JSON.stringify({ password: 'newadminpass1234' })
+            body: JSON.stringify({ password: 'newadminpass1234', old_password: 'demo1234' })
         });
         assert(patchAdmin.status === 200, 'PATCH /api/auth/profile (admin password change) returns 200');
 
@@ -164,7 +164,7 @@ async function runTests() {
         await makeRequest('/api/auth/profile', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', Cookie: newAdminCookie },
-            body: JSON.stringify({ password: 'demo1234' })
+            body: JSON.stringify({ password: 'demo1234', old_password: 'newadminpass1234' })
         });
         console.log('[INFO] Admin password restored to demo1234');
     } finally {

@@ -725,3 +725,337 @@
   ]
 }
 ```
+
+
+---
+
+## 11. Operations, Payments & Real-Time Tracking (Phase 12)
+
+### `GET /api/requests/:id/stream`
+- **Auth**: Optional / Cookie or `?token=`
+- **Description**: Real-time Server-Sent Events (SSE) stream for service request lifecycle and payment verification updates.
+- **Headers**:
+  ```http
+  Content-Type: text/event-stream
+  Cache-Control: no-cache
+  Connection: keep-alive
+  ```
+- **Events**:
+  - `init`: Emitted immediately on connection with current request state.
+  - `status_update`: Emitted on state transitions (`accepted`, `on_the_way`, `in_progress`, `completed`, `cancelled`).
+  - `payment_update`: Emitted when admin verifies or rejects manual mobile banking payment (`verified`, `rejected`).
+  - `rescheduled`: Emitted when request appointment slot is rescheduled.
+
+### `POST /api/requests/:id/dispute`
+- **Auth**: Required
+- **Role**: `customer` or `provider`
+- **Body**:
+  ```json
+  {
+    "reason": "Specialist arrived 2 hours late without notice"
+  }
+  ```
+- **Response `201 Created`**:
+  ```json
+  {
+    "ok": true,
+    "dispute": {
+      "id": 1,
+      "request_id": 14,
+      "raised_by_user_id": 1,
+      "reason": "Specialist arrived 2 hours late without notice",
+      "status": "open",
+      "created_at": "2026-10-27T17:00:00.000Z"
+    }
+  }
+  ```
+
+### `GET /api/provider/availability`
+- **Auth**: Required
+- **Role**: `provider`
+- **Response `200 OK`**:
+  ```json
+  {
+    "ok": true,
+    "availability": [
+      { "id": 1, "weekday": 1, "start_minute": 540, "end_minute": 1020 }
+    ]
+  }
+  ```
+
+### `PUT /api/provider/availability`
+- **Auth**: Required
+- **Role**: `provider`
+- **Body**:
+  ```json
+  {
+    "availability": [
+      { "weekday": 1, "start_minute": 540, "end_minute": 1020 },
+      { "weekday": 2, "start_minute": 540, "end_minute": 1020 }
+    ]
+  }
+  ```
+- **Response `200 OK`**:
+  ```json
+  {
+    "ok": true,
+    "message": "Availability updated",
+    "count": 2
+  }
+  ```
+
+### `GET /api/provider/blackouts`
+- **Auth**: Required
+- **Role**: `provider`
+- **Response `200 OK`**:
+  ```json
+  {
+    "ok": true,
+    "blackouts": [
+      {
+        "id": 1,
+        "blackout_date": "2026-11-20",
+        "reason": "Annual Training",
+        "created_at": "2026-10-27T17:00:00.000Z"
+      }
+    ]
+  }
+  ```
+
+### `POST /api/provider/blackouts`
+- **Auth**: Required
+- **Role**: `provider`
+- **Body**:
+  ```json
+  {
+    "blackout_date": "2026-11-20",
+    "reason": "Annual Training"
+  }
+  ```
+- **Response `200 OK`**:
+  ```json
+  {
+    "ok": true,
+    "blackout": {
+      "id": 1,
+      "provider_id": 2,
+      "blackout_date": "2026-11-20",
+      "reason": "Annual Training",
+      "created_at": "2026-10-27T17:00:00.000Z"
+    }
+  }
+  ```
+
+### `DELETE /api/provider/blackouts/:id`
+- **Auth**: Required
+- **Role**: `provider`
+- **Response `200 OK`**:
+  ```json
+  {
+    "ok": true
+  }
+  ```
+
+### `GET /api/provider/payouts`
+- **Auth**: Required
+- **Role**: `provider`
+- **Response `200 OK`**:
+  ```json
+  {
+    "ok": true,
+    "payouts": [
+      {
+        "id": 1,
+        "provider_id": 2,
+        "amount": "500.00",
+        "status": "pending",
+        "created_at": "2026-10-27T17:00:00.000Z"
+      }
+    ],
+    "total_earned": 2850.00,
+    "available_balance": 2350.00
+  }
+  ```
+
+### `POST /api/provider/payouts`
+- **Auth**: Required
+- **Role**: `provider`
+- **Body**:
+  ```json
+  {
+    "amount": 500
+  }
+  ```
+- **Response `200 OK`**:
+  ```json
+  {
+    "ok": true,
+    "payout": {
+      "id": 1,
+      "provider_id": 2,
+      "amount": "500.00",
+      "status": "pending",
+      "created_at": "2026-10-27T17:00:00.000Z"
+    },
+    "available_balance": 1850.00
+  }
+  ```
+
+### `GET /api/admin/payments`
+- **Auth**: Required
+- **Role**: `admin`
+- **Response `200 OK`**:
+  ```json
+  {
+    "ok": true,
+    "payments": [
+      {
+        "id": 15,
+        "customer_id": 1,
+        "customer_name": "Demo Client",
+        "estimated_price": "1000.00",
+        "payment_method": "bkash",
+        "trx_id": "9B8A7C6D5E",
+        "sender_number": "01712345678",
+        "payment_status": "pending",
+        "created_at": "2026-10-27T17:00:00.000Z"
+      }
+    ]
+  }
+  ```
+
+### `PATCH /api/admin/payments/:id/verify`
+- **Auth**: Required
+- **Role**: `admin`
+- **Body**:
+  ```json
+  {
+    "action": "verify"
+  }
+  ```
+  *(or `"action": "reject"`)*
+- **Response `200 OK`**:
+  ```json
+  {
+    "ok": true,
+    "request": {
+      "id": 15,
+      "payment_status": "verified",
+      "status": "requested"
+    }
+  }
+  ```
+  *Note: If rejected, `payment_status` becomes `'rejected'`, `status` becomes `'cancelled'`, and any reserved slot in `provider_bookings` is automatically released.*
+
+### `GET /api/admin/payouts`
+- **Auth**: Required
+- **Role**: `admin`
+- **Response `200 OK`**:
+  ```json
+  {
+    "ok": true,
+    "payouts": [
+      {
+        "id": 1,
+        "provider_id": 2,
+        "provider_name": "Rahim Electronics",
+        "amount": "500.00",
+        "status": "pending",
+        "created_at": "2026-10-27T17:00:00.000Z"
+      }
+    ]
+  }
+  ```
+
+### `PATCH /api/admin/payouts/:id/approve`
+- **Auth**: Required
+- **Role**: `admin`
+- **Body**:
+  ```json
+  {
+    "action": "approve"
+  }
+  ```
+- **Response `200 OK`**:
+  ```json
+  {
+    "ok": true,
+    "payout": {
+      "id": 1,
+      "status": "completed"
+    }
+  }
+  ```
+
+### `GET /api/admin/disputes`
+- **Auth**: Required
+- **Role**: `admin`
+- **Response `200 OK`**:
+  ```json
+  {
+    "ok": true,
+    "disputes": [
+      {
+        "id": 1,
+        "request_id": 14,
+        "raised_by_name": "Demo Client",
+        "reason": "Specialist arrived 2 hours late",
+        "status": "open",
+        "created_at": "2026-10-27T17:00:00.000Z"
+      }
+    ]
+  }
+  ```
+
+### `POST /api/admin/disputes/:id/resolve`
+- **Auth**: Required
+- **Role**: `admin`
+- **Body**:
+  ```json
+  {
+    "status": "resolved"
+  }
+  ```
+- **Response `200 OK`**:
+  ```json
+  {
+    "ok": true,
+    "dispute": {
+      "id": 1,
+      "status": "resolved"
+    }
+  }
+  ```
+
+### `PATCH /api/admin/users/:id/verify`
+- **Auth**: Required
+- **Role**: `admin`
+- **Description**: Toggles specialist active / verified status (`is_active`).
+- **Response `200 OK`**:
+  ```json
+  {
+    "ok": true,
+    "is_active": true
+  }
+  ```
+
+### `POST /api/admin/bookings/:id/assign`
+- **Auth**: Required
+- **Role**: `admin`
+- **Body**:
+  ```json
+  {
+    "provider_id": 2
+  }
+  ```
+- **Response `200 OK`**:
+  ```json
+  {
+    "ok": true,
+    "request": {
+      "id": 14,
+      "assigned_provider_id": 2,
+      "status": "accepted"
+    }
+  }
+  ```

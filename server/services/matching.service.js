@@ -59,6 +59,11 @@ async function matchProviders({
         ) w ON w.provider_id = p.id
         WHERE p.is_active = TRUE
           AND ps.category_id = $1
+          AND NOT EXISTS (
+            SELECT 1 FROM provider_blackouts pb
+            WHERE pb.provider_id = p.id
+              AND pb.blackout_date = $2
+          )
           AND EXISTS (
             SELECT 1 FROM provider_availability pa
             WHERE pa.provider_id = p.id

@@ -99,7 +99,7 @@ async function runTests() {
     console.log('\n--- Part 4: Documentation Synchronization ---');
 
     const uiDoc = fs.readFileSync(path.join(__dirname, 'docs', 'UI.md'), 'utf8');
-    assert(uiDoc.includes('Fixora'), 'docs/UI.md mentions Fixora');
+    assert(uiDoc.includes('HutFix') || uiDoc.includes('Fixora'), 'docs/UI.md mentions HutFix');
     assert(uiDoc.includes('RBAC'), 'docs/UI.md covers role-based access control (RBAC)');
 
     const apiDoc = fs.readFileSync(path.join(__dirname, 'docs', 'API.md'), 'utf8');
@@ -161,7 +161,7 @@ async function runTests() {
         // Static Files Serving
         const indexRes = await makeRequest('/');
         assert(indexRes.status === 200, 'GET / returns 200 OK');
-        assert((indexRes.body.includes('FixHut') || indexRes.body.includes('Fixora')) && indexRes.body.includes('auth-screen'), 'Root HTML renders FixHut/Fixora UI with auth overlay');
+        assert((indexRes.body.includes('HutFix') || indexRes.body.includes('FixHut') || indexRes.body.includes('Fixora')) && indexRes.body.includes('auth-screen'), 'Root HTML renders HutFix UI with auth overlay');
 
         const styleRes = await makeRequest('/style.css');
         assert(styleRes.status === 200, 'GET /style.css returns 200 OK');

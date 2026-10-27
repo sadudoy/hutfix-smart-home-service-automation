@@ -1,8 +1,8 @@
-# Fixora — Frontend UI & Design System Specification
+# HutFix — Frontend UI & Design System Specification
 
 ## 1. Overview & Reference Architecture
 
-Fixora is the definitive UI for the HutFix Smart Home Service Automation platform. It adopts the modern, high-density dashboard design from `client/_reference_fixora/` with full real-backend API wiring, responsive mobile layouts, and strict role-based access control (RBAC).
+HutFix is the definitive UI for the HutFix Smart Home Service Automation platform. It adopts the modern, high-density dashboard design from `client/_reference_fixora/` with full real-backend API wiring, responsive mobile layouts, and strict role-based access control (RBAC).
 
 - **Brand & Theme**: Deep Slate / Indigo accents (`#2563eb`), neutral grays (`#0f172a`, `#1e293b`, `#f8fafc`), clean surface borders (`#e2e8f0`).
 - **Typography**: Inter / system sans-serif hierarchy scaled strictly to $\ge 11$px to eliminate readability defects.
@@ -14,7 +14,7 @@ Fixora is the definitive UI for the HutFix Smart Home Service Automation platfor
 ## 2. Authentication Gate & Session Management
 
 ### `#auth-screen` (Modal Gateway)
-When an unauthenticated user opens Fixora, an accessible modal overlay covers the dashboard view:
+When an unauthenticated user opens HutFix, an accessible modal overlay covers the dashboard view:
 - **Form Controls**: Email input (`#auth-email`), password input (`#auth-password`), toggle between Login and Sign Up.
 - **Demo Switcher Links**: Quick-fill demo credentials buttons (`data-demo="customer"`, `data-demo="provider"`, `data-demo="admin"`).
 - **Session Verification**: On load, `boot()` queries `GET /api/auth/me`. If valid, the overlay is hidden and role-scoped dashboard views are mounted. If 401, `#auth-screen` is presented.

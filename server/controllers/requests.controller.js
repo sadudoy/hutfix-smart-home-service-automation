@@ -3,6 +3,7 @@ const matchingService = require('../services/matching.service');
 const scheduling = require('../services/scheduling.service');
 const lifecycle = require('../services/lifecycle.service');
 const notificationsService = require('../services/notifications.service');
+const sseService = require('../services/sse.service');
 
 async function match(req, res, next) {
     try {
@@ -69,7 +70,10 @@ async function create(req, res, next) {
         latitude,
         longitude,
         description,
-        contact_phone
+        contact_phone,
+        payment_method,
+        trx_id,
+        sender_number
     } = req.body || {};
 
     const startMin = parseInt(preferred_start_minute, 10);
@@ -171,8 +175,9 @@ async function create(req, res, next) {
                 customer_id, category_id, assigned_provider_id, description,
                 urgency, address, latitude, longitude, preferred_date,
                 preferred_start_minute, preferred_end_minute, contact_phone,
-                image_url, status, estimated_price
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'requested', $14)
+                image_url, status, estimated_price,
+                payment_method, trx_id, sender_number, payment_status
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'requested', $14, $15, $16, $17, 'pending')
             RETURNING *;
         `;
 
@@ -190,7 +195,10 @@ async function create(req, res, next) {
             endMin,
             contact_phone || null,
             imageUrl,
-            estimatedPrice
+            estimatedPrice,
+            payment_method || 'bkash',
+            trx_id || null,
+            sender_number || null
         ]);
 
         const newRequest = reqRes.rows[0];
@@ -279,58 +287,81 @@ async function create(req, res, next) {
 
 async function mine(req, res, next) {
     try {
-        let query;
+        const page = req.query.page ? parseInt(req.query.page, 10) : null;
+        const limit = req.query.limit ? parseInt(req.query.limit, 10) : null;
+
+        let baseQuery;
         let params = [];
+        let selectFields = '';
 
         if (req.user.role === 'customer') {
-            query = `
-                SELECT sr.*, sc.name AS category_name, sc.slug AS category_slug,
-                       pu.full_name AS provider_name,
-                       r.stars AS rating_stars, r.comment AS rating_comment
+            selectFields = `
+                sr.*, sc.name AS category_name, sc.slug AS category_slug,
+                pu.full_name AS provider_name,
+                r.stars AS rating_stars, r.comment AS rating_comment
+            `;
+            baseQuery = `
                 FROM service_requests sr
                 LEFT JOIN service_categories sc ON sc.id = sr.category_id
                 LEFT JOIN providers p ON p.id = sr.assigned_provider_id
                 LEFT JOIN users pu ON pu.id = p.user_id
                 LEFT JOIN ratings r ON r.request_id = sr.id
                 WHERE sr.customer_id = $1
-                ORDER BY sr.created_at DESC;
             `;
             params = [req.user.id];
         } else if (req.user.role === 'provider') {
-            query = `
-                SELECT sr.*, sc.name AS category_name, sc.slug AS category_slug,
-                       cu.full_name AS customer_name,
-                       r.stars AS rating_stars
+            selectFields = `
+                sr.*, sc.name AS category_name, sc.slug AS category_slug,
+                cu.full_name AS customer_name,
+                r.stars AS rating_stars
+            `;
+            baseQuery = `
                 FROM service_requests sr
                 LEFT JOIN service_categories sc ON sc.id = sr.category_id
                 LEFT JOIN users cu ON cu.id = sr.customer_id
                 JOIN providers p ON p.id = sr.assigned_provider_id
                 LEFT JOIN ratings r ON r.request_id = sr.id
                 WHERE p.user_id = $1
-                ORDER BY sr.created_at DESC;
             `;
             params = [req.user.id];
         } else {
             // Admin
-            query = `
-                SELECT sr.*, sc.name AS category_name, sc.slug AS category_slug,
-                       cu.full_name AS customer_name,
-                       pu.full_name AS provider_name,
-                       r.stars AS rating_stars
+            selectFields = `
+                sr.*, sc.name AS category_name, sc.slug AS category_slug,
+                cu.full_name AS customer_name,
+                pu.full_name AS provider_name,
+                r.stars AS rating_stars
+            `;
+            baseQuery = `
                 FROM service_requests sr
                 LEFT JOIN service_categories sc ON sc.id = sr.category_id
                 LEFT JOIN users cu ON cu.id = sr.customer_id
                 LEFT JOIN providers p ON p.id = sr.assigned_provider_id
                 LEFT JOIN users pu ON pu.id = p.user_id
                 LEFT JOIN ratings r ON r.request_id = sr.id
-                ORDER BY sr.created_at DESC;
             `;
         }
 
-        const result = await pool.query(query, params);
+        const countRes = await pool.query(`SELECT COUNT(*)::int AS count ${baseQuery};`, params);
+        const total = countRes.rows[0].count;
+
+        let query = `SELECT ${selectFields} ${baseQuery} ORDER BY sr.created_at DESC`;
+        const queryParams = [...params];
+
+        if (limit != null && !isNaN(limit)) {
+            const p = page && !isNaN(page) && page > 0 ? page : 1;
+            const offset = (p - 1) * limit;
+            query += ` LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2};`;
+            queryParams.push(limit, offset);
+        }
+
+        const result = await pool.query(query, queryParams);
         return res.status(200).json({
             ok: true,
-            requests: result.rows
+            requests: result.rows,
+            total,
+            page: page || 1,
+            limit: limit || result.rows.length
         });
     } catch (err) {
         return next(err);
@@ -465,6 +496,8 @@ async function customerCancel(req, res, next) {
         await client.query('COMMIT');
         client.release();
 
+        sseService.broadcast(id, { type: 'status_update', status: 'cancelled', request: updateRes.rows[0] });
+
         return res.status(200).json({
             ok: true,
             request: updateRes.rows[0]
@@ -539,6 +572,8 @@ async function acceptRequest(req, res, next) {
 
         await client.query('COMMIT');
         client.release();
+
+        sseService.broadcast(id, { type: 'status_update', status: 'accepted', request: updateRes.rows[0] });
 
         return res.status(200).json({
             ok: true,
@@ -615,6 +650,8 @@ async function rejectRequest(req, res, next) {
 
         await client.query('COMMIT');
         client.release();
+
+        sseService.broadcast(id, { type: 'status_update', status: 'cancelled', request: updateRes.rows[0] });
 
         return res.status(200).json({
             ok: true,
@@ -744,6 +781,8 @@ async function updateStatus(req, res, next) {
         await client.query('COMMIT');
         client.release();
 
+        sseService.broadcast(id, { type: 'status_update', status: status, request: updateRes.rows[0] });
+
         return res.status(200).json({
             ok: true,
             request: updateRes.rows[0]
@@ -838,6 +877,8 @@ async function updateProviderSettings(req, res, next) {
 
         await client.query('COMMIT');
         client.release();
+
+        sseService.broadcast(id, { type: 'status_update', status, request: updateRes.rows[0] });
 
         return res.status(200).json({
             ok: true,
@@ -943,6 +984,8 @@ async function reschedule(req, res, next) {
         client.release();
         clientReleased = true;
 
+        sseService.broadcast(id, { type: 'rescheduled', preferred_date: new_date, request: updateRes.rows[0] });
+
         return res.status(200).json({
             ok: true,
             request: updateRes.rows[0]
@@ -954,6 +997,54 @@ async function reschedule(req, res, next) {
         if (!clientReleased) {
             client.release();
         }
+        return next(err);
+    }
+}
+
+async function stream(req, res, next) {
+    try {
+        const id = parseInt(req.params.id, 10);
+        if (isNaN(id)) {
+            return res.status(400).json({ ok: false, error: 'invalid request id' });
+        }
+
+        res.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache, no-transform',
+            'Connection': 'keep-alive',
+            'Access-Control-Allow-Origin': '*'
+        });
+
+        const currentReq = await pool.query('SELECT id, status, payment_status FROM service_requests WHERE id = $1;', [id]);
+        if (currentReq.rows.length > 0) {
+            res.write(`data: ${JSON.stringify({ type: 'init', request: currentReq.rows[0] })}\n\n`);
+        } else {
+            res.write(`data: ${JSON.stringify({ type: 'connected', requestId: id })}\n\n`);
+        }
+
+        sseService.addClient(id, res);
+
+        req.on('close', () => {
+            sseService.removeClient(id, res);
+        });
+    } catch (err) {
+        return next(err);
+    }
+}
+
+async function createDispute(req, res, next) {
+    try {
+        const id = parseInt(req.params.id, 10);
+        const { reason } = req.body || {};
+        if (isNaN(id) || !reason) {
+            return res.status(400).json({ ok: false, error: 'valid request id and reason are required' });
+        }
+        const result = await pool.query(
+            'INSERT INTO disputes (request_id, raised_by_user_id, reason, status) VALUES ($1, $2, $3, $4) RETURNING *;',
+            [id, req.user.id, reason, 'open']
+        );
+        return res.status(201).json({ ok: true, dispute: result.rows[0] });
+    } catch (err) {
         return next(err);
     }
 }
@@ -970,5 +1061,8 @@ module.exports = {
     updateStatus,
     providerRequests,
     getProviderSettings,
-    updateProviderSettings
+    updateProviderSettings,
+    stream,
+    createDispute,
+    pushSSE: sseService.broadcast
 };

@@ -1,5 +1,5 @@
 /**
- * FixHut — Single Page Application Frontend
+ * HutFix — Single Page Application Frontend
  * Connected to Real Express & PostgreSQL Backend
  */
 
@@ -118,14 +118,17 @@ const repairNav = [
   ['overview', '<i class="bi bi-speedometer2"></i>', 'Overview'],
   ['my-gigs', '<i class="bi bi-briefcase"></i>', 'My service gigs'],
   ['requests', '<i class="bi bi-calendar-check"></i>', 'Booking requests'],
-  ['earnings', '<i class="bi bi-cash-coin"></i>', 'Earnings'],
+  ['availability', '<i class="bi bi-clock-history"></i>', 'Availability & slots'],
+  ['earnings', '<i class="bi bi-cash-coin"></i>', 'Earnings & payouts'],
   ['repair-profile', '<i class="bi bi-person"></i>', 'My profile']
 ];
 
 const adminNav = [
   ['admin-overview', '<i class="bi bi-speedometer2"></i>', 'Overview'],
+  ['payments', '<i class="bi bi-credit-card"></i>', 'Payments'],
+  ['payouts', '<i class="bi bi-cash-stack"></i>', 'Payouts'],
   ['users', '<i class="bi bi-people"></i>', 'Users & repairmen'],
-  ['moderation', '<i class="bi bi-shield-check"></i>', 'Gig moderation'],
+  ['moderation', '<i class="bi bi-shield-check"></i>', 'Disputes & moderation'],
   ['all-bookings', '<i class="bi bi-calendar-check"></i>', 'All bookings'],
   ['reports', '<i class="bi bi-graph-up"></i>', 'Reports & analytics']
 ];
@@ -190,7 +193,7 @@ function stat(label, value, icon, foot) {
 }
 
 // Modal handling
-function openModal(title, body, eyebrow = 'FIXHUT BOOKING') {
+function openModal(title, body, eyebrow = 'HUTFIX BOOKING') {
   $('#modalEyebrow').textContent = eyebrow;
   $('#modalTitle').textContent = title;
   $('#modalBody').innerHTML = body;
@@ -236,7 +239,7 @@ async function loadServices() {
         provider: 'Verified Specialist',
         initials: s.name.slice(0, 2).toUpperCase(),
         avatar: 'avatar-blue',
-        subtitle: 'FixHut Certified Pro',
+        subtitle: 'HutFix Certified Pro',
         verified: true,
         tag: idx === 0 ? 'POPULAR' : idx === 1 ? 'TOP RATED' : 'CERTIFIED'
       }));
@@ -638,6 +641,33 @@ async function renderTracking() {
     const canCancel = rawStatus === 'requested' || rawStatus === 'accepted';
     const canRate = rawStatus === 'completed' && !rating;
 
+    const payStatus = req.payment_status || 'pending';
+    const payBadge = payStatus === 'verified'
+      ? `<span class="status completed" style="background:#e6f8ef; color:#0e8345; font-weight:700;">✓ Payment Verified</span>`
+      : payStatus === 'rejected'
+      ? `<span class="status" style="background:#fee2e2; color:#b91c1c; font-weight:700;">✕ Payment Rejected</span>`
+      : `<span class="status pending" style="background:#fef3c7; color:#b45309; font-weight:700;">⏳ Payment Pending Verification</span>`;
+
+    // Connect SSE EventSource for real-time live telemetry
+    if (window.activeTrackingSource) {
+      window.activeTrackingSource.close();
+      window.activeTrackingSource = null;
+    }
+    try {
+      const es = new EventSource(`/api/requests/${activeId}/stream`);
+      window.activeTrackingSource = es;
+      es.onmessage = (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          if (['status_update', 'payment_update', 'rescheduled', 'assigned'].includes(data.type)) {
+            if (state.page === 'tracking') {
+              render();
+            }
+          }
+        } catch (_) {}
+      };
+    } catch (_) {}
+
     return `
       ${pageHead('LIVE SERVICE UPDATES', 'Track your service', `Real-time fulfillment tracking for request #${req.id}.`, '<button class="secondary-btn" data-page="bookings">← All bookings</button>')}
       <div class="tracking-box">
@@ -646,8 +676,12 @@ async function renderTracking() {
             <span class="eyebrow">BOOKING #${req.id}</span>
             <h2>${req.category_name || 'Home Service'}</h2>
             <p>${req.preferred_date} · ${minutesToTime(req.preferred_start_minute)} · ${req.address}</p>
+            <div style="font-size:12px; color:var(--muted); margin-top:6px;">Payment: <strong>${(req.payment_method || 'bKash').toUpperCase()}</strong> · TrxID: <code>${escapeHtml(req.trx_id || 'N/A')}</code> ${req.sender_number ? `· Sender: ${escapeHtml(req.sender_number)}` : ''}</div>
           </div>
-          <span class="status ${statusClass(rawStatus)}">${normalizeStatus(rawStatus)}</span>
+          <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+            <span class="status ${statusClass(rawStatus)}">${normalizeStatus(rawStatus)}</span>
+            ${payBadge}
+          </div>
         </div>
         ${timelineHtml}
       </div>
@@ -745,6 +779,7 @@ async function renderProfile() {
           <div class="form-field"><label>Full name</label><input id="profFullName" name="full_name" value="${escapeHtml(u.full_name || '')}" required></div>
           <div class="form-field"><label>Email address</label><input id="profEmail" name="email" value="${escapeHtml(u.email || '')}" type="email" required></div>
           <div class="form-field"><label>Phone number</label><input id="profPhone" name="phone" value="${escapeHtml(u.phone || '')}" placeholder="+8801700000000"></div>
+          <div class="form-field"><label>Old password (required to change password)</label><input id="profOldPassword" name="old_password" type="password" placeholder="Enter current password"></div>
           <div class="form-field"><label>New password</label><input id="profPassword" name="password" type="password" placeholder="Leave blank to keep current"></div>
           <div class="form-field full" style="margin-top:15px;">
             <button class="primary-btn" type="submit" id="saveProfileBtn">Save changes</button>
@@ -903,7 +938,7 @@ async function renderGigDetails() {
               <div style="font-size:12px; color:var(--muted); text-transform:uppercase; font-weight:700;">Starting from</div>
               <div style="font-size:32px; font-weight:800; color:var(--text); margin-top:4px;">${money(basePrice)}</div>
               <p style="font-size:13px; color:var(--muted); margin:8px 0 0; line-height:1.5;">
-                Includes initial diagnosis, standard visit dispatch, and FixHut service guarantee.
+                Includes initial diagnosis, standard visit dispatch, and HutFix service guarantee.
               </p>
             </div>
             <button class="primary-btn" id="bookGigNowBtn" data-provider-id="${provider.id}" data-category-slug="${firstService.category_slug}" data-price="${basePrice}" style="width:100%; justify-content:center; padding:14px; font-size:14px; font-weight:700;">
@@ -1227,17 +1262,58 @@ function renderRequests() {
   `;
 }
 
-function renderEarnings() {
+async function renderEarnings() {
   const invs = state.providerInvoices?.invoices || [];
-  const totalSum = state.providerInvoices?.totals?.sum_total || 0;
+  let payouts = [];
+  let availableBalance = state.providerInvoices?.totals?.sum_total || 0;
+  let totalEarned = availableBalance;
+
+  try {
+    const pRes = await fetch('/api/provider/payouts', { credentials: 'include' });
+    const pData = await pRes.json();
+    if (pData.ok) {
+      payouts = pData.payouts || [];
+      if (pData.available_balance != null) availableBalance = pData.available_balance;
+      if (pData.total_earned != null) totalEarned = pData.total_earned;
+    }
+  } catch (_) {}
+
   return `
-    ${pageHead('PAYOUTS & REVENUE', 'Earnings', 'Track your service income and payout history.', '<button class="secondary-btn" id="payoutBtn">Request payout ↗</button>')}
+    ${pageHead('PAYOUTS & REVENUE', 'Earnings', 'Track your service income and payout history.', '<button class="primary-btn" id="payoutBtn">Request payout ↗</button>')}
     <div class="stats-grid">
-      ${stat('Available balance', money(totalSum), '৳', 'Earned from jobs')}
+      ${stat('Available balance', money(availableBalance), '৳', 'Eligible for withdrawal')}
+      ${stat('Total earned', money(totalEarned), '↗', 'Gross job revenue')}
       ${stat('Total invoices', invs.length, '▤', 'Completed bookings')}
-      ${stat('Platform fee', '5%', '✓', 'Standard 5% platform tax')}
-      ${stat('Payout method', 'bKash', '৳', 'Direct settlement')}
+      ${stat('Payout method', 'bKash / Nagad', '৳', 'Direct settlement')}
     </div>
+
+    <!-- Payout Requests History -->
+    <div class="panel" style="margin-bottom:24px;">
+      <div class="panel-head">
+        <div>
+          <h3>Disbursement & Payout History</h3>
+          <p>Status of requested funds and transfers</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>PAYOUT ID</th><th>AMOUNT</th><th>DATE</th><th>STATUS</th></tr>
+          </thead>
+          <tbody>
+            ${payouts.map(po => `
+              <tr>
+                <td><strong>#${po.id}</strong></td>
+                <td><strong>${money(po.amount)}</strong></td>
+                <td>${new Date(po.created_at).toLocaleDateString()}</td>
+                <td><span class="status ${po.status === 'completed' ? 'completed' : po.status === 'rejected' ? 'danger' : 'progress'}">${po.status}</span></td>
+              </tr>
+            `).join('') || '<tr><td colspan="4">No payout requests submitted yet.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="panel">
       <div class="panel-head"><h3>Recent transactions & invoices</h3></div>
       <div class="table-wrap">
@@ -1256,6 +1332,110 @@ function renderEarnings() {
                 <td><span class="status completed">${i.status || 'paid'}</span></td>
               </tr>
             `).join('') || '<tr><td colspan="6">No invoices issued yet.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+async function renderProviderAvailability() {
+  let availability = [];
+  let blackouts = [];
+  try {
+    const [availRes, blackRes] = await Promise.all([
+      fetch('/api/provider/availability', { credentials: 'include' }),
+      fetch('/api/provider/blackouts', { credentials: 'include' })
+    ]);
+    const aData = await availRes.json();
+    const bData = await blackRes.json();
+    if (aData.ok) availability = aData.availability || [];
+    if (bData.ok) blackouts = bData.blackouts || [];
+  } catch (err) {
+    console.error(err);
+  }
+
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  return `
+    ${pageHead('WORKING HOURS & SCHEDULE', 'Availability & slots', 'Configure your weekly working hours and scheduled blackout dates.', '<button class="primary-btn" id="saveAvailabilityTopBtn">Save schedule</button>')}
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h3>Weekly Operating Hours</h3>
+          <p>Define which days and hours you accept customer appointments</p>
+        </div>
+      </div>
+      <form id="availabilityForm" style="margin-top:14px;">
+        <div style="display:grid; gap:12px;">
+          ${days.map((dayName, idx) => {
+            const row = availability.find(a => a.weekday === idx);
+            const isChecked = !!row;
+
+            const startH = row ? String(Math.floor(row.start_minute / 60)).padStart(2, '0') : '09';
+            const startM = row ? String(row.start_minute % 60).padStart(2, '0') : '00';
+            const endH = row ? String(Math.floor(row.end_minute / 60)).padStart(2, '0') : '17';
+            const endM = row ? String(row.end_minute % 60).padStart(2, '0') : '00';
+
+            return `
+              <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:#f8fafc; border:1px solid var(--line); border-radius:10px; gap:16px;">
+                <label style="display:flex; align-items:center; gap:10px; min-width:140px; cursor:pointer; font-weight:600; color:var(--text); margin:0;">
+                  <input type="checkbox" name="day_active_${idx}" value="${idx}" ${isChecked ? 'checked' : ''} style="width:18px; height:18px;">
+                  ${dayName}
+                </label>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <label style="font-size:12px; color:var(--muted); margin:0;">From</label>
+                  <input type="time" name="start_time_${idx}" value="${startH}:${startM}" style="padding:6px 10px; font-size:13px; border:1px solid var(--line); border-radius:6px; background:#fff;">
+                  <label style="font-size:12px; color:var(--muted); margin:0;">To</label>
+                  <input type="time" name="end_time_${idx}" value="${endH}:${endM}" style="padding:6px 10px; font-size:13px; border:1px solid var(--line); border-radius:6px; background:#fff;">
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        <div style="margin-top:16px; text-align:right;">
+          <button class="primary-btn" type="submit" id="saveAvailBtn">Save Weekly Schedule ↗</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Blackouts Section -->
+    <div class="panel" style="margin-top:24px;">
+      <div class="panel-head">
+        <div>
+          <h3>Blackout Dates & Time Off</h3>
+          <p>Dates when you are unavailable for matching and automated bookings</p>
+        </div>
+      </div>
+      <form id="blackoutForm" style="margin-top:14px; display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+        <div class="form-field" style="margin:0; flex:1; min-width:180px;">
+          <label>Blackout Date</label>
+          <input type="date" id="blackoutDateInput" min="${new Date().toISOString().split('T')[0]}" required>
+        </div>
+        <div class="form-field" style="margin:0; flex:2; min-width:220px;">
+          <label>Reason (optional)</label>
+          <input type="text" id="blackoutReasonInput" placeholder="e.g. Holiday, Training, Personal">
+        </div>
+        <button class="primary-btn" type="submit" style="min-height:42px;">＋ Add Blackout Date</button>
+      </form>
+
+      <div class="table-wrap" style="margin-top:16px;">
+        <table class="data-table">
+          <thead>
+            <tr><th>DATE</th><th>REASON</th><th>SCHEDULED AT</th><th>ACTION</th></tr>
+          </thead>
+          <tbody>
+            ${blackouts.map(b => `
+              <tr>
+                <td><strong>${b.blackout_date ? new Date(b.blackout_date).toLocaleDateString() : b.blackout_date}</strong></td>
+                <td>${escapeHtml(b.reason || 'Unavailable')}</td>
+                <td>${new Date(b.created_at).toLocaleDateString()}</td>
+                <td>
+                  <button class="danger-btn" data-delete-blackout-id="${b.id}" style="padding:4px 10px; font-size:12px; min-height:30px;">Remove</button>
+                </td>
+              </tr>
+            `).join('') || '<tr><td colspan="4">No blackout dates scheduled. You are open according to weekly availability.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -1291,41 +1471,101 @@ function renderRepairProfile() {
   `;
 }
 
-// -------------------------------------------------------------
-// Admin Renderers
-// -------------------------------------------------------------
-function renderAdminOverview() {
-  const st = state.adminStats || {};
+async function renderAdminPayments() {
+  let payments = [];
+  try {
+    const res = await fetch('/api/admin/payments', { credentials: 'include' });
+    const data = await res.json();
+    if (data.ok) payments = data.payments || [];
+  } catch (err) {
+    console.error(err);
+  }
+
   return `
-    ${pageHead('PLATFORM CONTROL CENTER', 'Marketplace overview', 'Live operational telemetry of users, bookings and revenue.')}
-    <div class="stats-grid">
-      ${stat('Gross volume', money(st.gross_volume || st.total_revenue || 0), '৳', 'Cumulative transactions')}
-      ${stat('Platform revenue', money(st.platform_revenue || 0), '↗', 'Platform commission')}
-      ${stat('Total bookings', st.total_bookings || 0, '▤', `${st.completed_bookings || 0} completed`)}
-      ${stat('Registered users', st.total_users || 0, '♙', `${st.total_providers || 0} providers`)}
-    </div>
-    <div class="section-head">
-      <div><h2>Recent marketplace bookings</h2><p>Latest customer requests across categories</p></div>
-      <button class="link-btn" data-page="all-bookings">All bookings ↗</button>
-    </div>
+    ${pageHead('FINANCE & CLEARING', 'Manual payments', 'Verify manual bKash & Nagad payments submitted by clients.')}
     <div class="panel">
+      <div class="panel-head"><h3>Transaction proofs ledger (${payments.length})</h3></div>
       <div class="table-wrap">
         <table class="data-table">
           <thead>
-            <tr><th>ID</th><th>SERVICE</th><th>CLIENT</th><th>SPECIALIST</th><th>DATE</th><th>ESTIMATE</th><th>STATUS</th></tr>
+            <tr><th>BOOKING</th><th>CLIENT</th><th>METHOD</th><th>TRX ID</th><th>SENDER</th><th>AMOUNT</th><th>STATUS</th><th>ACTIONS</th></tr>
           </thead>
           <tbody>
-            ${(state.adminBookings || []).slice(0, 10).map(b => `
+            ${payments.map(p => `
               <tr>
-                <td><strong>#${b.id}</strong></td>
-                <td>${escapeHtml(b.category_name || 'Service')}</td>
-                <td>${escapeHtml(b.customer_name || 'Customer')}</td>
-                <td>${escapeHtml(b.provider_name || 'Unassigned')}</td>
-                <td>${b.preferred_date}</td>
-                <td><strong>${money(b.estimated_price)}</strong></td>
-                <td><span class="status ${statusClass(b.status)}">${normalizeStatus(b.status)}</span></td>
+                <td><strong>#${p.id}</strong><br><small style="color:var(--muted);">${p.category_name || 'Service'}</small></td>
+                <td><strong>${escapeHtml(p.customer_name || 'Customer')}</strong><br><small style="color:var(--muted);">${p.customer_phone || p.customer_email || ''}</small></td>
+                <td><span style="font-weight:700; text-transform:uppercase;">${escapeHtml(p.payment_method || 'bkash')}</span></td>
+                <td><code>${escapeHtml(p.trx_id || 'N/A')}</code></td>
+                <td>${escapeHtml(p.sender_number || 'N/A')}</td>
+                <td><strong>${money(p.estimated_price)}</strong></td>
+                <td>
+                  <span class="status ${p.payment_status === 'verified' ? 'completed' : p.payment_status === 'rejected' ? 'danger' : 'progress'}">
+                    ${p.payment_status || 'pending'}
+                  </span>
+                </td>
+                <td>
+                  ${p.payment_status === 'pending' ? `
+                    <div class="admin-actions">
+                      <button class="small-action" data-payment-action="verify" data-req-id="${p.id}" style="color:var(--green); border-color:var(--green);">Verify</button>
+                      <button class="small-action" data-payment-action="reject" data-req-id="${p.id}" style="color:var(--red); border-color:var(--red);">Reject</button>
+                    </div>
+                  ` : `
+                    <small style="color:var(--muted);">${p.payment_status === 'verified' ? 'Cleared' : 'Rejected'}</small>
+                  `}
+                </td>
               </tr>
-            `).join('') || '<tr><td colspan="7">No bookings logged.</td></tr>'}
+            `).join('') || '<tr><td colspan="8">No payment proofs logged.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+async function renderAdminPayouts() {
+  let payouts = [];
+  try {
+    const res = await fetch('/api/admin/payouts', { credentials: 'include' });
+    const data = await res.json();
+    if (data.ok) payouts = data.payouts || [];
+  } catch (err) {
+    console.error(err);
+  }
+
+  return `
+    ${pageHead('SETTLEMENTS & DISBURSEMENTS', 'Provider payouts', 'Manage specialist balance disbursements and withdrawals.')}
+    <div class="panel">
+      <div class="panel-head"><h3>Disbursement requests (${payouts.length})</h3></div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>PAYOUT ID</th><th>SPECIALIST</th><th>CONTACT</th><th>AMOUNT</th><th>REQUESTED AT</th><th>STATUS</th><th>ACTIONS</th></tr>
+          </thead>
+          <tbody>
+            ${payouts.map(po => `
+              <tr>
+                <td><strong>#${po.id}</strong></td>
+                <td><strong>${escapeHtml(po.provider_name || 'Specialist')}</strong></td>
+                <td>${escapeHtml(po.provider_phone || po.provider_email || '')}</td>
+                <td><strong>${money(po.amount)}</strong></td>
+                <td>${new Date(po.created_at).toLocaleString()}</td>
+                <td>
+                  <span class="status ${po.status === 'completed' ? 'completed' : po.status === 'rejected' ? 'danger' : 'progress'}">
+                    ${po.status || 'pending'}
+                  </span>
+                </td>
+                <td>
+                  ${po.status === 'pending' ? `
+                    <div class="admin-actions">
+                      <button class="small-action" data-payout-action="approve" data-payout-id="${po.id}" style="color:var(--green); border-color:var(--green);">Approve ↗</button>
+                    </div>
+                  ` : `
+                    <small style="color:var(--muted);">${po.status === 'completed' ? 'Paid' : 'Rejected'}</small>
+                  `}
+                </td>
+              </tr>
+            `).join('') || '<tr><td colspan="7">No payout requests logged.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -1380,8 +1620,9 @@ function renderUsers() {
                 <td>${new Date(u.created_at).toLocaleDateString()}</td>
                 <td>
                   <div class="admin-actions">
-                    <button class="small-action" data-user-action="verify" data-user="${escapeHtml(u.full_name)}">Verify</button>
-                    <button class="small-action" data-user-action="suspend" data-user="${escapeHtml(u.full_name)}">Suspend</button>
+                    <button class="small-action" data-user-action="verify" data-user-id="${u.id}" data-user="${escapeHtml(u.full_name)}">
+                      ${u.provider_active === false ? 'Activate' : 'Toggle Active'}
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -1393,13 +1634,48 @@ function renderUsers() {
   `;
 }
 
-function renderModeration() {
+async function renderModeration() {
+  let disputes = [];
+  try {
+    const res = await fetch('/api/admin/disputes', { credentials: 'include' });
+    const data = await res.json();
+    if (data.ok) disputes = data.disputes || [];
+  } catch (err) {
+    console.error(err);
+  }
+
   return `
-    ${pageHead('QUALITY & TRUST', 'Gig moderation', 'Review service listings before they are published to the marketplace.')}
-    <div class="empty-state" style="padding:60px 20px;">
-      <div style="font-size:32px; margin-bottom:10px;">◈</div>
-      <h3 style="margin:0 0 8px;">No items pending review</h3>
-      <p style="margin:0;">All service listings and specialist accounts are fully verified.</p>
+    ${pageHead('QUALITY & TRUST', 'Disputes & moderation', 'Review customer disputes, complaints and service issues.')}
+    <div class="panel">
+      <div class="panel-head"><h3>Disputes & grievances ledger (${disputes.length})</h3></div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>DISPUTE ID</th><th>BOOKING #</th><th>RAISED BY</th><th>REASON</th><th>STATUS</th><th>DATE</th><th>ACTIONS</th></tr>
+          </thead>
+          <tbody>
+            ${disputes.map(d => `
+              <tr>
+                <td><strong>#${d.id}</strong></td>
+                <td><strong>#${d.request_id}</strong></td>
+                <td>${escapeHtml(d.raised_by_name || 'User')}<br><small style="color:var(--muted);">${escapeHtml(d.raised_by_email || '')}</small></td>
+                <td>${escapeHtml(d.reason)}</td>
+                <td><span class="status ${d.status === 'resolved' ? 'completed' : d.status === 'rejected' ? 'danger' : 'review'}">${d.status}</span></td>
+                <td>${new Date(d.created_at).toLocaleDateString()}</td>
+                <td>
+                  ${d.status === 'open' ? `
+                    <div class="admin-actions">
+                      <button class="small-action" data-dispute-action="resolve" data-dispute-id="${d.id}" style="color:var(--green); border-color:var(--green);">Resolve</button>
+                    </div>
+                  ` : `
+                    <small style="color:var(--muted);">${d.status}</small>
+                  `}
+                </td>
+              </tr>
+            `).join('') || '<tr><td colspan="7">No open disputes filed. All service requests operating normally.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
     </div>
   `;
 }
@@ -1505,9 +1781,12 @@ async function render() {
     overview: renderRepairOverview,
     'my-gigs': renderGigs,
     requests: renderRequests,
+    availability: renderProviderAvailability,
     earnings: renderEarnings,
     'repair-profile': renderRepairProfile,
     'admin-overview': renderAdminOverview,
+    payments: renderAdminPayments,
+    payouts: renderAdminPayouts,
     users: renderUsers,
     moderation: renderModeration,
     'all-bookings': renderAllBookings,
@@ -1924,8 +2203,127 @@ document.addEventListener('click', async (e) => {
   const userActionBtn = e.target.closest('[data-user-action]');
   if (userActionBtn) {
     const uName = userActionBtn.dataset.user;
+    const uId = userActionBtn.dataset.userId;
     const act = userActionBtn.dataset.userAction;
+    if (act === 'verify' && uId) {
+      try {
+        const res = await fetch(`/api/admin/users/${uId}/verify`, { method: 'PATCH', credentials: 'include' });
+        const d = await res.json();
+        if (d.ok) {
+          toast(d.is_active ? 'Specialist verified and active' : 'Specialist deactivated');
+          await loadAdminData();
+          render();
+        } else {
+          toast(d.error || 'Failed to update user status');
+        }
+      } catch (err) {
+        toast('Error: ' + err.message);
+      }
+      return;
+    }
     toast(`Action logged (demo): ${act} user ${uName}`);
+    return;
+  }
+
+  // Payment Verification Actions
+  const payActBtn = e.target.closest('[data-payment-action]');
+  if (payActBtn) {
+    const act = payActBtn.dataset.paymentAction;
+    const reqId = payActBtn.dataset.reqId;
+    try {
+      const res = await fetch(`/api/admin/payments/${reqId}/verify`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: act })
+      });
+      const d = await res.json();
+      if (d.ok) {
+        toast(`Payment #${reqId} ${act === 'verify' ? 'verified' : 'rejected'}`);
+        render();
+      } else {
+        toast(d.error || 'Failed to update payment');
+      }
+    } catch (err) {
+      toast('Error: ' + err.message);
+    }
+    return;
+  }
+
+  // Payout Approval Actions
+  const poActBtn = e.target.closest('[data-payout-action]');
+  if (poActBtn) {
+    const poId = poActBtn.dataset.payoutId;
+    try {
+      const res = await fetch(`/api/admin/payouts/${poId}/approve`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'approve' })
+      });
+      const d = await res.json();
+      if (d.ok) {
+        toast(`Payout #${poId} approved!`);
+        render();
+      } else {
+        toast(d.error || 'Failed to approve payout');
+      }
+    } catch (err) {
+      toast('Error: ' + err.message);
+    }
+    return;
+  }
+
+  // Dispute Resolution Actions
+  const dispActBtn = e.target.closest('[data-dispute-action]');
+  if (dispActBtn) {
+    const dispId = dispActBtn.dataset.disputeId;
+    try {
+      const res = await fetch(`/api/admin/disputes/${dispId}/resolve`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'resolved' })
+      });
+      const d = await res.json();
+      if (d.ok) {
+        toast(`Dispute #${dispId} marked as resolved.`);
+        render();
+      } else {
+        toast(d.error || 'Failed to resolve dispute');
+      }
+    } catch (err) {
+      toast('Error: ' + err.message);
+    }
+    return;
+  }
+
+  // Delete Blackout Button
+  const delBlackoutBtn = e.target.closest('[data-delete-blackout-id]');
+  if (delBlackoutBtn) {
+    const bId = delBlackoutBtn.dataset.deleteBlackoutId;
+    try {
+      const res = await fetch(`/api/provider/blackouts/${bId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      const d = await res.json();
+      if (d.ok) {
+        toast('Blackout date removed.');
+        render();
+      } else {
+        toast(d.error || 'Failed to remove blackout');
+      }
+    } catch (err) {
+      toast('Error: ' + err.message);
+    }
+    return;
+  }
+
+  // Top Save Availability Button
+  if (e.target.closest('#saveAvailabilityTopBtn')) {
+    const af = document.getElementById('availabilityForm');
+    if (af) af.dispatchEvent(new Event('submit'));
     return;
   }
 
@@ -1952,6 +2350,53 @@ document.addEventListener('click', async (e) => {
     return;
   }
 
+  // Payout Request Modal
+  if (e.target.closest('#payoutBtn')) {
+    openModal(
+      'Request Payout',
+      `
+        <div style="font-size:14px; margin-bottom:12px; color:var(--text);">Enter payout amount to withdraw from your available balance:</div>
+        <form id="payoutRequestForm">
+          <div class="form-grid">
+            <div class="form-field full">
+              <label>Payout Amount (৳)</label>
+              <input type="number" id="payoutAmountInput" min="50" step="50" placeholder="e.g. 500" required />
+            </div>
+          </div>
+          <div class="modal-actions" style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+            <button type="button" class="secondary-btn" id="cancelModal">Cancel</button>
+            <button class="primary-btn" type="submit">Submit Request ↗</button>
+          </div>
+        </form>
+      `
+    );
+    const pForm = $('#payoutRequestForm');
+    pForm?.addEventListener('submit', async (pev) => {
+      pev.preventDefault();
+      const amt = Number($('#payoutAmountInput')?.value);
+      if (!amt || amt <= 0) return toast('Please enter a valid amount');
+      try {
+        const res = await fetch('/api/provider/payouts', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: amt })
+        });
+        const d = await res.json();
+        if (res.ok && d.ok) {
+          closeModal();
+          toast('Payout request submitted successfully!');
+          render();
+        } else {
+          toast(d.error || 'Failed to request payout');
+        }
+      } catch (err) {
+        toast('Error requesting payout: ' + err.message);
+      }
+    });
+    return;
+  }
+
   // Fallback toasts for un-implemented / demo buttons
   if (e.target.closest('#saveProfileBtn') || e.target.closest('#saveRepairProfile')) {
     toast('Profile saved locally.');
@@ -1959,10 +2404,6 @@ document.addEventListener('click', async (e) => {
   }
   if (e.target.closest('#newGigBtn') || e.target.closest('[data-edit-gig]')) {
     toast('Gig editing arrives in a later phase.');
-    return;
-  }
-  if (e.target.closest('#payoutBtn')) {
-    toast('Payouts managed offline in this demo.');
     return;
   }
   if (e.target.closest('#supportBtn')) {
@@ -2015,10 +2456,18 @@ document.addEventListener('submit', async (e) => {
     const full_name = form.querySelector('#profFullName')?.value?.trim();
     const email = form.querySelector('#profEmail')?.value?.trim();
     const phone = form.querySelector('#profPhone')?.value?.trim();
+    const old_password = form.querySelector('#profOldPassword')?.value;
     const password = form.querySelector('#profPassword')?.value;
 
     const payload = { full_name, email, phone };
-    if (password) payload.password = password;
+    if (password) {
+      if (!old_password) {
+        toast('Old password required to change password');
+        return;
+      }
+      payload.old_password = old_password;
+      payload.password = password;
+    }
 
     try {
       const res = await fetch('/api/auth/profile', {
@@ -2037,6 +2486,74 @@ document.addEventListener('submit', async (e) => {
       render();
     } catch (err) {
       toast('Error updating profile: ' + err.message);
+    }
+    return;
+  }
+
+  // Provider Availability Form Submission
+  if (e.target.id === 'availabilityForm') {
+    e.preventDefault();
+    const form = e.target;
+    const availabilityItems = [];
+    for (let day = 0; day <= 6; day++) {
+      const cb = form.querySelector(`input[name="day_active_${day}"]`);
+      if (cb && cb.checked) {
+        const startVal = form.querySelector(`input[name="start_time_${day}"]`)?.value || '09:00';
+        const endVal = form.querySelector(`input[name="end_time_${day}"]`)?.value || '17:00';
+        const [sH, sM] = startVal.split(':').map(Number);
+        const [eH, eM] = endVal.split(':').map(Number);
+        availabilityItems.push({
+          weekday: day,
+          start_minute: sH * 60 + (sM || 0),
+          end_minute: eH * 60 + (eM || 0)
+        });
+      }
+    }
+    try {
+      const res = await fetch('/api/provider/availability', {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ availability: availabilityItems })
+      });
+      const d = await res.json();
+      if (d.ok) {
+        toast('Weekly schedule saved successfully!');
+        render();
+      } else {
+        toast(d.error || 'Failed to save schedule');
+      }
+    } catch (err) {
+      toast('Error saving schedule: ' + err.message);
+    }
+    return;
+  }
+
+  // Blackout Date Form Submission
+  if (e.target.id === 'blackoutForm') {
+    e.preventDefault();
+    const blackoutDate = $('#blackoutDateInput')?.value;
+    const reason = $('#blackoutReasonInput')?.value?.trim();
+    if (!blackoutDate) {
+      toast('Please select a blackout date');
+      return;
+    }
+    try {
+      const res = await fetch('/api/provider/blackouts', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blackout_date: blackoutDate, reason })
+      });
+      const d = await res.json();
+      if (d.ok) {
+        toast('Blackout date added successfully!');
+        render();
+      } else {
+        toast(d.error || 'Failed to add blackout');
+      }
+    } catch (err) {
+      toast('Error: ' + err.message);
     }
     return;
   }
@@ -2135,7 +2652,7 @@ document.addEventListener('submit', async (e) => {
             bookFd.append('image', imgFile);
           }
 
-          // Render Mock Payment Checkout Step
+          // Render Manual Mobile Banking Payment Step
           container.innerHTML = `
             <div id="mockPaymentStep" style="margin-top:10px;">
               <div style="background:#f8fafc; border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px;">
@@ -2154,25 +2671,33 @@ document.addEventListener('submit', async (e) => {
                 </div>
               </div>
 
-              <!-- mock payment form -->
+              <div style="background:#fff9eb; border:1px solid #f6d289; border-radius:10px; padding:12px; margin-bottom:16px; font-size:13px; color:#854d0e;">
+                <strong>Payment Instructions:</strong><br>
+                Please send <strong>${money(totalPrice)}</strong> to bKash/Nagad: <strong>01712345678</strong> (Merchant) and enter your transaction details below.
+              </div>
+
+              <!-- Manual payment form -->
               <form id="mockPaymentForm">
                 <div class="form-grid">
+                  <div class="form-field">
+                    <label>Payment Method</label>
+                    <select id="payMethodInput" name="payment_method">
+                      <option value="bkash">bKash (Merchant: 01712345678)</option>
+                      <option value="nagad">Nagad (Merchant: 01712345678)</option>
+                    </select>
+                  </div>
+                  <div class="form-field">
+                    <label>Sender Mobile Number</label>
+                    <input type="text" id="senderNumberInput" name="sender_number" placeholder="e.g. 01712345678" value="${escapeHtml(state.user?.phone || '')}" required />
+                  </div>
                   <div class="form-field full">
-                    <label>Credit / Debit Card Number (mock payment)</label>
-                    <input type="text" id="mockCardInput" placeholder="4242 •••• •••• 4242" value="4242 5555 6666 7777" required />
-                  </div>
-                  <div class="form-field">
-                    <label>Expiry Date</label>
-                    <input type="text" placeholder="MM/YY" value="08/28" required />
-                  </div>
-                  <div class="form-field">
-                    <label>CVC</label>
-                    <input type="text" placeholder="123" value="456" required />
+                    <label>bKash / Nagad Transaction ID (TrxID)</label>
+                    <input type="text" id="trxIdInput" name="trx_id" placeholder="e.g. 9B8A7C6D5E" required />
                   </div>
                 </div>
                 <div class="modal-actions" style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
                   <button type="button" class="secondary-btn" id="cancelPaymentBtn">Back</button>
-                  <button type="submit" class="primary-btn" id="paySubmitBtn">Pay ${money(totalPrice)} & Confirm</button>
+                  <button type="submit" class="primary-btn" id="paySubmitBtn">Submit Payment Proof ↗</button>
                 </div>
               </form>
             </div>
@@ -2187,18 +2712,22 @@ document.addEventListener('submit', async (e) => {
           const payForm = container.querySelector('#mockPaymentForm');
           payForm.addEventListener('submit', async (pEv) => {
             pEv.preventDefault();
-            const cardVal = payForm.querySelector('#mockCardInput').value.trim();
-            if (!cardVal) {
-              toast('Please enter a valid credit card number');
+            const payMethod = payForm.querySelector('#payMethodInput')?.value || 'bkash';
+            const senderNum = payForm.querySelector('#senderNumberInput')?.value?.trim();
+            const trxVal = payForm.querySelector('#trxIdInput')?.value?.trim();
+
+            if (!senderNum || !trxVal) {
+              toast('Please enter both sender mobile number and Transaction ID (TrxID)');
               return;
             }
 
+            bookFd.set('payment_method', payMethod);
+            bookFd.set('sender_number', senderNum);
+            bookFd.set('trx_id', trxVal);
+
             const payBtn = payForm.querySelector('#paySubmitBtn');
             payBtn.disabled = true;
-            payBtn.innerHTML = '<span style="display:inline-block; animation:spin 1s linear infinite;">⏳</span> Processing payment...';
-
-            // 1.5 seconds mock payment delay
-            await new Promise(r => setTimeout(r, 1500));
+            payBtn.innerHTML = '<span style="display:inline-block; animation:spin 1s linear infinite;">⏳</span> Submitting proof...';
 
             try {
               const bookRes = await fetch('/api/requests', {
@@ -2246,12 +2775,12 @@ document.addEventListener('submit', async (e) => {
               await loadMyBookings();
               state.bookingFilter = 'All';
               state.activeRequestId = bookData.request.id;
-              toast(`Booking #${bookData.request.id} confirmed & paid!`);
+              toast('Booking submitted! We are verifying your payment.');
               goPage('tracking');
             } catch (bErr) {
               toast('Booking error: ' + bErr.message);
               payBtn.disabled = false;
-              payBtn.textContent = `Pay ${money(totalPrice)} & Confirm`;
+              payBtn.textContent = 'Submit Payment Proof ↗';
             }
           });
         });

@@ -107,9 +107,9 @@
 
 ---
 
-## Phase 10 — Final UI Implementation (Fixora Reference) & Real Backend Wiring
+## Phase 10 — Final UI Implementation (HutFix Reference) & Real Backend Wiring
 - **Landed**:
-  - Adopted the definitive Fixora reference UI (`client/_reference_fixora/` &rarr; `client/index.html`, `style.css`, `app.js`).
+  - Adopted the definitive HutFix reference UI (`client/_reference_fixora/` &rarr; `client/index.html`, `style.css`, `app.js`).
   - Safely archived Phase 9 multi-page UI to `client/_legacy_phase9/` and exposed static assets as an Express fallback to maintain backward compatibility.
   - Scaled entire CSS typographic hierarchy in `client/style.css` to $\ge 11$px (7–10px &rarr; 11–13px, 11–14px &rarr; 14–15px, explicit `.hero h1` 40px and `.page-head h1` 32px), eliminating all sub-11px illegibility defects.
   - Implemented client-side authentication overlay (`#auth-screen`) with instant demo credentials switching (`customer@demo.test`, `provider@demo.test`, `admin@demo.test`) and session logout (`#logoutBtn`).
@@ -126,7 +126,7 @@
 ## Phase 10.1 — UI Hotfix: Sticky Sidebar, Guest Browsing, Profile Editing, Icons & Branding
 - **Commit**: `e482ca1`
 - **Landed**:
-  - Rebranded platform to FixHut with official logo image and Manrope typography.
+  - Rebranded platform to HutFix with official logo image and Manrope typography.
   - Implemented sticky desktop sidebar (`position: sticky; top: 0; height: 100vh; overflow-y: auto;`).
   - Added guest browsing allowing visitors to explore services without forced login backdrop.
   - Integrated Bootstrap Icons CDN replacing generic unicode symbols across navigation, chips, and cards.
@@ -150,5 +150,31 @@
 
 ---
 
-## Phase 12+: pending
+## Phase 12 — HutFix Operations, Admin Verification & Real-Time Tracking
+- **Landed**:
+  - Pure branding alignment to **HutFix** across HTML, client JS, docs, and README.
+  - Executed database migration `database/migrations/003_provider_ops.sql` adding `provider_blackouts`, `disputes`, `payout_requests`, and `service_requests` payment columns (`payment_method`, `trx_id`, `sender_number`, `payment_status`).
+  - Implemented Server-Sent Events (SSE) real-time streaming endpoint `GET /api/requests/:id/stream` and pub/sub service (`server/services/sse.service.js`) broadcasting status changes and payment updates immediately to clients.
+  - Added manual mobile banking payment verification flow (bKash & Nagad):
+    - Customer booking flow prompts for bKash/Nagad Merchant transaction ID (TrxID) and sender number.
+    - Admin payment clearing ledger (`GET /api/admin/payments`) with one-click `verify` and `reject` actions (`PATCH /api/admin/payments/:id/verify`).
+    - Rejection automatically cancels booking and frees provider slot.
+  - Provider schedule management:
+    - Weekly operating hours API (`GET / PUT /api/provider/availability`) and interactive UI in provider dashboard.
+    - Blackout dates CRUD (`GET / POST / DELETE /api/provider/blackouts`) and automated exclusion in multi-factor smart matching.
+    - Payout requests (`GET / POST /api/provider/payouts`) with balance calculation from invoices minus previous payouts.
+  - Admin operational controls:
+    - Admin provider payout approval (`GET /api/admin/payouts`, `PATCH /api/admin/payouts/:id/approve`).
+    - Specialist verification toggle (`PATCH /api/admin/users/:id/verify`).
+    - Dispute moderation ledger (`GET /api/admin/disputes`, `POST /api/admin/disputes/:id/resolve`).
+    - Manual admin appointment assignment (`POST /api/admin/bookings/:id/assign`).
+    - Pagination support (`?page=1&limit=10`) across admin users, bookings, and customer requests.
+  - Security hardening:
+    - Profile password updates now strictly verify `old_password` using pgcrypto `crypt()`.
+    - Profile UI provides Old Password input field with validation.
+  - Authored comprehensive verification test suite `test_phase12.js` passing 100% of all static, functional, and regression assertions (Phases 0 through 11).
+
+---
+
+## Phase 13+: pending
 - Future planned enhancements outlined in `docs/ROADMAP.md`.

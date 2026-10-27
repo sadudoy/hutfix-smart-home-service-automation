@@ -2,7 +2,7 @@
 
 > On-demand, slot-scheduled home services with algorithmic matching, concurrency-safe booking, and automated invoice delivery for the BAUST CSE FEST 2026 Hackathon.
 
-**Status: Phase 11 / 13 complete**
+**Status: Phase 12 / 13 complete**
 
 ---
 
@@ -93,13 +93,14 @@ The project maintains an automated test suite verifying every layer from static 
 | `test_phase7.js` | Modern design system, landing/login/request overhaul, and dark mode toggle | **PASS** |
 | `test_phase8.js` | Impeccable redesign, purged AI visual tells, dark mode contrast hardening, 0 detector findings | **PASS** |
 | `test_phase9.legacy.js` | Restored original prototype UI, backend rewiring, mobile responsive fixes | **PASS** |
-| `test_phase10.js` | Fixora reference UI adoption, scaled typography (>=11px), strict RBAC, admin analytics, and live backend wiring | **PASS** |
-| `test_phase10_1.js` | UI hotfix: sticky sidebar, guest browsing, profile editing, Bootstrap Icons, FixHut branding | **PASS** |
-| `test_phase11.js` | Customer experience: gig details, address book CRUD, advisory-locked reschedule, search filters, mock checkout | **PASS** |
+| `test_phase10.js` | Phase 10: HutFix reference UI adoption, scaled typography (>=11px), strict RBAC, admin analytics, and live backend wiring | **PASS** |
+| `test_phase10_1.js` | Phase 10.1: UI hotfix: sticky sidebar, guest browsing, profile editing, Bootstrap Icons, HutFix branding | **PASS** |
+| `test_phase11.js` | Phase 11: Customer experience: gig details, address book CRUD, advisory-locked reschedule, search filters, mock checkout | **PASS** |
+| `test_phase12.js` | Phase 12: HutFix operations, manual bKash/Nagad verification, provider availability & blackouts, admin payouts, real-time SSE tracking | **PASS** |
 
 Run tests anytime with:
 ```bash
-node test_phase11.js
+node test_phase12.js
 ```
 
 ---

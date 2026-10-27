@@ -175,7 +175,7 @@ async function me(req, res, next) {
 async function updateProfile(req, res, next) {
     try {
         const userId = req.user.id;
-        const { full_name, email, phone, password } = req.body || {};
+        const { full_name, email, phone, password, old_password } = req.body || {};
 
         let normalizedEmail = null;
         if (email && typeof email === 'string' && email.trim()) {
@@ -191,6 +191,25 @@ async function updateProfile(req, res, next) {
 
         let newPassword = null;
         if (password && typeof password === 'string' && password.trim()) {
+            if (!old_password) {
+                return res.status(400).json({
+                    ok: false,
+                    error: 'Old password required to set a new one'
+                });
+            }
+
+            const verifyOldRes = await pool.query(
+                'SELECT (password_hash = crypt($1, password_hash)) AS valid FROM users WHERE id = $2;',
+                [old_password, userId]
+            );
+
+            if (verifyOldRes.rows.length === 0 || !verifyOldRes.rows[0].valid) {
+                return res.status(401).json({
+                    ok: false,
+                    error: 'Incorrect old password'
+                });
+            }
+
             if (password.length < 6) {
                 return res.status(400).json({
                     ok: false,
