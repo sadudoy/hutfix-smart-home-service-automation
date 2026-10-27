@@ -24,6 +24,7 @@ const state = {
   incoming: [],
   active: [],
   history: [],
+  favorites: [],
   providerProfile: null,
   providerInvoices: { invoices: [], totals: { count: 0, sum_total: 0 } },
   adminStats: {},
@@ -176,6 +177,8 @@ function renderNav() {
   if (topAv) topAv.style.display = state.user ? 'grid' : 'none';
   const loginBtn = $('#login-btn');
   if (loginBtn) loginBtn.style.display = state.user ? 'none' : 'inline-flex';
+  const locPill = $('#location-pill');
+  if (locPill) locPill.style.display = (state.role === 'repairman' || state.role === 'admin') ? 'none' : 'flex';
   if (state.user) {
     $('#miniName').textContent = state.user.full_name || 'User';
     $('#miniRole').textContent = ({ customer: 'Client account', provider: 'Provider account', admin: 'Admin account' })[state.user.role] || 'Account';
@@ -284,7 +287,7 @@ async function loadMyBookings() {
         return {
           id: r.id,
           rawId: r.id,
-          displayId: 'FX-' + (1000 + Number(r.id)),
+          displayId: 'HF-' + (1000 + Number(r.id)),
           service: r.category_name || 'Home Service',
           icon: '<i class="bi bi-tools"></i>',
           provider: r.provider_name || 'Assigned Specialist',
@@ -523,10 +526,10 @@ function renderDiscover() {
     </div>
 
     <!-- Filter dropdowns above #services-grid -->
-    <div class="filter-controls-bar" style="display:flex; gap:16px; flex-wrap:wrap; align-items:center; margin: 16px 0 20px; padding: 12px 16px; background:#fff; border:1px solid var(--line); border-radius:12px;">
+    <div class="filter-controls-bar" style="display:flex; gap:16px; flex-wrap:wrap; align-items:center; margin: 16px 0 20px; padding: 12px 16px; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:12px;">
       <div style="display:flex; align-items:center; gap:8px;">
         <label for="filterRating" style="font-size:13px; font-weight:700; color:var(--muted);"><i class="bi bi-star-fill" style="color:var(--amber);"></i> Rating:</label>
-        <select id="filterRating" style="padding:6px 12px; border-radius:8px; border:1px solid #d1d5db; font-size:13px; background:#fff; cursor:pointer;">
+        <select id="filterRating" style="padding:6px 12px; border-radius:8px; border:1px solid var(--border-color); font-size:13px; background:var(--bg-surface); color:var(--text-main); cursor:pointer;">
           <option value="">All</option>
           <option value="4.0" ${state.filterRating === '4.0' ? 'selected' : ''}>4.0+</option>
           <option value="4.5" ${state.filterRating === '4.5' ? 'selected' : ''}>4.5+</option>
@@ -535,7 +538,7 @@ function renderDiscover() {
       </div>
       <div style="display:flex; align-items:center; gap:8px;">
         <label for="filterPrice" style="font-size:13px; font-weight:700; color:var(--muted);"><i class="bi bi-tag-fill" style="color:var(--blue);"></i> Price:</label>
-        <select id="filterPrice" style="padding:6px 12px; border-radius:8px; border:1px solid #d1d5db; font-size:13px; background:#fff; cursor:pointer;">
+        <select id="filterPrice" style="padding:6px 12px; border-radius:8px; border:1px solid var(--border-color); font-size:13px; background:var(--bg-surface); color:var(--text-main); cursor:pointer;">
           <option value="">All</option>
           <option value="500" ${state.filterPrice === '500' ? 'selected' : ''}>&lt; 500</option>
           <option value="1000" ${state.filterPrice === '1000' ? 'selected' : ''}>&lt; 1000</option>
@@ -544,7 +547,7 @@ function renderDiscover() {
       </div>
       <div style="display:flex; align-items:center; gap:8px;">
         <label for="filterSort" style="font-size:13px; font-weight:700; color:var(--muted);"><i class="bi bi-arrow-down-up" style="color:var(--green);"></i> Sort:</label>
-        <select id="filterSort" style="padding:6px 12px; border-radius:8px; border:1px solid #d1d5db; font-size:13px; background:#fff; cursor:pointer;">
+        <select id="filterSort" style="padding:6px 12px; border-radius:8px; border:1px solid var(--border-color); font-size:13px; background:var(--bg-surface); color:var(--text-main); cursor:pointer;">
           <option value="" ${!state.filterSort ? 'selected' : ''}>Recommended</option>
           <option value="rating_desc" ${state.filterSort === 'rating_desc' ? 'selected' : ''}>Rating</option>
           <option value="price_asc" ${state.filterSort === 'price_asc' ? 'selected' : ''}>Price: Low-High</option>
@@ -594,7 +597,7 @@ function renderBookings() {
 
 async function renderTracking() {
   const container = $('#content');
-  container.innerHTML = `<div class="empty-state">Loading tracking telemetry...</div>`;
+  container.innerHTML = `<div class="loading-box"><span class="loading-spinner"></span><span>Loading tracking telemetry...</span></div>`;
 
   const activeId = state.activeRequestId || (state.bookings[0] && state.bookings[0].rawId);
   if (!activeId) {
@@ -624,7 +627,7 @@ async function renderTracking() {
     ];
 
     const timelineHtml = isCancelled
-      ? `<div style="padding:20px; text-align:center; background:#fff0f0; border-radius:12px; color:var(--red); font-weight:700; margin:20px 0;">Request Cancelled</div>`
+      ? `<div class="conflict-alert" style="text-align:center; font-weight:700; margin:20px 0;">Request Cancelled</div>`
       : `<div class="timeline">
           ${steps.map((s, i) => `
             <div class="timeline-step ${i < currentStep ? 'done' : i === currentStep ? 'current' : ''}">
@@ -640,10 +643,10 @@ async function renderTracking() {
 
     const payStatus = req.payment_status || 'pending';
     const payBadge = payStatus === 'verified'
-      ? `<span class="status completed" style="background:#e6f8ef; color:#0e8345; font-weight:700;">✓ Payment Verified</span>`
+      ? `<span class="status completed">✓ Payment Verified</span>`
       : payStatus === 'rejected'
-      ? `<span class="status" style="background:#fee2e2; color:#b91c1c; font-weight:700;">✕ Payment Rejected</span>`
-      : `<span class="status pending" style="background:#fef3c7; color:#b45309; font-weight:700;">⏳ Payment Pending Verification</span>`;
+      ? `<span class="status cancelled">✕ Payment Rejected</span>`
+      : `<span class="status pending">⏳ Payment Pending Verification</span>`;
 
     // Connect SSE EventSource for real-time live telemetry
     if (window.activeTrackingSource) {
@@ -819,7 +822,7 @@ async function renderProfile() {
 async function renderGigDetails() {
   const gigId = state.viewingGigId || 2;
   const content = $('#content');
-  content.innerHTML = '<div class="empty-state">Loading specialist details...</div>';
+  content.innerHTML = '<div class="loading-box"><span class="loading-spinner"></span><span>Loading specialist details...</span></div>';
 
   try {
     const res = await fetch(`/api/gigs/${gigId}`);
@@ -908,14 +911,19 @@ async function renderGigDetails() {
             </div>
             <div class="list-stack">
               ${services.map(s => `
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid var(--line);">
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid var(--line); gap:16px;">
                   <div>
                     <strong style="font-size:15px; color:var(--text);">${escapeHtml(s.category_name)}</strong>
                     <div style="font-size:12px; color:var(--muted); margin-top:2px;">Category: ${escapeHtml(s.category_slug)}</div>
                   </div>
-                  <div style="text-align:right;">
-                    <span style="font-size:17px; font-weight:800; color:var(--blue);">${money(s.price)}</span>
-                    <small style="color:var(--muted); display:block; font-size:11px;">/ base rate</small>
+                  <div style="display:flex; align-items:center; gap:16px;">
+                    <div style="text-align:right;">
+                      <span style="font-size:17px; font-weight:800; color:var(--blue);">${money(s.price)}</span>
+                      <small style="color:var(--muted); display:block; font-size:11px;">/ base rate</small>
+                    </div>
+                    <button class="secondary-btn book-service-btn" data-category-slug="${escapeHtml(s.category_slug)}" data-provider-id="${provider.id}" style="padding:6px 12px; font-size:12px; font-weight:600; min-height:34px;">
+                      Book ↗
+                    </button>
                   </div>
                 </div>
               `).join('')}
@@ -966,7 +974,7 @@ async function renderGigDetails() {
               return `
                 <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:13px;">
                   <span style="width:36px; font-weight:600; color:var(--text);">${star} ★</span>
-                  <div style="flex:1; height:8px; background:#e2e8f0; border-radius:4px; overflow:hidden;">
+                  <div style="flex:1; height:8px; background:var(--line); border-radius:4px; overflow:hidden;">
                     <div style="width:${pct}%; height:100%; background:var(--blue); border-radius:4px;"></div>
                   </div>
                   <span style="width:32px; text-align:right; color:var(--muted); font-size:12px;">${count}</span>
@@ -1007,11 +1015,23 @@ async function renderGigDetails() {
 // -------------------------------------------------------------
 // Booking Flow & Direct Booking / Smart Match Wiring
 // -------------------------------------------------------------
-async function openBooking(providerId = null, categorySlug = null) {
-  // If first parameter is a category slug string (from Discover)
-  if (typeof providerId === 'string' && isNaN(Number(providerId)) && !categorySlug) {
-    categorySlug = providerId;
-    providerId = null;
+async function openBooking(arg1 = null, arg2 = null) {
+  let providerId = null;
+  let categorySlug = null;
+
+  if (typeof arg1 === 'number' || (typeof arg1 === 'string' && !isNaN(Number(arg1)) && Number(arg1) > 0 && typeof arg2 === 'string')) {
+    providerId = Number(arg1);
+    categorySlug = arg2;
+  } else if (typeof arg2 === 'number' || (typeof arg2 === 'string' && !isNaN(Number(arg2)) && Number(arg2) > 0)) {
+    providerId = Number(arg2);
+    categorySlug = typeof arg1 === 'string' ? arg1 : null;
+  } else if (typeof arg1 === 'string') {
+    categorySlug = arg1;
+  } else if (typeof arg1 === 'number') {
+    providerId = arg1;
+  } else if (arg1 && typeof arg1 === 'object') {
+    providerId = arg1.providerId || null;
+    categorySlug = arg1.categorySlug || null;
   }
 
   if (!state.user || state.role === 'guest') {
@@ -1247,7 +1267,7 @@ async function openBooking(providerId = null, categorySlug = null) {
               </div>
             </div>
 
-            <div style="background:#fff9eb; border:1px solid #f6d289; border-radius:10px; padding:12px; margin-bottom:16px; font-size:13px; color:#854d0e;">
+            <div class="payment-instructions">
               <strong>Payment Instructions:</strong><br>
               Please send <strong>${money(totalPrice)}</strong> to bKash/Nagad: <strong>01712345678</strong> (Merchant) and enter your transaction details below.
             </div>
@@ -1314,7 +1334,7 @@ async function openBooking(providerId = null, categorySlug = null) {
           const submitBtn = payForm.querySelector('#directPaySubmitBtn');
           if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span style="display:inline-block; animation:spin 1s linear infinite;">⏳</span> Submitting proof...';
+            submitBtn.innerHTML = '<span class="loading-spinner" style="width:14px; height:14px; border-width:2px; vertical-align:middle; margin-right:6px;"></span> Submitting proof...';
           }
 
           try {
@@ -1328,7 +1348,7 @@ async function openBooking(providerId = null, categorySlug = null) {
             if (bookRes.status === 409) {
               const suggestions = bookData.suggestions || [];
               checkoutContainer.innerHTML = `
-                <div style="padding:15px; background:#fff0f0; border-radius:10px; color:var(--red); font-size:13px; margin-bottom:12px;">
+                <div class="conflict-alert">
                   ${escapeHtml(bookData.error || 'This slot was just booked by another client.')}
                 </div>
                 ${suggestions.length > 0 ? `
@@ -1717,16 +1737,16 @@ async function renderProviderAvailability() {
             const endM = row ? String(row.end_minute % 60).padStart(2, '0') : '00';
 
             return `
-              <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:#f8fafc; border:1px solid var(--line); border-radius:10px; gap:16px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--bg-body); border:1px solid var(--border-color); border-radius:10px; gap:16px;">
                 <label style="display:flex; align-items:center; gap:10px; min-width:140px; cursor:pointer; font-weight:600; color:var(--text); margin:0;">
                   <input type="checkbox" name="day_active_${idx}" value="${idx}" ${isChecked ? 'checked' : ''} style="width:18px; height:18px;">
                   ${dayName}
                 </label>
                 <div style="display:flex; align-items:center; gap:8px;">
                   <label style="font-size:12px; color:var(--muted); margin:0;">From</label>
-                  <input type="time" name="start_time_${idx}" value="${startH}:${startM}" style="padding:6px 10px; font-size:13px; border:1px solid var(--line); border-radius:6px; background:#fff;">
+                  <input type="time" name="start_time_${idx}" value="${startH}:${startM}" style="padding:6px 10px; font-size:13px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-surface); color:var(--text-main);">
                   <label style="font-size:12px; color:var(--muted); margin:0;">To</label>
-                  <input type="time" name="end_time_${idx}" value="${endH}:${endM}" style="padding:6px 10px; font-size:13px; border:1px solid var(--line); border-radius:6px; background:#fff;">
+                  <input type="time" name="end_time_${idx}" value="${endH}:${endM}" style="padding:6px 10px; font-size:13px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-surface); color:var(--text-main);">
                 </div>
               </div>
             `;
@@ -1840,7 +1860,7 @@ function renderAdminOverview() {
       </div>
       <div class="stat-card">
         <div class="stat-head">Gross Volume <span class="stat-icon">৳</span></div>
-        <div class="stat-value">৳${stats.gross_volume ?? stats.total_revenue ?? 0}</div>
+        <div class="stat-value">${money(stats.gross_volume ?? stats.total_revenue ?? 0)}</div>
       </div>
       <div class="stat-card">
         <div class="stat-head">Total Users <span class="stat-icon">♙</span></div>
@@ -1865,7 +1885,7 @@ function renderAdminOverview() {
                   <td>${escapeHtml(b.category_name || 'Service')}</td>
                   <td><span class="status ${statusClass(b.status)}">${normalizeStatus(b.status)}</span></td>
                 </tr>
-              `).join('') || '<tr><td colspan="3">No recent bookings.</td></tr>'}
+              `).join('') || '<tr><td colspan="3" style="text-align:center; padding:24px 16px; color:var(--text-muted);">No recent bookings recorded.</td></tr>'}
             </tbody>
           </table>
         </div>
@@ -1879,7 +1899,7 @@ function renderAdminOverview() {
               <span class="activity-dot">৳</span>
               <div class="activity-copy">
                 <strong>TrxID: ${escapeHtml(p.trx_id || 'N/A')}</strong>
-                <p>৳${p.estimated_price} from ${escapeHtml(p.customer_name || 'Customer')}</p>
+                <p>${money(p.estimated_price)} from ${escapeHtml(p.customer_name || 'Customer')}</p>
               </div>
             </div>
           `).join('') || '<div class="empty-state">No pending payments.</div>'}
@@ -1902,13 +1922,13 @@ function renderAdminPayments() {
               <tr>
                 <td><strong>${escapeHtml(p.trx_id || 'N/A')}</strong></td>
                 <td>${escapeHtml(p.customer_name || 'Customer')}</td>
-                <td>৳${p.estimated_price}</td>
+                <td><strong>${money(p.estimated_price)}</strong></td>
                 <td>
                   <button class="mini-link" data-payment-action="verify" data-req-id="${p.id}" onclick="verifyPayment(${p.id}, 'verify')">Verify</button>
                   <button class="small-action" data-payment-action="reject" data-req-id="${p.id}" onclick="verifyPayment(${p.id}, 'reject')">Reject</button>
                 </td>
               </tr>
-            `).join('') || '<tr><td colspan="4">No pending payments.</td></tr>'}
+            `).join('') || '<tr><td colspan="4" style="text-align:center; padding:30px 16px; color:var(--text-muted);">No pending payments to verify.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -1928,13 +1948,13 @@ function renderAdminPayouts() {
             ${payouts.map(p => `
               <tr>
                 <td><strong>${escapeHtml(p.provider_name || 'Specialist')}</strong></td>
-                <td>৳${p.amount}</td>
+                <td><strong>${money(p.amount)}</strong></td>
                 <td>${new Date(p.created_at).toLocaleDateString()}</td>
                 <td>
                   <button class="mini-link" data-payout-action="approve" data-payout-id="${p.id}" onclick="approvePayout(${p.id})">Approve</button>
                 </td>
               </tr>
-            `).join('') || '<tr><td colspan="4">No pending payouts.</td></tr>'}
+            `).join('') || '<tr><td colspan="4" style="text-align:center; padding:30px 16px; color:var(--text-muted);">No pending payout requests.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -2139,56 +2159,64 @@ function renderReports() {
 // Core View Router
 // -------------------------------------------------------------
 async function render() {
-  // Role-based view guard
-  const allowed = navItems().map(n => n[0]);
-  if (state.role === 'client' || state.role === 'guest') {
-    allowed.push('gig-details');
-  }
-  const homePage = (state.role === 'client' || state.role === 'guest') ? 'discover' : (state.role === 'repairman' ? 'overview' : 'admin-overview');
-
-  if (!allowed.includes(state.page)) {
-    state.page = homePage;
-  }
-
-  renderNav();
-  const pages = {
-    discover: typeof renderDiscover === 'function' ? renderDiscover : null,
-    bookings: typeof renderBookings === 'function' ? renderBookings : null,
-    tracking: typeof renderTracking === 'function' ? renderTracking : null,
-    favorites: typeof renderFavorites === 'function' ? renderFavorites : null,
-    profile: typeof renderProfile === 'function' ? renderProfile : null,
-    'gig-details': typeof renderGigDetails === 'function' ? renderGigDetails : null,
-    overview: typeof renderRepairOverview === 'function' ? renderRepairOverview : null,
-    'my-gigs': typeof renderGigs === 'function' ? renderGigs : null,
-    requests: typeof renderRequests === 'function' ? renderRequests : null,
-    availability: typeof renderProviderAvailability === 'function' ? renderProviderAvailability : null,
-    earnings: typeof renderEarnings === 'function' ? renderEarnings : null,
-    'repair-profile': typeof renderRepairProfile === 'function' ? renderRepairProfile : null,
-    'admin-overview': typeof renderAdminOverview === 'function' ? renderAdminOverview : null,
-    payments: typeof renderAdminPayments === 'function' ? renderAdminPayments : null,
-    payouts: typeof renderAdminPayouts === 'function' ? renderAdminPayouts : null,
-    users: typeof renderUsers === 'function' ? renderUsers : null,
-    moderation: typeof renderModeration === 'function' ? renderModeration : null,
-    'all-bookings': typeof renderAllBookings === 'function' ? renderAllBookings : null,
-    reports: typeof renderReports === 'function' ? renderReports : null
-  };
-
-  const contentArea = document.getElementById('content');
-  if (!contentArea) return;
-
-  const currentPage = pages[state.page];
-  if (typeof currentPage === 'function') {
-    try {
-      const res = await currentPage();
-      if (res != null) {
-        contentArea.innerHTML = res;
-      }
-    } catch (e) {
-      console.error('Render error on page:', state.page, e);
-      contentArea.innerHTML = `<div class="empty-state" style="color:red; padding: 20px;">Error rendering ${state.page}: ${e.message}</div>`;
+  try {
+    // Role-based view guard
+    const allowed = navItems().map(n => n[0]);
+    if (state.role === 'client' || state.role === 'guest') {
+      allowed.push('gig-details');
     }
-  } else {
-    contentArea.innerHTML = `<div class="empty-state" style="padding: 20px;">Page "${state.page}" is not implemented yet.</div>`;
+    const homePage = (state.role === 'client' || state.role === 'guest') ? 'discover' : (state.role === 'repairman' ? 'overview' : 'admin-overview');
+
+    if (!allowed.includes(state.page)) {
+      state.page = homePage;
+    }
+
+    renderNav();
+    const pages = {
+      discover: typeof renderDiscover === 'function' ? renderDiscover : null,
+      bookings: typeof renderBookings === 'function' ? renderBookings : null,
+      tracking: typeof renderTracking === 'function' ? renderTracking : null,
+      favorites: typeof renderFavorites === 'function' ? renderFavorites : null,
+      profile: typeof renderProfile === 'function' ? renderProfile : null,
+      'gig-details': typeof renderGigDetails === 'function' ? renderGigDetails : null,
+      overview: typeof renderRepairOverview === 'function' ? renderRepairOverview : null,
+      'my-gigs': typeof renderGigs === 'function' ? renderGigs : null,
+      requests: typeof renderRequests === 'function' ? renderRequests : null,
+      availability: typeof renderProviderAvailability === 'function' ? renderProviderAvailability : null,
+      earnings: typeof renderEarnings === 'function' ? renderEarnings : null,
+      'repair-profile': typeof renderRepairProfile === 'function' ? renderRepairProfile : null,
+      'admin-overview': typeof renderAdminOverview === 'function' ? renderAdminOverview : null,
+      payments: typeof renderAdminPayments === 'function' ? renderAdminPayments : null,
+      payouts: typeof renderAdminPayouts === 'function' ? renderAdminPayouts : null,
+      users: typeof renderUsers === 'function' ? renderUsers : null,
+      moderation: typeof renderModeration === 'function' ? renderModeration : null,
+      'all-bookings': typeof renderAllBookings === 'function' ? renderAllBookings : null,
+      reports: typeof renderReports === 'function' ? renderReports : null
+    };
+
+    const contentArea = document.getElementById('content');
+    if (!contentArea) return;
+
+    const currentPage = pages[state.page];
+    if (typeof currentPage === 'function') {
+      try {
+        const res = await currentPage();
+        if (res != null) {
+          contentArea.innerHTML = res;
+        }
+      } catch (e) {
+        console.error('Render error on page:', state.page, e);
+        contentArea.innerHTML = `<div class="empty-state" style="color:var(--red); padding: 30px;"><div style="font-size:24px; margin-bottom:8px;">⚠️</div><h3>Unable to load page</h3><p style="color:var(--text-muted);">${escapeHtml(e.message)}</p></div>`;
+      }
+    } else {
+      contentArea.innerHTML = `<div class="empty-state" style="padding: 30px;"><div style="font-size:24px; margin-bottom:8px;">📄</div><h3>Page not found</h3><p style="color:var(--text-muted);">The requested page "${escapeHtml(state.page)}" is not available.</p></div>`;
+    }
+  } catch (fatalErr) {
+    console.error('Fatal render error:', fatalErr);
+    const contentArea = document.getElementById('content');
+    if (contentArea) {
+      contentArea.innerHTML = `<div class="empty-state" style="padding:40px 20px;"><div style="font-size:32px; margin-bottom:12px;">⚠️</div><h3>Something went wrong</h3><p style="color:var(--text-muted);">${escapeHtml(fatalErr.message)}</p><button class="primary-btn" onclick="state.page='discover'; render();" style="margin-top:16px;">Return to Home</button></div>`;
+    }
   }
 }
 
@@ -2313,7 +2341,16 @@ document.addEventListener('click', async (e) => {
   if (bookGigNowBtn) {
     const catSlug = bookGigNowBtn.dataset.categorySlug || 'appliance-repair';
     const provId = bookGigNowBtn.dataset.providerId;
-    openBooking(catSlug, provId);
+    openBooking(provId, catSlug);
+    return;
+  }
+
+  // Individual service Book button on gig details
+  const bookServiceBtn = e.target.closest('.book-service-btn');
+  if (bookServiceBtn) {
+    const catSlug = bookServiceBtn.dataset.categorySlug || 'appliance-repair';
+    const provId = bookServiceBtn.dataset.providerId;
+    openBooking(provId, catSlug);
     return;
   }
 
@@ -2573,7 +2610,7 @@ document.addEventListener('click', async (e) => {
         `Invoice ${inv.invoice_number}`,
         `
           <div style="padding:10px 0;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:14px; border-bottom:1px solid #edf0f5; padding-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:14px; border-bottom:1px solid var(--border-color); padding-bottom:12px;">
               <div>
                 <strong>Customer: ${escapeHtml(inv.customer_name || 'Client')}</strong>
                 <div style="font-size:12px; color:var(--muted);">${inv.customer_phone || ''}</div>
@@ -2584,9 +2621,9 @@ document.addEventListener('click', async (e) => {
               </div>
             </div>
             <table style="width:100%; border-collapse:collapse; font-size:13px; margin:16px 0;">
-              <tr style="border-bottom:1px solid #edf0f5;"><th style="text-align:left; padding:8px 0;">Description</th><th style="text-align:right; padding:8px 0;">Amount</th></tr>
-              <tr style="border-bottom:1px solid #edf0f5;"><td style="padding:8px 0;">${escapeHtml(inv.category_name || 'Home Service Execution')}</td><td style="text-align:right; padding:8px 0;">${money(inv.subtotal)}</td></tr>
-              <tr style="border-bottom:1px solid #edf0f5;"><td style="padding:8px 0;">Platform Tax / Fee (5%)</td><td style="text-align:right; padding:8px 0;">${money(inv.tax_amount)}</td></tr>
+              <tr style="border-bottom:1px solid var(--border-color);"><th style="text-align:left; padding:8px 0;">Description</th><th style="text-align:right; padding:8px 0;">Amount</th></tr>
+              <tr style="border-bottom:1px solid var(--border-color);"><td style="padding:8px 0;">${escapeHtml(inv.category_name || 'Home Service Execution')}</td><td style="text-align:right; padding:8px 0;">${money(inv.subtotal)}</td></tr>
+              <tr style="border-bottom:1px solid var(--border-color);"><td style="padding:8px 0;">Platform Tax / Fee (5%)</td><td style="text-align:right; padding:8px 0;">${money(inv.tax_amount)}</td></tr>
               <tr style="font-weight:700; font-size:15px;"><td style="padding:10px 0;">Total Paid</td><td style="text-align:right; padding:10px 0; color:var(--blue);">${money(inv.total)}</td></tr>
             </table>
           </div>
@@ -3043,7 +3080,7 @@ document.addEventListener('submit', async (e) => {
 
       const candidates = data.candidates || [];
       if (candidates.length === 0) {
-        container.innerHTML = `<div style="padding:15px; background:#fff8e9; border-radius:10px; color:#856404; font-size:13px;">No available specialists found for this slot. Please try another date or time.</div>`;
+        container.innerHTML = `<div class="payment-instructions">No available specialists found for this slot. Please try another date or time.</div>`;
         return;
       }
 
@@ -3051,12 +3088,12 @@ document.addEventListener('submit', async (e) => {
       if (actions) actions.style.display = 'none';
 
       container.innerHTML = `
-        <div style="font-size:13px; font-weight:700; margin:15px 0 10px; color:#172238;">Ranked Specialist Matches (${candidates.length})</div>
+        <div style="font-size:13px; font-weight:700; margin:15px 0 10px; color:var(--text-main);">Ranked Specialist Matches (${candidates.length})</div>
         <div style="display:grid; gap:10px;">
           ${candidates.map(c => `
-            <div style="border:1px solid #edf0f5; border-radius:12px; padding:12px; display:flex; justify-content:space-between; align-items:center; background:#fafbfe;">
+            <div style="border:1px solid var(--border-color); border-radius:12px; padding:12px; display:flex; justify-content:space-between; align-items:center; background:var(--bg-body);">
               <div>
-                <strong style="font-size:14px; color:#172238;">${escapeHtml(c.provider.name)}</strong>
+                <strong style="font-size:14px; color:var(--text-main);">${escapeHtml(c.provider.name)}</strong>
                 <div style="font-size:12px; color:var(--muted); margin-top:2px;">
                   ★ ${c.provider.rating} (${c.provider.rating_count} reviews) · ${c.provider.address}
                 </div>
@@ -3100,7 +3137,7 @@ document.addEventListener('submit', async (e) => {
           // Render Manual Mobile Banking Payment Step
           container.innerHTML = `
             <div id="mockPaymentStep" style="margin-top:10px;">
-              <div style="background:#f8fafc; border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px;">
+              <div style="background:var(--bg-body); border:1px solid var(--border-color); border-radius:12px; padding:16px; margin-bottom:16px;">
                 <div style="font-size:14px; font-weight:700; color:var(--text); margin-bottom:12px;">Booking & Payment Summary</div>
                 <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--text); margin-bottom:6px;">
                   <span>Specialist Base Rate</span>
@@ -3116,7 +3153,7 @@ document.addEventListener('submit', async (e) => {
                 </div>
               </div>
 
-              <div style="background:#fff9eb; border:1px solid #f6d289; border-radius:10px; padding:12px; margin-bottom:16px; font-size:13px; color:#854d0e;">
+              <div class="payment-instructions">
                 <strong>Payment Instructions:</strong><br>
                 Please send <strong>${money(totalPrice)}</strong> to bKash/Nagad: <strong>01712345678</strong> (Merchant) and enter your transaction details below.
               </div>
@@ -3172,7 +3209,7 @@ document.addEventListener('submit', async (e) => {
 
             const payBtn = payForm.querySelector('#paySubmitBtn');
             payBtn.disabled = true;
-            payBtn.innerHTML = '<span style="display:inline-block; animation:spin 1s linear infinite;">⏳</span> Submitting proof...';
+            payBtn.innerHTML = '<span class="loading-spinner" style="width:14px; height:14px; border-width:2px; vertical-align:middle; margin-right:6px;"></span> Submitting proof...';
 
             try {
               const bookRes = await fetch('/api/requests', {
@@ -3186,8 +3223,8 @@ document.addEventListener('submit', async (e) => {
                 // Concurrency slot conflict with suggestions
                 const suggestions = bookData.suggestions || [];
                 container.innerHTML = `
-                  <div style="padding:15px; background:#fff0f0; border-radius:10px; color:var(--red); font-size:13px; margin-bottom:12px;">
-                    ${bookData.error || 'This slot was just booked by another client.'}
+                  <div class="conflict-alert">
+                    ${escapeHtml(bookData.error || 'This slot was just booked by another client.')}
                   </div>
                   ${suggestions.length > 0 ? `
                     <div style="font-size:13px; font-weight:700; margin-bottom:8px;">Suggested alternative slots:</div>

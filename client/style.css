@@ -1460,7 +1460,64 @@ button { cursor: pointer; }
   color: #ffffff;
 }
 
+/* Loading Indicators */
+.loading-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 26px;
+  height: 26px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.payment-instructions {
+  background: #fff9eb;
+  border: 1px solid #f6d289;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #854d0e;
+}
+
+.conflict-alert {
+  padding: 15px;
+  background: #fff0f0;
+  border-radius: 10px;
+  color: var(--red);
+  font-size: 13px;
+  margin-bottom: 12px;
+  border: 1px solid #fecaca;
+}
+
 /* Dark mode specific fine-tuning */
+[data-theme="dark"] .payment-instructions {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #fde68a;
+}
+
+[data-theme="dark"] .conflict-alert {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
 [data-theme="dark"] .admin-highlight {
   background: #3b2c14;
   border-color: #5c441a;

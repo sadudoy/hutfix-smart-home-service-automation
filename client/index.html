@@ -68,10 +68,10 @@
           <div class="location-pill" id="location-pill" style="cursor: pointer;"><span class="pin">⌖</span><span><small>Service location</small><strong id="currentLocationText">Dhaka, Bangladesh</strong></span><span class="chevron">⌄</span></div>
           <button class="icon-btn theme-toggle-btn" id="themeToggle" aria-label="Toggle dark/light theme" title="Toggle theme">🌙</button>
           <button class="icon-btn notification-btn" id="notificationBtn" aria-label="Notifications">♧<i></i></button>
-          <div id="notificationsDropdown" style="display:none; position:absolute; top:52px; right:45px; width:320px; background:#fff; border:1px solid var(--line); border-radius:14px; box-shadow:0 12px 35px rgba(0,0,0,0.12); padding:16px; z-index:100;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #edf0f5; padding-bottom:8px;">
-              <strong style="font-size:14px;">Notifications</strong>
-              <small id="markAllReadBtn" style="color:var(--blue); cursor:pointer; font-weight:600;">Mark all read</small>
+          <div id="notificationsDropdown" style="display:none; position:absolute; top:52px; right:45px; width:320px; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:14px; box-shadow:var(--shadow); padding:16px; z-index:100; color:var(--text-main);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
+              <strong style="font-size:14px; color:var(--text-main);">Notifications</strong>
+              <small id="markAllReadBtn" style="color:var(--primary); cursor:pointer; font-weight:600;">Mark all read</small>
             </div>
             <div id="notificationsList" style="max-height:280px; overflow-y:auto; display:grid; gap:10px;"></div>
           </div>
