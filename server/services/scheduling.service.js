@@ -10,6 +10,13 @@ function formatSlotLabel(startMinute, endMinute) {
 }
 
 async function getSlots(providerId, dateStr, categorySlug) {
+    const provId = parseInt(providerId, 10);
+    if (isNaN(provId) || provId <= 0) {
+        const err = new Error('invalid provider id');
+        err.status = 400;
+        throw err;
+    }
+
     // 1. Look up provider and category-specific price
     const providerQuery = `
         SELECT p.id, u.full_name AS name, p.rating, p.rating_count, p.headline, p.address, ps.price
@@ -19,7 +26,7 @@ async function getSlots(providerId, dateStr, categorySlug) {
         JOIN service_categories sc ON sc.id = ps.category_id
         WHERE p.id = $1 AND sc.slug = $2 AND p.is_active = TRUE;
     `;
-    const providerRes = await pool.query(providerQuery, [providerId, categorySlug]);
+    const providerRes = await pool.query(providerQuery, [provId, categorySlug]);
 
     if (providerRes.rows.length === 0) {
         const err = new Error('provider not found or does not serve category');
@@ -46,7 +53,7 @@ async function getSlots(providerId, dateStr, categorySlug) {
         FROM provider_availability
         WHERE provider_id = $1 AND weekday = $2
         ORDER BY start_minute ASC;
-    `, [providerId, weekday]);
+    `, [provId, weekday]);
 
     if (availRes.rows.length === 0) {
         return {
@@ -61,7 +68,7 @@ async function getSlots(providerId, dateStr, categorySlug) {
         SELECT start_minute
         FROM provider_bookings
         WHERE provider_id = $1 AND slot_date = $2;
-    `, [providerId, dateStr]);
+    `, [provId, dateStr]);
 
     const taken = new Set(bookingsRes.rows.map(r => parseInt(r.start_minute, 10)));
 
@@ -96,11 +103,14 @@ async function getSlots(providerId, dateStr, categorySlug) {
 }
 
 async function getSuggestions(providerId, dateStr, categorySlug, excludeStartMinute, limit = 3) {
+    const provId = parseInt(providerId, 10);
+    if (isNaN(provId) || provId <= 0) return [];
+
     const suggestions = [];
 
     // 1. Check same day
     try {
-        const dayResult = await getSlots(providerId, dateStr, categorySlug);
+        const dayResult = await getSlots(provId, dateStr, categorySlug);
         const availableSameDay = dayResult.slots.filter(
             s => s.available && s.start_minute !== parseInt(excludeStartMinute, 10)
         );
@@ -125,7 +135,7 @@ async function getSuggestions(providerId, dateStr, categorySlug, excludeStartMin
         const nextDateStr = d.toISOString().split('T')[0];
 
         try {
-            const nextResult = await getSlots(providerId, nextDateStr, categorySlug);
+            const nextResult = await getSlots(provId, nextDateStr, categorySlug);
             const availableSlots = nextResult.slots.filter(s => s.available);
 
             for (const s of availableSlots) {
@@ -144,19 +154,22 @@ async function getSuggestions(providerId, dateStr, categorySlug, excludeStartMin
 }
 
 async function isSlotAvailable(providerId, dateStr, startMinute, endMinute) {
+    const provId = parseInt(providerId, 10);
+    if (isNaN(provId) || provId <= 0) return false;
+
     const weekday = new Date(dateStr + 'T00:00:00Z').getUTCDay();
 
     const availRes = await pool.query(`
         SELECT 1 FROM provider_availability
         WHERE provider_id = $1 AND weekday = $2 AND start_minute <= $3 AND end_minute >= $4;
-    `, [providerId, weekday, startMinute, endMinute]);
+    `, [provId, weekday, startMinute, endMinute]);
 
     if (availRes.rows.length === 0) return false;
 
     const bookingRes = await pool.query(`
         SELECT 1 FROM provider_bookings
         WHERE provider_id = $1 AND slot_date = $2 AND start_minute = $3;
-    `, [providerId, dateStr, startMinute]);
+    `, [provId, dateStr, startMinute]);
 
     return bookingRes.rows.length === 0;
 }

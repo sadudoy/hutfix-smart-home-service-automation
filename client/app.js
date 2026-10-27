@@ -380,13 +380,14 @@ async function loadAdminData() {
 // Customer / Client Renderers
 // -------------------------------------------------------------
 function serviceCard(s) {
+  const cardProvId = parseInt(s.providerId, 10) || 2;
   const imageUrl = window.IMAGES?.category ? window.IMAGES.category(s.slug) : '';
   const coverHtml = imageUrl
     ? `<div class="service-cover ${s.cover}" style="background-image:url('${imageUrl}'); background-size:cover; background-position:center;"><span class="cover-badge">${s.tag || 'SERVICE'}</span></div>`
     : `<div class="service-cover ${s.cover}"><span class="cover-badge">${s.tag || 'SERVICE'}</span><span class="cover-emoji" style="font-size:2.5rem; color:var(--blue);">${s.icon}</span></div>`;
 
   return `
-    <article class="service-card" data-provider-id="${s.providerId || s.id || 2}" style="cursor: pointer;">
+    <article class="service-card" data-provider-id="${cardProvId}" style="cursor: pointer;">
       ${coverHtml}
       <div class="service-body">
         <div class="service-topline">
@@ -820,7 +821,7 @@ async function renderProfile() {
 }
 
 async function renderGigDetails() {
-  const gigId = state.viewingGigId || 2;
+  const gigId = parseInt(state.viewingGigId, 10) || 2;
   const content = $('#content');
   content.innerHTML = '<div class="loading-box"><span class="loading-spinner"></span><span>Loading specialist details...</span></div>';
 
@@ -828,13 +829,15 @@ async function renderGigDetails() {
     const res = await fetch(`/api/gigs/${gigId}`);
     if (!res.ok) throw new Error('Provider gig not found');
     const data = await res.json();
-    const provider = data.provider;
+    const provider = data.provider || {};
+    const provId = parseInt(provider.id || gigId || 2, 10) || 2;
     const services = provider.services || [];
     const firstService = services[0] || { category_slug: 'appliance-repair', price: 900, category_name: 'Appliance Repair' };
+    const firstCatSlug = firstService.category_slug || 'appliance-repair';
     const reviews = data.reviews || [];
     const breakdown = data.ratingBreakdown || [];
 
-    const heroImage = window.IMAGES?.category ? window.IMAGES.category(firstService.category_slug) : '';
+    const heroImage = window.IMAGES?.category ? window.IMAGES.category(firstCatSlug) : '';
     const avatarUrl = window.IMAGES?.providerAvatar ? window.IMAGES.providerAvatar(provider.full_name) : '';
     const basePrice = Number(firstService.price || 900);
 
@@ -921,7 +924,7 @@ async function renderGigDetails() {
                       <span style="font-size:17px; font-weight:800; color:var(--blue);">${money(s.price)}</span>
                       <small style="color:var(--muted); display:block; font-size:11px;">/ base rate</small>
                     </div>
-                    <button class="secondary-btn book-service-btn" data-category-slug="${escapeHtml(s.category_slug)}" data-provider-id="${provider.id}" style="padding:6px 12px; font-size:12px; font-weight:600; min-height:34px;">
+                    <button class="secondary-btn book-service-btn" data-category-slug="${escapeHtml(s.category_slug)}" data-provider-id="${provId}" style="padding:6px 12px; font-size:12px; font-weight:600; min-height:34px;">
                       Book ↗
                     </button>
                   </div>
@@ -945,7 +948,7 @@ async function renderGigDetails() {
                 Includes initial diagnosis, standard visit dispatch, and HutFix service guarantee.
               </p>
             </div>
-            <button class="primary-btn" id="bookGigNowBtn" onclick="openBooking(${provider.id}, '${firstService.category_slug}')" data-provider-id="${provider.id}" data-category-slug="${firstService.category_slug}" data-price="${basePrice}" style="width:100%; justify-content:center; padding:14px; font-size:14px; font-weight:700;">
+            <button class="primary-btn" id="bookGigNowBtn" data-provider-id="${provId}" data-category-slug="${escapeHtml(firstCatSlug)}" data-price="${basePrice}" style="width:100%; justify-content:center; padding:14px; font-size:14px; font-weight:700;">
               Book this Pro ↗
             </button>
             <div style="font-size:12px; color:var(--muted); text-align:center; margin-top:12px;">
@@ -1016,22 +1019,41 @@ async function renderGigDetails() {
 // Booking Flow & Direct Booking / Smart Match Wiring
 // -------------------------------------------------------------
 async function openBooking(arg1 = null, arg2 = null) {
+  function parseProvId(val) {
+    if (val == null) return null;
+    if (typeof val === 'number') {
+      return (!isNaN(val) && isFinite(val) && val > 0) ? Math.floor(val) : null;
+    }
+    if (typeof val === 'string') {
+      const s = val.trim();
+      if (!s || s === 'NaN' || s === 'undefined' || s === 'null') return null;
+      const n = parseInt(s, 10);
+      return (!isNaN(n) && isFinite(n) && n > 0) ? n : null;
+    }
+    return null;
+  }
+
+  function parseCatSlug(val) {
+    if (typeof val !== 'string') return null;
+    const trimmed = val.trim();
+    if (!trimmed || trimmed === 'NaN' || trimmed === 'undefined' || trimmed === 'null') return null;
+    if (!isNaN(Number(trimmed))) return null;
+    return trimmed;
+  }
+
   let providerId = null;
   let categorySlug = null;
 
-  if (typeof arg1 === 'number' || (typeof arg1 === 'string' && !isNaN(Number(arg1)) && Number(arg1) > 0 && typeof arg2 === 'string')) {
-    providerId = Number(arg1);
-    categorySlug = arg2;
-  } else if (typeof arg2 === 'number' || (typeof arg2 === 'string' && !isNaN(Number(arg2)) && Number(arg2) > 0)) {
-    providerId = Number(arg2);
-    categorySlug = typeof arg1 === 'string' ? arg1 : null;
-  } else if (typeof arg1 === 'string') {
-    categorySlug = arg1;
-  } else if (typeof arg1 === 'number') {
-    providerId = arg1;
-  } else if (arg1 && typeof arg1 === 'object') {
-    providerId = arg1.providerId || null;
-    categorySlug = arg1.categorySlug || null;
+  if (arg1 && typeof arg1 === 'object') {
+    providerId = parseProvId(arg1.providerId);
+    categorySlug = parseCatSlug(arg1.categorySlug);
+  } else {
+    const p1 = parseProvId(arg1);
+    const c1 = parseCatSlug(arg1);
+    const p2 = parseProvId(arg2);
+    const c2 = parseCatSlug(arg2);
+    providerId = p1 || p2 || null;
+    categorySlug = c1 || c2 || null;
   }
 
   if (!state.user || state.role === 'guest') {
@@ -1161,6 +1183,11 @@ async function openBooking(arg1 = null, arg2 = null) {
       if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Select a Time Slot ↗';
+      }
+
+      if (!providerId || isNaN(providerId) || providerId <= 0) {
+        slotsContainer.innerHTML = '<span style="font-size:13px; color:var(--red);">No valid specialist selected. Please choose a specialist.</span>';
+        return;
       }
 
       slotsContainer.innerHTML = '<span style="font-size:13px; color:var(--text-muted);"><i class="bi bi-hourglass-split"></i> Loading available slots...</span>';
@@ -2323,8 +2350,8 @@ document.addEventListener('click', async (e) => {
   // Service card click -> Gig Details
   const serviceCardEl = e.target.closest('.service-card');
   if (serviceCardEl && !e.target.closest('button')) {
-    const provId = serviceCardEl.dataset.providerId || 2;
-    state.viewingGigId = Number(provId);
+    const provId = parseInt(serviceCardEl.dataset.providerId, 10) || 2;
+    state.viewingGigId = provId;
     goPage('gig-details');
     return;
   }
@@ -2340,7 +2367,7 @@ document.addEventListener('click', async (e) => {
   const bookGigNowBtn = e.target.closest('#bookGigNowBtn');
   if (bookGigNowBtn) {
     const catSlug = bookGigNowBtn.dataset.categorySlug || 'appliance-repair';
-    const provId = bookGigNowBtn.dataset.providerId;
+    const provId = parseInt(bookGigNowBtn.dataset.providerId, 10) || 2;
     openBooking(provId, catSlug);
     return;
   }
@@ -2349,7 +2376,7 @@ document.addEventListener('click', async (e) => {
   const bookServiceBtn = e.target.closest('.book-service-btn');
   if (bookServiceBtn) {
     const catSlug = bookServiceBtn.dataset.categorySlug || 'appliance-repair';
-    const provId = bookServiceBtn.dataset.providerId;
+    const provId = parseInt(bookServiceBtn.dataset.providerId, 10) || 2;
     openBooking(provId, catSlug);
     return;
   }
