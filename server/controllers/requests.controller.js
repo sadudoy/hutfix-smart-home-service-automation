@@ -853,12 +853,118 @@ async function updateProviderSettings(req, res, next) {
     }
 }
 
+async function reschedule(req, res, next) {
+    const client = await pool.connect();
+    let inTransaction = false;
+    let clientReleased = false;
+
+    try {
+        const id = parseInt(req.params.id, 10);
+        if (isNaN(id)) {
+            client.release();
+            return res.status(400).json({ ok: false, error: 'invalid request id' });
+        }
+
+        const { new_date, new_start_minute, new_end_minute } = req.body || {};
+        const startMin = parseInt(new_start_minute, 10);
+        const endMin = parseInt(new_end_minute, 10);
+
+        if (!new_date || isNaN(startMin) || isNaN(endMin) || startMin >= endMin) {
+            client.release();
+            return res.status(400).json({
+                ok: false,
+                error: 'new_date, new_start_minute, and new_end_minute are required (start < end)'
+            });
+        }
+
+        const reqCheck = await client.query('SELECT * FROM service_requests WHERE id = $1;', [id]);
+        if (reqCheck.rows.length === 0) {
+            client.release();
+            return res.status(404).json({ ok: false, error: 'request not found' });
+        }
+
+        const existing = reqCheck.rows[0];
+        if (Number(existing.customer_id) !== Number(req.user.id)) {
+            client.release();
+            return res.status(403).json({ ok: false, error: 'forbidden' });
+        }
+
+        if (existing.status !== 'requested' && existing.status !== 'accepted') {
+            client.release();
+            return res.status(400).json({ ok: false, error: 'cannot reschedule request in current status' });
+        }
+
+        await client.query('BEGIN');
+        inTransaction = true;
+
+        const providerId = existing.assigned_provider_id;
+
+        if (providerId) {
+            const lockKey = `booking:${providerId}:${new_date}:${startMin}`;
+            await client.query('SELECT pg_advisory_xact_lock(hashtext($1::text)) AS _lock;', [lockKey]);
+
+            const slotCheck = await client.query(`
+                SELECT 1 FROM provider_bookings
+                WHERE provider_id = $1 AND slot_date = $2 AND start_minute = $3 AND request_id != $4;
+            `, [providerId, new_date, startMin, id]);
+
+            if (slotCheck.rows.length > 0) {
+                await client.query('ROLLBACK');
+                inTransaction = false;
+                client.release();
+                clientReleased = true;
+                return res.status(409).json({ ok: false, error: 'slot already booked' });
+            }
+
+            // Update provider_bookings: delete old, insert new
+            await client.query('DELETE FROM provider_bookings WHERE request_id = $1;', [id]);
+            await client.query(`
+                INSERT INTO provider_bookings (provider_id, request_id, slot_date, start_minute, end_minute)
+                VALUES ($1, $2, $3, $4, $5);
+            `, [providerId, id, new_date, startMin, endMin]);
+        }
+
+        // Update service_requests
+        const updateRes = await client.query(`
+            UPDATE service_requests
+            SET preferred_date = $1, preferred_start_minute = $2, preferred_end_minute = $3, updated_at = NOW()
+            WHERE id = $4
+            RETURNING *;
+        `, [new_date, startMin, endMin, id]);
+
+        // Insert request_status_events
+        await client.query(`
+            INSERT INTO request_status_events (request_id, status, note, created_by_user_id)
+            VALUES ($1, $2, 'Rescheduled by customer', $3);
+        `, [id, existing.status, req.user.id]);
+
+        await client.query('COMMIT');
+        inTransaction = false;
+        client.release();
+        clientReleased = true;
+
+        return res.status(200).json({
+            ok: true,
+            request: updateRes.rows[0]
+        });
+    } catch (err) {
+        if (inTransaction) {
+            await client.query('ROLLBACK');
+        }
+        if (!clientReleased) {
+            client.release();
+        }
+        return next(err);
+    }
+}
+
 module.exports = {
     match,
     create,
     mine,
     getOne,
     customerCancel,
+    reschedule,
     acceptRequest,
     rejectRequest,
     updateStatus,

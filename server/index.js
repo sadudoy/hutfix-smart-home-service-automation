@@ -17,6 +17,8 @@ const invoicesRouter = require('./routes/invoices.routes');
 const ratingsRouter = require('./routes/ratings.routes');
 const notificationsRouter = require('./routes/notifications.routes');
 const adminRouter = require('./routes/admin.routes');
+const addressesRouter = require('./routes/addresses.routes');
+const gigsRouter = require('./routes/gigs.routes');
 const errorHandler = require('./middleware/error');
 
 const app = express();
@@ -45,6 +47,8 @@ app.use('/api/invoices', invoicesRouter);
 app.use('/api/ratings', ratingsRouter);
 app.use('/api/notifications', notificationsRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/addresses', addressesRouter);
+app.use('/api/gigs', gigsRouter);
 
 // Static frontend serving
 app.use(express.static(path.join(__dirname, '..', 'client')));

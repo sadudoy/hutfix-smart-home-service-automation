@@ -123,5 +123,32 @@
 
 ---
 
-## Phase 11+: pending
+## Phase 10.1 — UI Hotfix: Sticky Sidebar, Guest Browsing, Profile Editing, Icons & Branding
+- **Commit**: `e482ca1`
+- **Landed**:
+  - Rebranded platform to FixHut with official logo image and Manrope typography.
+  - Implemented sticky desktop sidebar (`position: sticky; top: 0; height: 100vh; overflow-y: auto;`).
+  - Added guest browsing allowing visitors to explore services without forced login backdrop.
+  - Integrated Bootstrap Icons CDN replacing generic unicode symbols across navigation, chips, and cards.
+  - Added backend profile update endpoint `PATCH /api/auth/profile` with pgcrypto password hashing.
+  - Verification suite `test_phase10_1.js` with 24 checks and full regression passing.
+
+---
+
+## Phase 11 — Customer Experience & Gig Details
+- **Landed**:
+  - Created `addresses` database migration (`database/migrations/002_add_addresses.sql`) and indexed by `user_id`.
+  - Added full Address Book CRUD backend API (`/api/addresses`) with ownership and default-address toggling.
+  - Implemented public Gig Details endpoint `GET /api/gigs/:providerId` with provider info, services, reviews, and star breakdown.
+  - Implemented customer appointment reschedule flow `PATCH /api/requests/:id/reschedule` with advisory lock concurrency protection and slot clash prevention.
+  - Added multi-criteria provider search `GET /api/providers/search` with dynamic sorting, `min_rating`, and `max_price` filters.
+  - Built interactive Gig Details SPA view in `client/app.js` with hero photography, provider avatar, "About the Pro", sticky booking card, and reviews breakdown.
+  - Added Saved Addresses management UI in Customer Profile and address quick-select in booking modal.
+  - Added Reschedule modal in service tracking view.
+  - Implemented Mock Checkout step with total computation (5% fee), mock credit card input, and simulated payment processing spinner.
+  - Authored comprehensive verification test suite `test_phase11.js` passing 35 functional tests and all prior regressions.
+
+---
+
+## Phase 12+: pending
 - Future planned enhancements outlined in `docs/ROADMAP.md`.

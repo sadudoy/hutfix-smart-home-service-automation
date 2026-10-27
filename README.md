@@ -2,7 +2,7 @@
 
 > On-demand, slot-scheduled home services with algorithmic matching, concurrency-safe booking, and automated invoice delivery for the BAUST CSE FEST 2026 Hackathon.
 
-**Status: Phase 10 / 13 complete**
+**Status: Phase 11 / 13 complete**
 
 ---
 
@@ -26,6 +26,7 @@ Follow these 4 steps to run the complete platform locally:
    psql "$DATABASE_URL" -f database/schema.sql
    psql "$DATABASE_URL" -f database/seed.sql
    psql "$DATABASE_URL" -f database/migrations/001_add_notifications.sql
+   psql "$DATABASE_URL" -f database/migrations/002_add_addresses.sql
    ```
 4. **Launch Dev Server**:
    ```bash
@@ -93,10 +94,12 @@ The project maintains an automated test suite verifying every layer from static 
 | `test_phase8.js` | Impeccable redesign, purged AI visual tells, dark mode contrast hardening, 0 detector findings | **PASS** |
 | `test_phase9.legacy.js` | Restored original prototype UI, backend rewiring, mobile responsive fixes | **PASS** |
 | `test_phase10.js` | Fixora reference UI adoption, scaled typography (>=11px), strict RBAC, admin analytics, and live backend wiring | **PASS** |
+| `test_phase10_1.js` | UI hotfix: sticky sidebar, guest browsing, profile editing, Bootstrap Icons, FixHut branding | **PASS** |
+| `test_phase11.js` | Customer experience: gig details, address book CRUD, advisory-locked reschedule, search filters, mock checkout | **PASS** |
 
 Run tests anytime with:
 ```bash
-node test_phase10.js
+node test_phase11.js
 ```
 
 ---

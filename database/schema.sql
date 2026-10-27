@@ -135,3 +135,14 @@ CREATE TABLE IF NOT EXISTS notifications (
 
 CREATE INDEX IF NOT EXISTS idx_notifications_user_unread
   ON notifications(user_id, is_read, created_at DESC);
+
+
+CREATE TABLE IF NOT EXISTS addresses (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  label TEXT NOT NULL DEFAULT 'Home',
+  address_line TEXT NOT NULL,
+  is_default BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_addresses_user ON addresses(user_id);

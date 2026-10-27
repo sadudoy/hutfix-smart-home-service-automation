@@ -585,3 +585,143 @@
 ```
 - **Errors**: `401 Unauthorized`, `403 Forbidden` (`role required: provider`).
 
+
+
+---
+
+## 11. Customer Experience & Gig Details (Phase 11)
+
+### `GET /api/gigs/:providerId`
+- **Auth**: None (Public)
+- **Role**: Any
+- **Response `200 OK`**:
+```json
+{
+  "ok": true,
+  "provider": {
+    "id": "2",
+    "full_name": "Rahim Electronics & AC Care",
+    "headline": "Senior HVAC & Refrigerator Technician",
+    "bio": "Fast response, certified compressor repair, and genuine parts guarantee.",
+    "rating": "4.8",
+    "rating_count": 115,
+    "address": "Green Road, Dhanmondi, Dhaka",
+    "years_experience": 9,
+    "services": [
+      {
+        "price": "950.00",
+        "category_id": "1",
+        "category_slug": "appliance-repair",
+        "category_name": "Appliance & Gadget Repair"
+      }
+    ]
+  },
+  "reviews": [],
+  "ratingBreakdown": []
+}
+```
+- **Errors**: `400 Bad Request` (`invalid provider id`), `404 Not Found`.
+
+### `GET /api/addresses`
+- **Auth**: Required
+- **Role**: `customer`, `provider`, `admin`
+- **Response `200 OK`**:
+```json
+{
+  "ok": true,
+  "addresses": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "label": "Home",
+      "address_line": "House 18, Road 7, Dhanmondi, Dhaka",
+      "is_default": true,
+      "created_at": "2026-10-27T16:45:00.000Z"
+    }
+  ]
+}
+```
+
+### `POST /api/addresses`
+- **Auth**: Required
+- **Body**:
+```json
+{
+  "label": "Work",
+  "address_line": "Gulshan 2, Dhaka",
+  "is_default": false
+}
+```
+- **Response `200 OK`**:
+```json
+{
+  "ok": true,
+  "address": {
+    "id": 2,
+    "user_id": 1,
+    "label": "Work",
+    "address_line": "Gulshan 2, Dhaka",
+    "is_default": false,
+    "created_at": "2026-10-27T16:46:00.000Z"
+  }
+}
+```
+
+### `PATCH /api/addresses/:id`
+- **Auth**: Required
+- **Body**: `{ "label": "Office", "address_line": "Banani DOHS, Dhaka", "is_default": true }`
+- **Response `200 OK`**: `{ "ok": true, "address": { ... } }`
+
+### `DELETE /api/addresses/:id`
+- **Auth**: Required
+- **Response `200 OK`**: `{ "ok": true }`
+
+### `PATCH /api/requests/:id/reschedule`
+- **Auth**: Required
+- **Role**: `customer`
+- **Body**:
+```json
+{
+  "new_date": "2026-11-26",
+  "new_start_minute": 840,
+  "new_end_minute": 960
+}
+```
+- **Response `200 OK`**:
+```json
+{
+  "ok": true,
+  "request": {
+    "id": 14,
+    "preferred_date": "2026-11-26",
+    "preferred_start_minute": 840,
+    "preferred_end_minute": 960,
+    "status": "requested"
+  }
+}
+```
+- **Errors**: `400 Bad Request`, `403 Forbidden`, `404 Not Found`, `409 Conflict` (`slot already booked`).
+
+### `GET /api/providers/search`
+- **Auth**: None (Public)
+- **Query Parameters**: `min_rating`, `max_price`, `sort`, `search`, `category_slug`
+- **Response `200 OK`**:
+```json
+{
+  "ok": true,
+  "providers": [
+    {
+      "id": "2",
+      "name": "Rahim Electronics & AC Care",
+      "headline": "Specialist in AC & Refrigerator Servicing",
+      "rating": "4.8",
+      "rating_count": 115,
+      "address": "Green Road, Dhanmondi, Dhaka",
+      "years_experience": 9,
+      "category_slug": "appliance-repair",
+      "category": "Appliance & Gadget Repair",
+      "price_per_hour": "950.00"
+    }
+  ]
+}
+```

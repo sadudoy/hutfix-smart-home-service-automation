@@ -29,7 +29,12 @@ const state = {
   adminUsers: [],
   adminBookings: [],
   notifications: [],
-  activeRequestId: null
+  activeRequestId: null,
+  viewingGigId: 2,
+  addresses: [],
+  filterRating: '',
+  filterPrice: '',
+  filterSort: ''
 };
 
 // UI Helpers
@@ -219,6 +224,7 @@ async function loadServices() {
       state.services = data.services.map((s, idx) => ({
         id: s.slug,
         slug: s.slug,
+        providerId: idx + 2,
         title: s.name,
         desc: s.description || 'Professional home service with verified background check and upfront pricing.',
         price: Number(s.base_price) || 800,
@@ -238,6 +244,22 @@ async function loadServices() {
   } catch (err) {
     console.error('loadServices error:', err);
   }
+}
+
+async function loadAddresses() {
+  if (!state.user || state.role === 'guest') return [];
+  try {
+    const res = await fetch('/api/addresses', { credentials: 'include' });
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (data.ok && Array.isArray(data.addresses)) {
+      state.addresses = data.addresses;
+      return state.addresses;
+    }
+  } catch (err) {
+    console.error('loadAddresses error:', err);
+  }
+  return [];
 }
 
 async function loadMyBookings() {
@@ -361,7 +383,7 @@ function serviceCard(s) {
     : `<div class="service-cover ${s.cover}"><span class="cover-badge">${s.tag || 'SERVICE'}</span><span class="cover-emoji" style="font-size:2.5rem; color:var(--blue);">${s.icon}</span></div>`;
 
   return `
-    <article class="service-card">
+    <article class="service-card" data-provider-id="${s.providerId || s.id || 2}" style="cursor: pointer;">
       ${coverHtml}
       <div class="service-body">
         <div class="service-topline">
@@ -383,6 +405,56 @@ function serviceCard(s) {
       </div>
     </article>
   `;
+}
+
+async function filterServicesGrid() {
+  const grid = $('#services-grid');
+  if (!grid) return;
+  grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">Filtering specialists...</div>';
+
+  const params = new URLSearchParams();
+  if (state.filterRating) params.append('min_rating', state.filterRating);
+  if (state.filterPrice) params.append('max_price', state.filterPrice);
+  if (state.filterSort) params.append('sort', state.filterSort);
+  if (state.category && state.category !== 'All services') {
+    const matchedCat = state.services.find(s => s.title.includes(state.category) || s.category === state.category);
+    if (matchedCat) params.append('category_slug', matchedCat.slug);
+  }
+  if (state.query) params.append('search', state.query);
+
+  try {
+    const res = await fetch('/api/providers/search?' + params.toString());
+    const data = await res.json();
+    if (data.ok && Array.isArray(data.providers)) {
+      if (data.providers.length === 0) {
+        grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">No specialists match your criteria. Try adjusting your filters.</div>';
+        return;
+      }
+
+      grid.innerHTML = data.providers.map(p => {
+        const item = {
+          id: p.category_slug,
+          slug: p.category_slug,
+          providerId: p.id,
+          title: p.category || p.headline,
+          desc: p.headline || `Expert services by ${p.name}.`,
+          price: Number(p.price_per_hour) || 900,
+          rating: p.rating || '4.8',
+          reviews: p.rating_count || 120,
+          provider: p.name,
+          initials: (p.name || 'SP').slice(0, 2).toUpperCase(),
+          avatar: 'avatar-blue',
+          subtitle: `${p.years_experience || 5}+ yrs exp · ${p.address || 'Dhaka'}`,
+          verified: true,
+          cover: 'cover-wash',
+          tag: Number(p.rating) >= 4.8 ? 'TOP RATED' : 'VERIFIED'
+        };
+        return serviceCard(item);
+      }).join('');
+    }
+  } catch (err) {
+    console.error('filterServicesGrid error:', err);
+  }
 }
 
 function renderDiscover() {
@@ -449,8 +521,40 @@ function renderDiscover() {
       </div>
       <button class="link-btn" data-page="bookings">My bookings ↗</button>
     </div>
+
+    <!-- Filter dropdowns above #services-grid -->
+    <div class="filter-controls-bar" style="display:flex; gap:16px; flex-wrap:wrap; align-items:center; margin: 16px 0 20px; padding: 12px 16px; background:#fff; border:1px solid var(--line); border-radius:12px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <label for="filterRating" style="font-size:13px; font-weight:700; color:var(--muted);"><i class="bi bi-star-fill" style="color:var(--amber);"></i> Rating:</label>
+        <select id="filterRating" style="padding:6px 12px; border-radius:8px; border:1px solid #d1d5db; font-size:13px; background:#fff; cursor:pointer;">
+          <option value="">All</option>
+          <option value="4.0" ${state.filterRating === '4.0' ? 'selected' : ''}>4.0+</option>
+          <option value="4.5" ${state.filterRating === '4.5' ? 'selected' : ''}>4.5+</option>
+          <option value="4.8" ${state.filterRating === '4.8' ? 'selected' : ''}>4.8+</option>
+        </select>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <label for="filterPrice" style="font-size:13px; font-weight:700; color:var(--muted);"><i class="bi bi-tag-fill" style="color:var(--blue);"></i> Price:</label>
+        <select id="filterPrice" style="padding:6px 12px; border-radius:8px; border:1px solid #d1d5db; font-size:13px; background:#fff; cursor:pointer;">
+          <option value="">All</option>
+          <option value="500" ${state.filterPrice === '500' ? 'selected' : ''}>&lt; 500</option>
+          <option value="1000" ${state.filterPrice === '1000' ? 'selected' : ''}>&lt; 1000</option>
+          <option value="1500" ${state.filterPrice === '1500' ? 'selected' : ''}>&lt; 1500</option>
+        </select>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <label for="filterSort" style="font-size:13px; font-weight:700; color:var(--muted);"><i class="bi bi-arrow-down-up" style="color:var(--green);"></i> Sort:</label>
+        <select id="filterSort" style="padding:6px 12px; border-radius:8px; border:1px solid #d1d5db; font-size:13px; background:#fff; cursor:pointer;">
+          <option value="" ${!state.filterSort ? 'selected' : ''}>Recommended</option>
+          <option value="rating_desc" ${state.filterSort === 'rating_desc' ? 'selected' : ''}>Rating</option>
+          <option value="price_asc" ${state.filterSort === 'price_asc' ? 'selected' : ''}>Price: Low-High</option>
+          <option value="price_desc" ${state.filterSort === 'price_desc' ? 'selected' : ''}>Price: High-Low</option>
+        </select>
+      </div>
+    </div>
+
     ${state.query ? `<div class="search-results-label">Showing results for “${escapeHtml(state.query)}”</div>` : ''}
-    <div class="service-grid">
+    <div class="service-grid" id="services-grid">
       ${list.map(serviceCard).join('') || '<div class="empty-state" style="grid-column:1/-1">No services match your search.</div>'}
     </div>
 
@@ -576,6 +680,7 @@ async function renderTracking() {
             </div>
           </div>
           <div style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap;">
+            ${canCancel ? `<button class="secondary-btn" id="rescheduleRequestBtn" data-id="${req.id}" data-date="${req.preferred_date}">Reschedule ◷</button>` : ''}
             ${canCancel ? `<button class="danger-btn" id="cancelRequestBtn" data-id="${req.id}">Cancel request</button>` : ''}
             ${canRate ? `<button class="primary-btn" id="rateServiceBtn" data-id="${req.id}">Rate this service ★</button>` : ''}
             ${rating ? `<div style="font-size:13px; color:var(--amber); font-weight:700;">You rated: ★ ${rating.rating_stars} ${rating.review_comment ? `— “${escapeHtml(rating.review_comment)}”` : ''}</div>` : ''}
@@ -616,8 +721,11 @@ function renderFavorites() {
   `;
 }
 
-function renderProfile() {
+async function renderProfile() {
   const u = state.user || {};
+  await loadAddresses();
+  const addresses = state.addresses || [];
+
   return `
     ${pageHead('ACCOUNT SETTINGS', 'My profile', 'Manage your contact details and service preferences.', '<button class="primary-btn" id="saveProfileTopBtn">Save changes</button>')}
     <div class="profile-banner">
@@ -644,13 +752,231 @@ function renderProfile() {
         </div>
       </form>
     </div>
+
+    <!-- Saved Addresses Section -->
+    <div class="panel" style="margin-top:24px;">
+      <div class="panel-head">
+        <div>
+          <h3>Saved Addresses</h3>
+          <p>Manage your delivery and service addresses</p>
+        </div>
+        <button class="primary-btn" id="openAddAddressModalBtn" style="padding:6px 14px; font-size:13px; min-height:36px;">
+          ＋ Add Address
+        </button>
+      </div>
+      <div id="savedAddressesList" class="list-stack" style="margin-top:14px;">
+        ${addresses.length > 0 ? addresses.map(a => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid var(--line);">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <strong style="font-size:14px; color:var(--text);">${escapeHtml(a.label)}</strong>
+                ${a.is_default ? '<span class="status completed" style="font-size:11px; padding:2px 8px;">Default</span>' : ''}
+              </div>
+              <p style="margin:4px 0 0; font-size:13px; color:var(--muted);">${escapeHtml(a.address_line)}</p>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="secondary-btn" data-edit-address-id="${a.id}" data-label="${escapeHtml(a.label)}" data-line="${escapeHtml(a.address_line)}" data-default="${a.is_default}" style="padding:5px 12px; font-size:12px; min-height:32px;">Edit</button>
+              <button class="danger-btn" data-delete-address-id="${a.id}" style="padding:5px 12px; font-size:12px; min-height:32px;">Delete</button>
+            </div>
+          </div>
+        `).join('') : '<div class="empty-state" style="padding:20px 0;">No saved addresses yet. Click "Add Address" to save your home or work address.</div>'}
+      </div>
+    </div>
   `;
+}
+
+async function renderGigDetails() {
+  const gigId = state.viewingGigId || 2;
+  const content = $('#content');
+  content.innerHTML = '<div class="empty-state">Loading specialist details...</div>';
+
+  try {
+    const res = await fetch(`/api/gigs/${gigId}`);
+    if (!res.ok) throw new Error('Provider gig not found');
+    const data = await res.json();
+    const provider = data.provider;
+    const services = provider.services || [];
+    const firstService = services[0] || { category_slug: 'appliance-repair', price: 900, category_name: 'Appliance Repair' };
+    const reviews = data.reviews || [];
+    const breakdown = data.ratingBreakdown || [];
+
+    const heroImage = window.IMAGES?.category ? window.IMAGES.category(firstService.category_slug) : '';
+    const avatarUrl = window.IMAGES?.providerAvatar ? window.IMAGES.providerAvatar(provider.full_name) : '';
+    const basePrice = Number(firstService.price || 900);
+
+    const starCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    if (breakdown.length > 0) {
+      breakdown.forEach(b => { starCounts[b.stars] = Number(b.count); });
+    } else if (Number(provider.rating_count) > 0) {
+      const tot = Number(provider.rating_count);
+      starCounts[5] = Math.round(tot * 0.75);
+      starCounts[4] = Math.round(tot * 0.20);
+      starCounts[3] = Math.round(tot * 0.05);
+    }
+    const totalCount = Object.values(starCounts).reduce((a, b) => a + b, 0) || Number(provider.rating_count) || 1;
+
+    return `
+      <div style="margin-bottom:16px;">
+        <button class="secondary-btn" id="backToDiscoverBtn" style="padding:6px 14px; font-size:13px; min-height:36px;">
+          ← Back to all services
+        </button>
+      </div>
+
+      <!-- Top Section -->
+      <div class="panel" style="overflow:hidden; padding:0; margin-bottom:24px; position:relative;">
+        <div style="height:220px; background-image:url('${heroImage}'); background-size:cover; background-position:center; position:relative;">
+          <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(11,18,32,0.2) 0%, rgba(11,18,32,0.85) 100%);"></div>
+          <div style="position:absolute; bottom:20px; left:24px; right:24px; display:flex; align-items:flex-end; gap:20px;">
+            <img src="${avatarUrl}" alt="${escapeHtml(provider.full_name)}" style="width:84px; height:84px; border-radius:18px; border:3px solid #fff; box-shadow:0 8px 24px rgba(0,0,0,0.2); object-fit:cover; background:#1e293b;" />
+            <div style="color:#fff;">
+              <span class="eyebrow" style="color:var(--blue-light, #93c5fd);">VERIFIED SPECIALIST</span>
+              <h1 style="color:#fff; margin:4px 0 6px; font-size:28px;">${escapeHtml(provider.full_name)}</h1>
+              <div style="display:flex; align-items:center; gap:16px; font-size:14px; color:#e2e8f0; flex-wrap:wrap;">
+                <span style="color:var(--amber, #f59e0b); font-weight:700;">★ ${provider.rating || '4.8'} (${provider.rating_count || 120})</span>
+                <span><i class="bi bi-geo-alt"></i> ${escapeHtml(provider.address || 'Dhaka, Bangladesh')}</span>
+                <span><i class="bi bi-briefcase"></i> ${provider.years_experience || 5} Years Experience</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Columns -->
+      <div style="display:grid; grid-template-columns: 2fr 1fr; gap:24px; align-items:start;">
+        <!-- Left Column: About the Pro & Services Offered -->
+        <div>
+          <div class="panel" style="margin-bottom:20px;">
+            <div class="panel-head">
+              <h3>About the Pro</h3>
+            </div>
+            <p style="color:var(--text); line-height:1.65; margin:0 0 16px;">
+              ${escapeHtml(provider.bio || provider.headline || 'Experienced home service specialist offering guaranteed repairs and fast response times across Dhaka.')}
+            </p>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; padding-top:16px; border-top:1px solid var(--line);">
+              <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted);">
+                <i class="bi bi-shield-check" style="color:var(--green); font-size:18px;"></i>
+                <span>Background Verified</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted);">
+                <i class="bi bi-award" style="color:var(--blue); font-size:18px;"></i>
+                <span>Certified Specialist</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted);">
+                <i class="bi bi-lock" style="color:var(--orange, #f97316); font-size:18px;"></i>
+                <span>Advisory Locked Dispatch</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Services Offered</h3>
+                <p>Transparent upfront pricing per service category</p>
+              </div>
+            </div>
+            <div class="list-stack">
+              ${services.map(s => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid var(--line);">
+                  <div>
+                    <strong style="font-size:15px; color:var(--text);">${escapeHtml(s.category_name)}</strong>
+                    <div style="font-size:12px; color:var(--muted); margin-top:2px;">Category: ${escapeHtml(s.category_slug)}</div>
+                  </div>
+                  <div style="text-align:right;">
+                    <span style="font-size:17px; font-weight:800; color:var(--blue);">${money(s.price)}</span>
+                    <small style="color:var(--muted); display:block; font-size:11px;">/ base rate</small>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column (Sticky): Book this Pro card -->
+        <div style="position:sticky; top:24px;">
+          <div class="panel" style="border: 2px solid var(--blue); box-shadow: 0 10px 30px rgba(37,99,235,0.08);">
+            <div class="panel-head">
+              <h3>Book this Pro</h3>
+              <span class="status completed">Available</span>
+            </div>
+            <div style="margin: 16px 0 20px;">
+              <div style="font-size:12px; color:var(--muted); text-transform:uppercase; font-weight:700;">Starting from</div>
+              <div style="font-size:32px; font-weight:800; color:var(--text); margin-top:4px;">${money(basePrice)}</div>
+              <p style="font-size:13px; color:var(--muted); margin:8px 0 0; line-height:1.5;">
+                Includes initial diagnosis, standard visit dispatch, and FixHut service guarantee.
+              </p>
+            </div>
+            <button class="primary-btn" id="bookGigNowBtn" data-provider-id="${provider.id}" data-category-slug="${firstService.category_slug}" data-price="${basePrice}" style="width:100%; justify-content:center; padding:14px; font-size:14px; font-weight:700;">
+              Check Availability & Book ↗
+            </button>
+            <div style="font-size:12px; color:var(--muted); text-align:center; margin-top:12px;">
+              ⚡ Concurrency protected · No double booking
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Section: Reviews -->
+      <div class="panel" style="margin-top:24px;">
+        <div class="panel-head">
+          <div>
+            <h3>Client Reviews</h3>
+            <p>Feedback from verified clients across Dhaka</p>
+          </div>
+          <div style="font-size:16px; font-weight:700; color:var(--amber);">★ ${provider.rating || '4.8'} (${provider.rating_count || 120} reviews)</div>
+        </div>
+        <div style="display:grid; grid-template-columns: 280px 1fr; gap:32px; margin-top:16px;">
+          <!-- Left: Rating breakdown bars -->
+          <div style="padding-right:24px; border-right:1px solid var(--line);">
+            <h4 style="margin:0 0 16px; font-size:14px; color:var(--text);">Rating Breakdown</h4>
+            ${[5, 4, 3, 2, 1].map(star => {
+              const count = starCounts[star] || 0;
+              const pct = totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;
+              return `
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:13px;">
+                  <span style="width:36px; font-weight:600; color:var(--text);">${star} ★</span>
+                  <div style="flex:1; height:8px; background:#e2e8f0; border-radius:4px; overflow:hidden;">
+                    <div style="width:${pct}%; height:100%; background:var(--blue); border-radius:4px;"></div>
+                  </div>
+                  <span style="width:32px; text-align:right; color:var(--muted); font-size:12px;">${count}</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <!-- Right: List of 20 reviews -->
+          <div>
+            <h4 style="margin:0 0 16px; font-size:14px; color:var(--text);">Recent Reviews (${reviews.length})</h4>
+            <div class="list-stack">
+              ${reviews.length > 0 ? reviews.map(r => `
+                <div style="padding:14px 0; border-bottom:1px solid var(--line);">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <strong style="font-size:14px;">${escapeHtml(r.customer_name || 'Verified Customer')}</strong>
+                    <span style="font-size:12px; color:var(--muted);">${new Date(r.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <div style="color:var(--amber); font-size:13px; margin-bottom:6px;">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</div>
+                  <p style="margin:0; font-size:13px; color:var(--text); line-height:1.5;">${escapeHtml(r.comment || 'Great service and very professional.')}</p>
+                </div>
+              `).join('') : `
+                <div style="padding:20px 0; color:var(--muted); font-size:13px;">
+                  <p style="margin:0 0 6px;">★ Verified Client Feedback</p>
+                  <small>No written reviews submitted yet. Average rating: ★ ${provider.rating || '4.8'} based on ${provider.rating_count || 120} completed appointments.</small>
+                </div>
+              `}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  } catch (err) {
+    return `<div class="empty-state">Failed to load gig details: ${escapeHtml(err.message)}</div>`;
+  }
 }
 
 // -------------------------------------------------------------
 // Booking Flow & Smart Match Wiring
 // -------------------------------------------------------------
-function openBooking(categorySlug) {
+async function openBooking(categorySlug, preselectedProviderId) {
   if (!state.user || state.role === 'guest') {
     const authScreen = document.getElementById('auth-screen');
     if (authScreen) authScreen.classList.add('open');
@@ -661,6 +987,12 @@ function openBooking(categorySlug) {
     }
     return;
   }
+
+  await loadAddresses();
+  const addresses = state.addresses || [];
+  const defaultAddrObj = addresses.find(a => a.is_default) || addresses[0];
+  const initialAddr = defaultAddrObj ? defaultAddrObj.address_line : 'House 18, Road 7, Dhanmondi, Dhaka';
+
   const s = state.services.find(x => x.slug === categorySlug) || state.services[0] || {
     slug: 'appliance-repair',
     title: 'Appliance Repair',
@@ -670,6 +1002,20 @@ function openBooking(categorySlug) {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+  const savedAddrSelectHtml = addresses.length > 0 ? `
+    <div class="form-field full">
+      <label><i class="bi bi-geo-alt"></i> Choose from Saved Addresses</label>
+      <select id="savedAddressSelect">
+        <option value="">-- Select a saved address --</option>
+        ${addresses.map(a => `
+          <option value="${escapeHtml(a.address_line)}" ${a.is_default ? 'selected' : ''}>
+            ${escapeHtml(a.label)}: ${escapeHtml(a.address_line)} ${a.is_default ? '(Default)' : ''}
+          </option>
+        `).join('')}
+      </select>
+    </div>
+  ` : '';
 
   openModal(
     `Book ${s.title}`,
@@ -683,6 +1029,7 @@ function openBooking(categorySlug) {
       </div>
       <form id="matchForm">
         <input type="hidden" name="category_slug" value="${s.slug}">
+        ${preselectedProviderId ? `<input type="hidden" name="preselected_provider_id" value="${preselectedProviderId}">` : ''}
         <div class="form-grid">
           <div class="form-field"><label>Preferred date</label><input type="date" name="preferred_date" value="${tomorrowStr}" min="${new Date().toISOString().split('T')[0]}" required></div>
           <div class="form-field"><label>Time window</label>
@@ -700,7 +1047,8 @@ function openBooking(categorySlug) {
             </select>
           </div>
           <div class="form-field"><label>Contact phone</label><input name="phone" value="${state.user?.phone || '+880 1712-345678'}" required></div>
-          <div class="form-field full"><label>Service address</label><input name="address" value="House 18, Road 7, Dhanmondi, Dhaka" required></div>
+          ${savedAddrSelectHtml}
+          <div class="form-field full"><label>Service address</label><input name="address" value="${escapeHtml(initialAddr)}" required></div>
           <div class="form-field full"><label>Describe issue (optional)</label><textarea name="description" placeholder="Briefly describe what needs attention..."></textarea></div>
           <div class="form-field full"><label>Attach photo (optional)</label><input type="file" name="image" accept="image/*"></div>
         </div>
@@ -712,6 +1060,16 @@ function openBooking(categorySlug) {
       </form>
     `
   );
+
+  const sel = $('#savedAddressSelect');
+  if (sel) {
+    sel.addEventListener('change', (e) => {
+      const addrInput = $('#matchForm input[name="address"]');
+      if (addrInput && e.target.value) {
+        addrInput.value = e.target.value;
+      }
+    });
+  }
 }
 
 // -------------------------------------------------------------
@@ -1143,6 +1501,7 @@ async function render() {
     tracking: renderTracking,
     favorites: renderFavorites,
     profile: renderProfile,
+    'gig-details': renderGigDetails,
     overview: renderRepairOverview,
     'my-gigs': renderGigs,
     requests: renderRequests,
@@ -1157,16 +1516,14 @@ async function render() {
 
   const renderer = pages[state.page] || renderDiscover;
   const content = $('#content');
-  if (renderer === renderTracking) {
-    const res = await renderTracking();
+  const res = await renderer();
+  if (res != null) {
     content.innerHTML = res;
-  } else {
-    content.innerHTML = renderer();
   }
 }
 
 function goPage(page) {
-  if (state.role === 'guest' && page !== 'discover') {
+  if (state.role === 'guest' && page !== 'discover' && page !== 'gig-details') {
     const authScreen = document.getElementById('auth-screen');
     if (authScreen) authScreen.classList.add('open');
     const errEl = document.getElementById('auth-error');
@@ -1215,6 +1572,129 @@ document.addEventListener('click', async (e) => {
   if (saveProfileTopBtn) {
     const pf = document.getElementById('profileForm');
     if (pf) pf.requestSubmit();
+    return;
+  }
+
+  // Service card click -> Gig Details
+  const serviceCardEl = e.target.closest('.service-card');
+  if (serviceCardEl && !e.target.closest('button')) {
+    const provId = serviceCardEl.dataset.providerId || 2;
+    state.viewingGigId = Number(provId);
+    goPage('gig-details');
+    return;
+  }
+
+  // Back to discover button from gig details
+  const backToDiscoverBtn = e.target.closest('#backToDiscoverBtn');
+  if (backToDiscoverBtn) {
+    goPage('discover');
+    return;
+  }
+
+  // Book gig button from gig details
+  const bookGigNowBtn = e.target.closest('#bookGigNowBtn');
+  if (bookGigNowBtn) {
+    const catSlug = bookGigNowBtn.dataset.categorySlug || 'appliance-repair';
+    const provId = bookGigNowBtn.dataset.providerId;
+    openBooking(catSlug, provId);
+    return;
+  }
+
+  // Open Add Address Modal
+  const openAddAddrBtn = e.target.closest('#openAddAddressModalBtn');
+  if (openAddAddrBtn) {
+    openModal('Add Address', `
+      <form id="addAddressForm">
+        <div class="form-grid">
+          <div class="form-field full"><label>Address Label</label><input name="label" placeholder="e.g. Home, Office" value="Home" required></div>
+          <div class="form-field full"><label>Street Address</label><textarea name="address_line" placeholder="House 12, Road 4, Dhanmondi, Dhaka" required></textarea></div>
+          <div class="form-field full" style="display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" id="isDefaultCheck" name="is_default" value="true" style="width:auto; cursor:pointer;">
+            <label for="isDefaultCheck" style="margin:0; cursor:pointer;">Set as default address</label>
+          </div>
+        </div>
+        <div class="modal-actions" style="margin-top:20px;">
+          <button type="button" class="secondary-btn" id="cancelModal">Cancel</button>
+          <button type="submit" class="primary-btn">Save Address</button>
+        </div>
+      </form>
+    `);
+    return;
+  }
+
+  // Edit Address Modal
+  const editAddrBtn = e.target.closest('[data-edit-address-id]');
+  if (editAddrBtn) {
+    const addrId = editAddrBtn.dataset.editAddressId;
+    const label = editAddrBtn.dataset.label || 'Home';
+    const line = editAddrBtn.dataset.line || '';
+    const isDef = editAddrBtn.dataset.default === 'true';
+    openModal('Edit Address', `
+      <form id="editAddressForm" data-id="${addrId}">
+        <div class="form-grid">
+          <div class="form-field full"><label>Address Label</label><input name="label" value="${escapeHtml(label)}" required></div>
+          <div class="form-field full"><label>Street Address</label><textarea name="address_line" required>${escapeHtml(line)}</textarea></div>
+          <div class="form-field full" style="display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" id="isDefaultEditCheck" name="is_default" value="true" ${isDef ? 'checked' : ''} style="width:auto; cursor:pointer;">
+            <label for="isDefaultEditCheck" style="margin:0; cursor:pointer;">Set as default address</label>
+          </div>
+        </div>
+        <div class="modal-actions" style="margin-top:20px;">
+          <button type="button" class="secondary-btn" id="cancelModal">Cancel</button>
+          <button type="submit" class="primary-btn">Update Address</button>
+        </div>
+      </form>
+    `);
+    return;
+  }
+
+  // Delete Address
+  const delAddrBtn = e.target.closest('[data-delete-address-id]');
+  if (delAddrBtn) {
+    const addrId = delAddrBtn.dataset.deleteAddressId;
+    try {
+      const res = await fetch(`/api/addresses/${addrId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (!res.ok) throw new Error('Failed to delete address');
+      toast('Address removed.');
+      await loadAddresses();
+      await render();
+    } catch (err) {
+      toast('Error: ' + err.message);
+    }
+    return;
+  }
+
+  // Reschedule Request Modal
+  const rescheduleBtn = e.target.closest('#rescheduleRequestBtn');
+  if (rescheduleBtn) {
+    const reqId = rescheduleBtn.dataset.id;
+    const currentDate = rescheduleBtn.dataset.date || new Date().toISOString().split('T')[0];
+    openModal('Reschedule Appointment', `
+      <form id="rescheduleForm" data-id="${reqId}">
+        <div class="form-grid">
+          <div class="form-field full">
+            <label>New Service Date</label>
+            <input type="date" name="new_date" min="${new Date().toISOString().split('T')[0]}" value="${currentDate}" required />
+          </div>
+          <div class="form-field full">
+            <label>New Time Window</label>
+            <select name="time_window">
+              <option value="09:00-11:00">09:00 AM – 11:00 AM</option>
+              <option value="11:00-13:00">11:00 AM – 01:00 PM</option>
+              <option value="14:00-16:00" selected>02:00 PM – 04:00 PM</option>
+              <option value="16:00-18:00">04:00 PM – 06:00 PM</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-actions" style="margin-top:20px;">
+          <button type="button" class="secondary-btn" id="cancelModal">Cancel</button>
+          <button type="submit" class="primary-btn">Confirm Reschedule</button>
+        </div>
+      </form>
+    `);
     return;
   }
 
@@ -1630,12 +2110,14 @@ document.addEventListener('submit', async (e) => {
         </div>
       `;
 
-      // Attach click listener for candidate booking
+      // Attach click listener for candidate booking -> leads to mock payment checkout step
       container.querySelectorAll('[data-confirm-book-prov]').forEach(btn => {
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', () => {
           const provId = btn.dataset.confirmBookProv;
-          btn.textContent = 'Booking...';
-          btn.disabled = true;
+          const matchedCand = candidates.find(c => String(c.provider.id) === String(provId));
+          const baseRate = matchedCand ? Number(matchedCand.provider.price || 1000) : 1000;
+          const tax = Math.round(baseRate * 0.05);
+          const totalPrice = baseRate + tax;
 
           const bookFd = new FormData();
           bookFd.append('category_slug', matchPayload.category_slug);
@@ -1653,58 +2135,125 @@ document.addEventListener('submit', async (e) => {
             bookFd.append('image', imgFile);
           }
 
-          try {
-            const bookRes = await fetch('/api/requests', {
-              method: 'POST',
-              credentials: 'include',
-              body: bookFd
-            });
-            const bookData = await bookRes.json();
-
-            if (bookRes.status === 409) {
-              // Concurrency slot conflict with suggestions
-              const suggestions = bookData.suggestions || [];
-              container.innerHTML = `
-                <div style="padding:15px; background:#fff0f0; border-radius:10px; color:var(--red); font-size:13px; margin-bottom:12px;">
-                  ${bookData.error || 'This slot was just booked by another client.'}
+          // Render Mock Payment Checkout Step
+          container.innerHTML = `
+            <div id="mockPaymentStep" style="margin-top:10px;">
+              <div style="background:#f8fafc; border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px;">
+                <div style="font-size:14px; font-weight:700; color:var(--text); margin-bottom:12px;">Booking & Payment Summary</div>
+                <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--text); margin-bottom:6px;">
+                  <span>Specialist Base Rate</span>
+                  <strong>${money(baseRate)}</strong>
                 </div>
-                ${suggestions.length > 0 ? `
-                  <div style="font-size:13px; font-weight:700; margin-bottom:8px;">Suggested alternative slots:</div>
-                  <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                    ${suggestions.map(sg => `
-                      <button type="button" class="pill-filter active" data-pick-suggested="${sg.start_minute}-${sg.end_minute}">
-                        ${minutesToTime(sg.start_minute)} – ${minutesToTime(sg.end_minute)}
-                      </button>
-                    `).join('')}
-                  </div>
-                ` : ''}
-              `;
+                <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--muted); margin-bottom:8px;">
+                  <span>Service Tax & Platform Fee (5%)</span>
+                  <span>${money(tax)}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:800; color:var(--blue); border-top:1px solid var(--line); padding-top:10px;">
+                  <span>Total Amount</span>
+                  <span>${money(totalPrice)}</span>
+                </div>
+              </div>
 
-              container.querySelectorAll('[data-pick-suggested]').forEach(sBtn => {
-                sBtn.addEventListener('click', () => {
-                  const [sMin, eMin] = sBtn.dataset.pickSuggested.split('-').map(Number);
-                  matchPayload.preferred_start_minute = sMin;
-                  matchPayload.preferred_end_minute = eMin;
-                  form.dispatchEvent(new Event('submit'));
-                });
-              });
+              <!-- mock payment form -->
+              <form id="mockPaymentForm">
+                <div class="form-grid">
+                  <div class="form-field full">
+                    <label>Credit / Debit Card Number (mock payment)</label>
+                    <input type="text" id="mockCardInput" placeholder="4242 •••• •••• 4242" value="4242 5555 6666 7777" required />
+                  </div>
+                  <div class="form-field">
+                    <label>Expiry Date</label>
+                    <input type="text" placeholder="MM/YY" value="08/28" required />
+                  </div>
+                  <div class="form-field">
+                    <label>CVC</label>
+                    <input type="text" placeholder="123" value="456" required />
+                  </div>
+                </div>
+                <div class="modal-actions" style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+                  <button type="button" class="secondary-btn" id="cancelPaymentBtn">Back</button>
+                  <button type="submit" class="primary-btn" id="paySubmitBtn">Pay ${money(totalPrice)} & Confirm</button>
+                </div>
+              </form>
+            </div>
+          `;
+
+          // Handle Back button
+          container.querySelector('#cancelPaymentBtn')?.addEventListener('click', () => {
+            form.dispatchEvent(new Event('submit'));
+          });
+
+          // Handle Payment Form submission
+          const payForm = container.querySelector('#mockPaymentForm');
+          payForm.addEventListener('submit', async (pEv) => {
+            pEv.preventDefault();
+            const cardVal = payForm.querySelector('#mockCardInput').value.trim();
+            if (!cardVal) {
+              toast('Please enter a valid credit card number');
               return;
             }
 
-            if (!bookRes.ok || !bookData.ok) {
-              throw new Error(bookData.error || 'Failed to create booking');
-            }
+            const payBtn = payForm.querySelector('#paySubmitBtn');
+            payBtn.disabled = true;
+            payBtn.innerHTML = '<span style="display:inline-block; animation:spin 1s linear infinite;">⏳</span> Processing payment...';
 
-            closeModal();
-            await loadMyBookings();
-            state.bookingFilter = 'All';
-            goPage('bookings');
-            toast(`Booking #${bookData.request.id} created! Specialist notified.`);
-          } catch (bErr) {
-            toast('Booking error: ' + bErr.message);
-            btn.textContent = 'Book this specialist ↗';
-            btn.disabled = false;
-          }
+            // 1.5 seconds mock payment delay
+            await new Promise(r => setTimeout(r, 1500));
+
+            try {
+              const bookRes = await fetch('/api/requests', {
+                method: 'POST',
+                credentials: 'include',
+                body: bookFd
+              });
+              const bookData = await bookRes.json();
+
+              if (bookRes.status === 409) {
+                // Concurrency slot conflict with suggestions
+                const suggestions = bookData.suggestions || [];
+                container.innerHTML = `
+                  <div style="padding:15px; background:#fff0f0; border-radius:10px; color:var(--red); font-size:13px; margin-bottom:12px;">
+                    ${bookData.error || 'This slot was just booked by another client.'}
+                  </div>
+                  ${suggestions.length > 0 ? `
+                    <div style="font-size:13px; font-weight:700; margin-bottom:8px;">Suggested alternative slots:</div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                      ${suggestions.map(sg => `
+                        <button type="button" class="pill-filter active" data-pick-suggested="${sg.start_minute}-${sg.end_minute}">
+                          ${minutesToTime(sg.start_minute)} – ${minutesToTime(sg.end_minute)}
+                        </button>
+                      `).join('')}
+                    </div>
+                  ` : ''}
+                `;
+
+                container.querySelectorAll('[data-pick-suggested]').forEach(sBtn => {
+                  sBtn.addEventListener('click', () => {
+                    const [sMin, eMin] = sBtn.dataset.pickSuggested.split('-').map(Number);
+                    matchPayload.preferred_start_minute = sMin;
+                    matchPayload.preferred_end_minute = eMin;
+                    form.dispatchEvent(new Event('submit'));
+                  });
+                });
+                return;
+              }
+
+              if (!bookRes.ok || !bookData.ok) {
+                throw new Error(bookData.error || 'Failed to create booking');
+              }
+
+              closeModal();
+              await loadMyBookings();
+              state.bookingFilter = 'All';
+              state.activeRequestId = bookData.request.id;
+              toast(`Booking #${bookData.request.id} confirmed & paid!`);
+              goPage('tracking');
+            } catch (bErr) {
+              toast('Booking error: ' + bErr.message);
+              payBtn.disabled = false;
+              payBtn.textContent = `Pay ${money(totalPrice)} & Confirm`;
+            }
+          });
         });
       });
 
@@ -1737,6 +2286,116 @@ document.addEventListener('submit', async (e) => {
     } catch (err) {
       toast('Rating error: ' + err.message);
     }
+    return;
+  }
+
+  // 3. Add Address Form
+  if (e.target.id === 'addAddressForm') {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const body = {
+      label: fd.get('label') || 'Home',
+      address_line: fd.get('address_line'),
+      is_default: fd.get('is_default') === 'true' || e.target.querySelector('input[name="is_default"]')?.checked
+    };
+    try {
+      const res = await fetch('/api/addresses', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Failed to save address');
+      closeModal();
+      toast('Address saved successfully');
+      await loadAddresses();
+      await render();
+    } catch (err) {
+      toast('Error: ' + err.message);
+    }
+    return;
+  }
+
+  // 4. Edit Address Form
+  if (e.target.id === 'editAddressForm') {
+    e.preventDefault();
+    const id = e.target.dataset.id;
+    const fd = new FormData(e.target);
+    const body = {
+      label: fd.get('label'),
+      address_line: fd.get('address_line'),
+      is_default: fd.get('is_default') === 'true' || e.target.querySelector('input[name="is_default"]')?.checked
+    };
+    try {
+      const res = await fetch(`/api/addresses/${id}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Failed to update address');
+      closeModal();
+      toast('Address updated successfully');
+      await loadAddresses();
+      await render();
+    } catch (err) {
+      toast('Error: ' + err.message);
+    }
+    return;
+  }
+
+  // 5. Reschedule Form
+  if (e.target.id === 'rescheduleForm') {
+    e.preventDefault();
+    const id = e.target.dataset.id;
+    const fd = new FormData(e.target);
+    const newDate = fd.get('new_date');
+    const timeWindow = fd.get('time_window') || '14:00-16:00';
+    const [startStr, endStr] = timeWindow.split('-');
+    const [sH, sM] = startStr.split(':').map(Number);
+    const [eH, eM] = endStr.split(':').map(Number);
+    const new_start_minute = sH * 60 + (sM || 0);
+    const new_end_minute = eH * 60 + (eM || 0);
+
+    try {
+      const res = await fetch(`/api/requests/${id}/reschedule`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          new_date: newDate,
+          new_start_minute,
+          new_end_minute
+        })
+      });
+      const data = await res.json();
+      if (res.status === 409) {
+        toast('Slot unavailable, please pick another time.');
+        return;
+      }
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || 'Reschedule failed');
+      }
+      closeModal();
+      toast('Service rescheduled successfully!');
+      await loadMyBookings();
+      await render();
+    } catch (err) {
+      toast('Error: ' + err.message);
+    }
+    return;
+  }
+});
+
+// Search filters change listener
+document.addEventListener('change', async (e) => {
+  if (e.target.id === 'filterRating' || e.target.id === 'filterPrice' || e.target.id === 'filterSort') {
+    state.filterRating = $('#filterRating')?.value || '';
+    state.filterPrice = $('#filterPrice')?.value || '';
+    state.filterSort = $('#filterSort')?.value || '';
+    await filterServicesGrid();
   }
 });
 
