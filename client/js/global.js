@@ -114,22 +114,6 @@ window.toggleTheme = function() {
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('hutfix_theme', next);
   updateThemeIcon();
-
-    const profileUrl = user ? (user.role === 'customer' ? 'customer-profile.html' : (user.role === 'provider' ? 'provider-profile.html' : 'admin-profile.html')) : 'login.html';
-    document.getElementById('topAvatar')?.addEventListener('click', () => { window.location.href = profileUrl; });
-    document.getElementById('user-avatar')?.addEventListener('click', () => { window.location.href = profileUrl; });
-    document.getElementById('userMiniInfo')?.addEventListener('click', () => { window.location.href = profileUrl; });
-
-    // Initial check for unread notifications to show red dot
-    if (user) {
-      fetch('/api/notifications', { credentials: 'include' })
-        .then(r => r.json())
-        .then(d => {
-          const dot = document.getElementById('notifDot');
-          if (dot && d.unread_count > 0) dot.style.display = 'block';
-        }).catch(() => {});
-    }
-
 };
 
 function updateThemeIcon() {
@@ -235,12 +219,17 @@ window.renderLayout = async function(expectedRole = null, activePage = '') {
         ['admin-reports.html', '<i class="bi bi-bar-chart"></i>', 'Reports & analytics', activePage === 'reports'],
         ['admin-payouts.html', '<i class="bi bi-cash-stack"></i>', 'Payouts', activePage === 'payouts'],
         ['admin-payments.html', '<i class="bi bi-credit-card"></i>', 'Payments', activePage === 'payments'],
-        ['admin-support.html', '<i class="bi bi-chat-left-dots"></i>', 'Support Tickets', activePage === 'support']
+        ['admin-support.html', '<i class="bi bi-chat-left-dots"></i>', 'Support Tickets', activePage === 'support'],
+        ['admin-settings.html', '<i class="bi bi-gear"></i>', 'Platform Settings', activePage === 'settings'],
+        ['admin-profile.html', '<i class="bi bi-person"></i>', 'My profile', activePage === 'profile']
       ];
     }
 
     const initials = user ? (user.full_name || 'U').split(' ').map(x => x[0]).slice(0, 2).join('').toUpperCase() : '--';
     const roleLabel = user ? ({ customer: 'Client account', provider: 'Provider account', admin: 'Admin account' })[user.role] : 'Guest';
+    const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.full_name || 'User')}&background=6366f1&color=fff`;
+    const avatarSrc = (user && (user.avatar || user.logo_url)) ? (user.avatar || user.logo_url) : fallbackAvatar;
+    const isDefaultAvatar = !(user && (user.avatar || user.logo_url));
 
     sidebarEl.innerHTML = `
       <a class="brand" href="index.html" aria-label="HutFix home">
@@ -266,8 +255,8 @@ window.renderLayout = async function(expectedRole = null, activePage = '') {
           </div>
         ` : ''}
         ${user ? `
-          <div class="user-mini">
-            <div class="avatar avatar-lilac" id="user-avatar">${initials}</div>
+          <div class="user-mini" id="userMiniInfo" style="cursor: pointer;" title="View Profile">
+            <img src="${avatarSrc}" class="avatar ${isDefaultAvatar ? 'default-avatar' : ''}" id="user-avatar" alt="Avatar" style="width:36px; height:36px; border-radius:50%; object-fit:cover;" />
             <div class="user-mini-info">
               <strong>${escapeHtml(user.full_name || 'User')}</strong>
               <span>${roleLabel}</span>
@@ -320,8 +309,9 @@ window.renderLayout = async function(expectedRole = null, activePage = '') {
           <i class="bi bi-moon-stars" id="themeIcon"></i>
         </button>
         ${user ? `
-          <button class="icon-btn notification-btn" id="notificationBtn" aria-label="Notifications">
+          <button class="icon-btn notification-btn" id="notificationBtn" aria-label="Notifications" style="position:relative;">
             <i class="bi bi-bell"></i>
+            <span class="badge" id="notifDot" style="display:none; position:absolute; top:5px; right:5px; width:8px; height:8px; background:#ef4444; border-radius:50%;"></span>
           </button>
           <div id="notificationsDropdown" style="display:none; position:absolute; top:52px; right:45px; width:320px; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:14px; box-shadow:var(--shadow); padding:16px; z-index:100; color:var(--text-main);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
@@ -330,7 +320,7 @@ window.renderLayout = async function(expectedRole = null, activePage = '') {
             </div>
             <div id="notificationsList" style="max-height:280px; overflow-y:auto; display:grid; gap:10px;"></div>
           </div>
-          <div class="avatar avatar-lilac top-avatar" id="topAvatar">${initials}</div>
+          <img src="${avatarSrc}" class="avatar top-avatar ${isDefaultAvatar ? 'default-avatar' : ''}" id="topAvatar" alt="Avatar" style="width:36px; height:36px; border-radius:50%; object-fit:cover; cursor:pointer;" title="View Profile" />
         ` : ''}
       </div>
     `;
@@ -385,13 +375,16 @@ window.renderLayout = async function(expectedRole = null, activePage = '') {
               const listEl = document.getElementById('notificationsList');
               if (listEl) {
                 const notifs = data.notifications || [];
-                listEl.innerHTML = notifs.map(n => `
-                  <div style="padding:8px 10px; border-radius:8px; background:${n.is_read ? 'transparent' : 'var(--bg-body)'}; border:1px solid ${n.is_read ? 'transparent' : 'var(--border-color)'};">
-                    <strong style="font-size:13px; display:block;">${escapeHtml(n.title)}</strong>
-                    <p style="font-size:12px; color:var(--muted); margin:3px 0 0;">${escapeHtml(n.body)}</p>
-                    <small style="font-size:10px; color:var(--muted);">${new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>
-                  </div>
-                `).join('') || '<div style="font-size:13px; color:var(--muted); text-align:center; padding:16px;">No notifications.</div>';
+                listEl.innerHTML = notifs.map(n => {
+                  const targetUrl = n.link || (user.role === 'customer' ? 'customer-bookings.html' : (user.role === 'provider' ? 'provider-requests.html' : 'admin-bookings.html'));
+                  return `
+                    <a href="${targetUrl}" style="text-decoration:none; color:inherit; display:block; padding:8px 10px; border-radius:8px; background:${n.is_read ? 'transparent' : 'var(--bg-body)'}; border:1px solid ${n.is_read ? 'transparent' : 'var(--border-color)'}; margin-bottom:6px;">
+                      <strong style="font-size:13px; display:block; color:var(--text-main);">${escapeHtml(n.title)}</strong>
+                      <p style="font-size:12px; color:var(--muted); margin:3px 0 0;">${escapeHtml(n.body)}</p>
+                      <small style="font-size:10px; color:var(--muted);">${new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>
+                    </a>
+                  `;
+                }).join('') || '<div style="font-size:13px; color:var(--muted); text-align:center; padding:16px;">No notifications.</div>';
               }
             }
           } catch (_) {}
@@ -404,6 +397,24 @@ window.renderLayout = async function(expectedRole = null, activePage = '') {
         const dot = document.getElementById('notifDot'); if (dot) dot.style.display = 'none';
         notifDropdown.style.display = 'none';
       });
+    }
+
+    // Role-based profile redirects
+    const profileUrl = user ? (user.role === 'customer' ? 'customer-profile.html' : (user.role === 'provider' ? 'provider-profile.html' : 'admin-profile.html')) : 'login.html';
+    document.getElementById('topAvatar')?.addEventListener('click', () => { window.location.href = profileUrl; });
+    document.getElementById('user-avatar')?.addEventListener('click', () => { window.location.href = profileUrl; });
+    document.getElementById('userMiniInfo')?.addEventListener('click', (e) => {
+      if (!e.target.closest('#logoutBtn')) window.location.href = profileUrl;
+    });
+
+    // Check for unread notifications to display badge
+    if (user) {
+      fetch('/api/notifications', { credentials: 'include' })
+        .then(r => r.json())
+        .then(d => {
+          const dot = document.getElementById('notifDot');
+          if (dot && d.unread_count > 0) dot.style.display = 'block';
+        }).catch(() => {});
     }
   }
 
@@ -780,7 +791,7 @@ window.openBooking = async function(providerId = null, categorySlug = null) {
         </div>
         <div class="form-field full" id="manualPaymentFields">
           <div style="background:var(--bg-body); padding:12px; border-radius:8px; border:1px solid var(--border-color); margin-bottom:10px; font-size:12px; color:var(--muted);">
-            Merchant bKash / Nagad Wallet: <strong style="color:var(--text-main);">01711-000000</strong><br>
+            Merchant <span id="manualWalletType">bKash</span> Wallet: <strong style="color:var(--text-main);" id="manualWalletNumber">${escapeHtml(platformSettings.bkash_number || '01700000000')}</strong><br>
             Please send fee and enter transaction proof below:
           </div>
           <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
@@ -822,7 +833,19 @@ window.openBooking = async function(providerId = null, categorySlug = null) {
   // Toggle manual payment fields on cash selection
   document.getElementById('bookPaymentMethod')?.addEventListener('change', (e) => {
     const pFields = document.getElementById('manualPaymentFields');
-    if (pFields) pFields.style.display = e.target.value === 'cash' ? 'none' : 'block';
+    const val = e.target.value;
+    if (pFields) pFields.style.display = val === 'cash' ? 'none' : 'block';
+    const typeEl = document.getElementById('manualWalletType');
+    const numEl = document.getElementById('manualWalletNumber');
+    if (typeEl && numEl) {
+      if (val === 'nagad') {
+        typeEl.textContent = 'Nagad';
+        numEl.textContent = platformSettings.nagad_number || '01700000000';
+      } else {
+        typeEl.textContent = 'bKash';
+        numEl.textContent = platformSettings.bkash_number || '01700000000';
+      }
+    }
   });
 
   document.getElementById('globalBookingForm')?.addEventListener('submit', async (e) => {

@@ -242,15 +242,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (btn) btn.disabled = true;
 
       const fd = new FormData(e.target);
-      const rating_stars = Number(fd.get('rating_stars')) || 5;
-      const review_comment = fd.get('review_comment') || '';
+      const stars = fd.get('rating_stars') || fd.get('stars') || 5;
+      const review_comment = fd.get('review_comment') || fd.get('comment') || '';
 
       try {
         const res = await fetch(`/api/ratings/by-request/${reqId}`, {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ stars: parseInt(rating_stars, 10), comment: review_comment, rating_stars: parseInt(rating_stars, 10), review_comment })
+          body: JSON.stringify({ stars: parseInt(stars, 10), comment: review_comment, rating_stars: parseInt(stars, 10), review_comment })
         });
         const data = await res.json();
         if (!res.ok || !data.ok) throw new Error(data.error || 'Rating failed');

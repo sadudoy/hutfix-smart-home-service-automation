@@ -375,14 +375,22 @@ button { cursor: pointer; }
   background: var(--bg-body);
 }
 
+.notification-btn {
+  position: relative;
+}
+
 .notification-btn i {
+  font-size: 16px;
+}
+
+.notification-btn .badge {
   position: absolute;
-  width: 6px;
-  height: 6px;
+  top: 5px;
+  right: 5px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: #f17a7a;
-  right: 8px;
-  top: 7px;
+  background: #ef4444;
   border: 1px solid var(--bg-surface);
 }
 
