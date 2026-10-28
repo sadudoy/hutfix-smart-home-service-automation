@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>HutFix — Booking Requests</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="css/style.css" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('hutfix_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="main-area">
+      <header class="topbar" id="topbar"></header>
+
+      <section class="content" id="content">
+        <div class="page-head" style="margin-bottom:20px;">
+          <span class="eyebrow">CLIENT REQUESTS</span>
+          <h2>Booking requests</h2>
+          <p>Review incoming requests, accept jobs, and advance fulfillment stages.</p>
+        </div>
+
+        <!-- 1. Incoming Requests Bucket -->
+        <div class="section-head">
+          <div><h2 id="incomingHeading">Incoming requests (0)</h2><p>New appointments awaiting your acceptance</p></div>
+        </div>
+        <div id="incomingContainer" style="display:grid; gap:12px; margin-bottom:30px;">
+          <div class="empty-state">Loading incoming requests...</div>
+        </div>
+
+        <!-- 2. Active Jobs Bucket -->
+        <div class="section-head">
+          <div><h2 id="activeHeading">Active jobs (0)</h2><p>Advance status as you deliver the service</p></div>
+        </div>
+        <div id="activeContainer" style="display:grid; gap:12px; margin-bottom:30px;">
+          <div class="empty-state">Loading active jobs...</div>
+        </div>
+
+        <!-- 3. Completed Jobs Bucket -->
+        <div class="section-head">
+          <div><h2 id="historyHeading">Completed jobs history (0)</h2><p>Past fulfilled appointments</p></div>
+        </div>
+        <div id="historyContainer" style="display:grid; gap:12px;">
+          <div class="empty-state">Loading job history...</div>
+        </div>
+      </section>
+
+      <footer class="footer"><span>© 2026 HutFix Marketplace</span><span>Made for a home that works.</span></footer>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="js/images.js"></script>
+  <script src="js/global.js"></script>
+  <script src="js/provider-requests.js"></script>
+</body>
+</html>

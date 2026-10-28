@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>HutFix — My Service Gigs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="css/style.css" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('hutfix_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="main-area">
+      <header class="topbar" id="topbar"></header>
+
+      <section class="content" id="content">
+        <div class="page-head" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;">
+          <div>
+            <span class="eyebrow">YOUR SERVICES</span>
+            <h2>My service gigs</h2>
+            <p>Your active service catalog, pricing baselines, and status.</p>
+          </div>
+          <button class="primary-btn" id="createGigBtn"><i class="bi bi-plus-lg"></i> Create a gig</button>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Your Service Listings</h3>
+              <p>Services clients can book with you across Dhaka</p>
+            </div>
+          </div>
+          <div id="gigsListContainer">
+            <div class="empty-state">Loading service listings...</div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer"><span>© 2026 HutFix Marketplace</span><span>Made for a home that works.</span></footer>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="js/images.js"></script>
+  <script src="js/global.js"></script>
+  <script src="js/provider-gigs.js"></script>
+</body>
+</html>

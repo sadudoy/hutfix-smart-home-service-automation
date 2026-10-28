@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>HutFix — Specialist Profile & Credentials</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="css/style.css" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('hutfix_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="main-area">
+      <header class="topbar" id="topbar"></header>
+
+      <section class="content" id="content">
+        <div class="page-head" style="margin-bottom:20px;">
+          <span class="eyebrow">PROFESSIONAL IDENTITY</span>
+          <h2>Specialist profile</h2>
+          <p>Manage your business credentials, bio, and operational verification.</p>
+        </div>
+
+        <div class="profile-banner">
+          <div class="avatar avatar-green" id="provBigAvatar" style="width:58px;height:58px;font-size:18px">--</div>
+          <div>
+            <h2 id="provBigName">Specialist <span style="font-size:14px; color:var(--blue);"><i class="bi bi-patch-check-fill"></i></span></h2>
+            <p id="provBigHeadline">Master Technician · Dhanmondi, Dhaka</p>
+            <p style="margin-top:6px;" id="provBigRating"><i class="bi bi-star-fill text-amber"></i> 4.9 rating · 120 reviews</p>
+          </div>
+          <div class="banner-actions"><span class="status completed"><i class="bi bi-shield-check"></i> Verified professional</span></div>
+        </div>
+
+        <div class="panel" style="margin-top:24px;">
+          <div class="panel-head"><h3>Professional Details</h3></div>
+          <form id="proDetailsForm">
+            <div class="form-grid">
+              <div class="form-field"><label>Display Name</label><input name="name" id="proNameInput" required /></div>
+              <div class="form-field"><label>Professional Headline</label><input name="headline" id="proHeadlineInput" /></div>
+              <div class="form-field"><label>Years of Experience</label><input name="years" id="proYearsInput" /></div>
+              <div class="form-field"><label>Primary Service Area</label><input name="area" id="proAreaInput" /></div>
+              <div class="form-field full"><label>About Your Work & Bio</label><textarea name="bio" id="proBioInput" rows="3"></textarea></div>
+            </div>
+            <div style="margin-top:16px;">
+              <button class="primary-btn" type="submit" id="saveProBtn"><i class="bi bi-check2"></i> Save Details</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Security -->
+        <div class="panel" style="margin-top:24px;">
+          <div class="panel-head"><h3>Account Security & Password</h3></div>
+          <form id="changePasswordForm" style="max-width:440px;">
+            <div class="form-grid">
+              <div class="form-field full">
+                <label>New Password</label>
+                <input name="new_password" type="password" placeholder="At least 6 characters" required />
+              </div>
+              <div class="form-field full">
+                <label>Confirm New Password</label>
+                <input name="confirm_password" type="password" placeholder="Re-enter new password" required />
+              </div>
+            </div>
+            <div style="margin-top:16px;">
+              <button class="primary-btn" type="submit" id="savePasswordBtn"><i class="bi bi-shield-check"></i> Update Password</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <footer class="footer"><span>© 2026 HutFix Marketplace</span><span>Made for a home that works.</span></footer>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="js/images.js"></script>
+  <script src="js/global.js"></script>
+  <script src="js/provider-profile.js"></script>
+</body>
+</html>

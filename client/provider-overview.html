@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>HutFix — Provider Overview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="css/style.css" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('hutfix_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="main-area">
+      <header class="topbar" id="topbar"></header>
+
+      <section class="content" id="content">
+        <div class="page-head" style="margin-bottom:20px;">
+          <span class="eyebrow">REPAIRMAN WORKSPACE</span>
+          <h2 id="welcomeGreeting">Provider Overview</h2>
+          <p>Here’s what’s happening with your service business today.</p>
+        </div>
+
+        <div class="stats-grid" id="providerStatsGrid">
+          <div class="stat-card"><div class="stat-head">Total earnings <span class="stat-icon">৳</span></div><div class="stat-value" id="statEarnings">--</div><div class="stat-foot">Verified job revenue</div></div>
+          <div class="stat-card"><div class="stat-head">Active jobs <span class="stat-icon"><i class="bi bi-tools"></i></span></div><div class="stat-value" id="statActive">--</div><div class="stat-foot">Currently in progress</div></div>
+          <div class="stat-card"><div class="stat-head">New requests <span class="stat-icon"><i class="bi bi-bell"></i></span></div><div class="stat-value" id="statIncoming">--</div><div class="stat-foot">Awaiting acceptance</div></div>
+          <div class="stat-card"><div class="stat-head">Average rating <span class="stat-icon"><i class="bi bi-star-fill text-amber"></i></span></div><div class="stat-value" id="statRating">--</div><div class="stat-foot" id="statReviews">From client reviews</div></div>
+        </div>
+
+        <div class="dashboard-grid" style="margin-top:24px;">
+          <div class="panel">
+            <div class="panel-head" style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <h3>Active service jobs</h3>
+                <p>Your current client appointments</p>
+              </div>
+              <a href="provider-requests.html" class="link-btn">View all requests <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div id="activeJobsList">
+              <div class="empty-state">Loading active appointments...</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Provider performance</h3>
+                <p>Reliability & rating telemetry</p>
+              </div>
+              <span class="status completed"><i class="bi bi-patch-check"></i> Verified pro</span>
+            </div>
+            <div class="progress-row" style="margin-top:16px;">
+              <strong>Profile rating score</strong>
+              <span id="scoreText">4.9 / 5.0</span>
+            </div>
+            <div class="progress-bar">
+              <span id="scoreBar" style="width: 95%;"></span>
+            </div>
+            <div style="margin-top:20px; font-size:13px; color:var(--muted); line-height:1.6;">
+              Your profile is verified and receiving service dispatch requests. Manage your weekly availability to optimize matching.
+            </div>
+            <div style="margin-top:16px;">
+              <a href="provider-availability.html" class="secondary-btn" style="width:100%; justify-content:center;">
+                <i class="bi bi-clock-history"></i> Update Availability
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer"><span>© 2026 HutFix Marketplace</span><span>Made for a home that works.</span></footer>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="js/images.js"></script>
+  <script src="js/global.js"></script>
+  <script src="js/provider-overview.js"></script>
+</body>
+</html>

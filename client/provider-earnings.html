@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>HutFix — Earnings & Payouts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="css/style.css" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('hutfix_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="main-area">
+      <header class="topbar" id="topbar"></header>
+
+      <section class="content" id="content">
+        <div class="page-head" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;">
+          <div>
+            <span class="eyebrow">FINANCIAL LEDGER</span>
+            <h2>Earnings & payouts</h2>
+            <p>Track your service income, platform fees, and request settlement payouts.</p>
+          </div>
+          <button class="primary-btn" id="openPayoutModalBtn"><i class="bi bi-wallet2"></i> Request payout</button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-head">Available balance <span class="stat-icon"><i class="bi bi-cash-stack"></i></span></div><div class="stat-value" id="valAvailable">--</div><div class="stat-foot">Eligible for withdrawal</div></div>
+          <div class="stat-card"><div class="stat-head">Total earned <span class="stat-icon"><i class="bi bi-graph-up-arrow"></i></span></div><div class="stat-value" id="valTotalEarned">--</div><div class="stat-foot">Gross job revenue</div></div>
+          <div class="stat-card"><div class="stat-head">Total invoices <span class="stat-icon"><i class="bi bi-receipt"></i></span></div><div class="stat-value" id="valInvoicesCount">--</div><div class="stat-foot">Completed appointments</div></div>
+          <div class="stat-card"><div class="stat-head">Payout method <span class="stat-icon"><i class="bi bi-phone"></i></span></div><div class="stat-value">bKash / Nagad</div><div class="stat-foot">Direct mobile banking</div></div>
+        </div>
+
+        <!-- Payout Requests History -->
+        <div class="panel" style="margin-top:24px;">
+          <div class="panel-head">
+            <div>
+              <h3>Disbursement & Payout History</h3>
+              <p>Status of requested funds and transfers</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr><th>Payout ID</th><th>Amount</th><th>Date</th><th>Status</th></tr>
+              </thead>
+              <tbody id="payoutsTableBody">
+                <tr><td colspan="4" class="empty-state">Loading payout requests...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Invoices Ledger -->
+        <div class="panel" style="margin-top:24px;">
+          <div class="panel-head">
+            <div>
+              <h3>Invoices Ledger</h3>
+              <p>Completed jobs with 10% platform fee deduction and net earnings</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr><th>Invoice ID</th><th>Date</th><th>Service</th><th>Customer</th><th>Gross (৳)</th><th>Fee (10%)</th><th>Net Payout (৳)</th></tr>
+              </thead>
+              <tbody id="invoicesTableBody">
+                <tr><td colspan="7" class="empty-state">Loading invoice ledger...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer"><span>© 2026 HutFix Marketplace</span><span>Made for a home that works.</span></footer>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="js/images.js"></script>
+  <script src="js/global.js"></script>
+  <script src="js/provider-earnings.js"></script>
+</body>
+</html>

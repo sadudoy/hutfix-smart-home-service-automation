@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>HutFix — Availability & Slots</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="css/style.css" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('hutfix_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="main-area">
+      <header class="topbar" id="topbar"></header>
+
+      <section class="content" id="content">
+        <div class="page-head" style="margin-bottom:20px;">
+          <span class="eyebrow">SCHEDULE MANAGEMENT</span>
+          <h2>Availability & slots</h2>
+          <p>Define your weekly working hours, active time windows, and schedule blackout dates.</p>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- Weekly Schedule Grid -->
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Weekly Working Hours</h3>
+                <p>Standard working windows for smart matching</p>
+              </div>
+            </div>
+            <div id="weeklyGridContainer">
+              <div class="empty-state">Loading schedule grid...</div>
+            </div>
+          </div>
+
+          <!-- Blackout Dates -->
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Blackout Dates</h3>
+                <p>Block off specific calendar days for holidays or leave</p>
+              </div>
+            </div>
+
+            <form id="addBlackoutForm" style="margin-bottom:20px; padding:16px; background:var(--bg-body); border-radius:12px; border:1px solid var(--border-color);">
+              <div class="form-grid">
+                <div class="form-field full">
+                  <label>Select Date to Block</label>
+                  <input type="date" name="blackout_date" id="blackoutDateInput" required />
+                </div>
+                <div class="form-field full">
+                  <label>Reason (Optional)</label>
+                  <input name="reason" placeholder="e.g., Personal leave, Public holiday" />
+                </div>
+              </div>
+              <div style="margin-top:12px;">
+                <button class="primary-btn" type="submit" id="addBlackoutBtn" style="padding:8px 14px; font-size:12px; min-height:34px;">
+                  <i class="bi bi-calendar-x"></i> Add Blackout Day
+                </button>
+              </div>
+            </form>
+
+            <h4>Active Blackout Dates</h4>
+            <div id="blackoutsListContainer" style="margin-top:10px;">
+              <div class="empty-state">Loading blackouts...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer"><span>© 2026 HutFix Marketplace</span><span>Made for a home that works.</span></footer>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="js/images.js"></script>
+  <script src="js/global.js"></script>
+  <script src="js/provider-availability.js"></script>
+</body>
+</html>

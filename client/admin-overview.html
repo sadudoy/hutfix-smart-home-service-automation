@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>HutFix — Admin Control Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="css/style.css" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('hutfix_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="main-area">
+      <header class="topbar" id="topbar"></header>
+
+      <section class="content" id="content">
+        <div class="page-head" style="margin-bottom:20px;">
+          <span class="eyebrow">PLATFORM CONTROL CENTER</span>
+          <h2>Marketplace overview</h2>
+          <p>A live snapshot of marketplace transactions, dispatch activity and users.</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-head">Total Bookings <span class="stat-icon"><i class="bi bi-calendar2-check"></i></span></div>
+            <div class="stat-value" id="valTotalBookings">--</div>
+            <div class="stat-foot">Platform wide requests</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-head">Gross Volume <span class="stat-icon">৳</span></div>
+            <div class="stat-value" id="valGrossVolume">--</div>
+            <div class="stat-foot">Cumulative GMV</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-head">Total Users <span class="stat-icon"><i class="bi bi-people"></i></span></div>
+            <div class="stat-value" id="valTotalUsers">--</div>
+            <div class="stat-foot">Registered clients</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-head">Total Providers <span class="stat-icon"><i class="bi bi-person-badge"></i></span></div>
+            <div class="stat-value" id="valTotalProviders">--</div>
+            <div class="stat-foot">Specialist network</div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid" style="margin-top:24px;">
+          <div class="panel">
+            <div class="panel-head" style="display:flex; justify-content:space-between; align-items:center;">
+              <div><h3>Recent Bookings</h3><p>Latest platform orders</p></div>
+              <a href="admin-bookings.html" class="link-btn">All bookings <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr><th>ID</th><th>Service</th><th>Client</th><th>Status</th></tr></thead>
+                <tbody id="recentBookingsTbody">
+                  <tr><td colspan="4" class="empty-state">Loading recent bookings...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head" style="display:flex; justify-content:space-between; align-items:center;">
+              <div><h3>Pending Payment Verifications</h3><p>Awaiting TrxID check</p></div>
+              <a href="admin-payments.html" class="link-btn">Verify payments <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div id="pendingPaymentsList">
+              <div class="empty-state">Checking pending payments...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer"><span>© 2026 HutFix Marketplace</span><span>Made for a home that works.</span></footer>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="js/images.js"></script>
+  <script src="js/global.js"></script>
+  <script src="js/admin-overview.js"></script>
+</body>
+</html>

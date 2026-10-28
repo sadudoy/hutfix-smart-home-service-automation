@@ -4,5 +4,6 @@ const { requireAuth, requireRole } = require('../middleware/auth');
 
 router.get('/mine', requireAuth, requireRole('provider'), ctrl.getMine);
 router.get('/by-request/:requestId', requireAuth, ctrl.getByRequest);
+router.get('/:id', requireAuth, ctrl.getById);
 
 module.exports = router;
