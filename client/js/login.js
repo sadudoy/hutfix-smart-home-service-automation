@@ -33,6 +33,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (errorEl) errorEl.style.display = 'none';
   });
 
+  if (urlParams.get('mode') === 'signup' || window.location.hash === '#signup') {
+    toggleBtn?.click();
+  }
+
   // Demo user fills
   document.querySelectorAll('[data-demo]').forEach(btn => {
     btn.addEventListener('click', () => {

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us — HutFix Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    if (localStorage.getItem('hutfix_theme') === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  </script>
+</head>
+<body>
+  <div class="public-layout">
+    <header class="public-navbar">
+      <a href="index.html" class="nav-brand" aria-label="HutFix Home">
+        <img src="assets/images/logo.jpg" alt="HutFix" style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover;" />
+        <span style="font-family: Manrope, sans-serif; font-weight: 800; font-size: 22px; color: var(--text-main); letter-spacing: -0.5px;">HutFix</span>
+      </a>
+      <div class="nav-actions">
+        <button class="icon-btn theme-toggle-btn" id="themeToggle" aria-label="Toggle theme" title="Toggle theme">
+          <i class="bi bi-moon-stars" id="themeIcon"></i>
+        </button>
+        <a href="index.html" class="secondary-btn" style="padding: 8px 16px; min-height: 38px;">
+          <i class="bi bi-house"></i> Back to Home
+        </a>
+        <a href="login.html" class="primary-btn" id="navAuthBtn" style="padding: 8px 16px; min-height: 38px;">
+          <i class="bi bi-box-arrow-in-right"></i> Sign In
+        </a>
+      </div>
+    </header>
+
+    <main class="public-content">
+      <div class="about-hero" style="text-align: center; margin-bottom: 40px; padding-bottom: 30px; border-bottom: 1px solid var(--border-color);">
+        <span class="policy-badge"><i class="bi bi-stars"></i> Dhaka's Premier On-Demand Maintenance Platform</span>
+        <h1 style="font-size: 36px; margin: 16px 0 12px; letter-spacing: -0.8px;">Connecting Dhaka with trusted home services.</h1>
+        <p style="font-size: 17px; max-width: 720px; margin: 0 auto; color: var(--text-muted); line-height: 1.7;">
+          Say goodbye to unreliable repairmen and unpredictable pricing. HutFix connects homeowners and businesses across Dhaka with vetted, background-checked trade professionals instantly.
+        </p>
+      </div>
+
+      <section class="about-section">
+        <h2><i class="bi bi-bullseye" style="color: var(--primary);"></i> Our Mission</h2>
+        <p>
+          HutFix was built to solve a simple problem: finding reliable, verified professionals for home repairs shouldn't be stressful. We connect you with background-checked experts instantly.
+        </p>
+        <p>
+          In a bustling metropolis like Dhaka, home emergencies shouldn't derail your schedule. Whether it's an air conditioner breakdown during humid monsoon heat, an electrical short circuit, a burst plumbing pipe, or essential appliance servicing, our mission is to deliver dependable, safe, and transparent assistance to your door in minutes.
+        </p>
+      </section>
+
+      <section class="about-section" id="how-it-works" style="margin-top: 40px;">
+        <h2><i class="bi bi-gear-wide-connected" style="color: var(--primary);"></i> How It Works</h2>
+        <p>Getting your repairs completed with guaranteed satisfaction takes three seamless steps:</p>
+        <div class="steps-grid">
+          <div class="step-card">
+            <div class="step-badge">1</div>
+            <h4>Book a service</h4>
+            <p>Select your category, pick an immediate or scheduled time slot, and provide job details or photos.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-badge">2</div>
+            <h4>We assign a verified pro</h4>
+            <p>Our automated dispatch algorithm assigns the nearest top-rated technician with a verified National ID.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-badge">3</div>
+            <h4>Track them live</h4>
+            <p>Follow your technician's GPS route in real time, inspect the finished work, and release payment securely.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="about-section" style="margin-top: 40px;">
+        <h2><i class="bi bi-shield-check" style="color: var(--primary);"></i> The HutFix Difference</h2>
+        <p>We are raising the standard for urban home maintenance through accountability and technology:</p>
+        <ul>
+          <li><strong>100% NID-Verified Technicians:</strong> Every provider undergoes government ID screening, background checks, and hands-on skill verification.</li>
+          <li><strong>Upfront & Transparent Rates:</strong> Clear pricing in Bangladeshi Taka (৳) with standard hourly caps. No surprise fees.</li>
+          <li><strong>Real-Time Live Tracking:</strong> Know the exact arrival time and status of your technician with interactive dispatch maps.</li>
+          <li><strong>Customer Protection Guarantee:</strong> 24-hour dispute resolution and escrow protection for peace of mind.</li>
+        </ul>
+      </section>
+
+      <section class="about-section" id="careers" style="margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+        <h2><i class="bi bi-briefcase" style="color: var(--primary);"></i> Careers</h2>
+        <div class="policy-callout">
+          <p>We are growing fast. If you are passionate about fixing things, drop us an email at <a href="mailto:careers@hutfix.com" style="color: var(--primary); font-weight: 700; text-decoration: underline;">careers@hutfix.com</a>.</p>
+        </div>
+        <p>
+          We are on a mission to empower skilled tradespeople with steady livelihoods while providing urban households with world-class home care. We are actively hiring software engineers, operations managers, customer support leads, and field technical auditors in Dhaka.
+        </p>
+      </section>
+
+      <section class="about-section" id="press" style="margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+        <h2><i class="bi bi-newspaper" style="color: var(--primary);"></i> Press & Media</h2>
+        <div class="policy-callout">
+          <p>For media inquiries and partnership updates, contact <a href="mailto:press@hutfix.com" style="color: var(--primary); font-weight: 700; text-decoration: underline;">press@hutfix.com</a>.</p>
+        </div>
+        <p>
+          Download our press kit, high-resolution logos, leadership biographies, and quarterly home-service trend reports. For interviews and editorial features, reach out directly to our communications desk.
+        </p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-brand-col">
+          <div class="footer-logo">
+            <img src="assets/images/logo.jpg" alt="HutFix" style="width: 28px; height: 28px; border-radius: 6px; object-fit: cover;" />
+            <span style="font-family: Manrope, sans-serif; font-weight: 800; font-size: 18px; color: var(--text-main);">HutFix</span>
+          </div>
+          <p class="footer-tagline">On-demand trusted home repairs & maintenance across Dhaka.</p>
+          <div class="footer-socials">
+            <a href="#" target="_blank" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+            <a href="#" target="_blank" aria-label="GitHub"><i class="bi bi-github"></i></a>
+            <a href="mailto:hello@example.com" aria-label="Email"><i class="bi bi-envelope-fill"></i></a>
+            <a href="https://wa.me/8801700000000" target="_blank" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+          </div>
+        </div>
+        <div class="footer-nav-col">
+          <strong>Company</strong>
+          <a href="about.html">About Us</a>
+          <a href="about.html#how-it-works">How It Works</a>
+          <a href="about.html#careers">Careers</a>
+          <a href="about.html#press">Press</a>
+        </div>
+        <div class="footer-nav-col">
+          <strong>Legal & Policies</strong>
+          <a href="terms.html#terms">Terms & Conditions</a>
+          <a href="terms.html#privacy">Privacy Policy</a>
+          <a href="terms.html#refunds">Refund Policy</a>
+          <a href="terms.html#trust">Trust & Safety</a>
+        </div>
+        <div class="footer-nav-col">
+          <strong>Platform</strong>
+          <a href="index.html">Explore Services</a>
+          <a href="login.html">Sign In</a>
+          <a href="signup.html">Create Account</a>
+          <span style="font-size: 12px; color: var(--text-muted); margin-top: 4px;"><i class="bi bi-headset"></i> 24/7 Support</span>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 HutFix Marketplace. Made for a home that works.</span>
+        <span>Dhaka, Bangladesh</span>
+      </div>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="js/images.js"></script>
+  <script src="js/global.js"></script>
+  <script>
+    // Initialize theme toggle and auth button state
+    document.addEventListener('DOMContentLoaded', async () => {
+      document.getElementById('themeToggle')?.addEventListener('click', window.toggleTheme);
+      window.updateThemeIcon();
+
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.ok && data.user) {
+            const authBtn = document.getElementById('navAuthBtn');
+            if (authBtn) {
+              const dashUrl = data.user.role === 'customer' ? 'customer-bookings.html' : (data.user.role === 'admin' ? 'admin-overview.html' : 'provider-overview.html');
+              authBtn.href = dashUrl;
+              authBtn.innerHTML = '<i class="bi bi-speedometer2"></i> Dashboard';
+            }
+          }
+        }
+      } catch (_) {}
+    });
+  </script>
+</body>
+</html>
