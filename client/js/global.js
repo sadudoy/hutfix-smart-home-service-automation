@@ -128,44 +128,54 @@ window.currentUser = null;
 window.favoriteProviderIds = new Set();
 
 // Layout Injection & Auth Guard
-window.renderLayout = async function(expectedRole = null, activePage = '') {
-  let user = null;
-  try {
-    const res = await fetch('/api/auth/me', { credentials: 'include' });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.ok && data.user) {
-        user = data.user;
-        window.currentUser = user;
+window.renderLayout = async function(expectedRole = null, activePage = '', passedUser = null) {
+  let user = passedUser || null;
+  if (!user) {
+    try {
+      const res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ok && data.user) {
+          user = data.user;
+          window.currentUser = user;
+        }
       }
+    } catch (err) {
+      console.warn('Auth check failed:', err);
     }
-  } catch (err) {
-    console.warn('Auth check failed:', err);
+  } else {
+    window.currentUser = user;
   }
 
+  // Normalize expectedRole
+  let normalizedRole = expectedRole;
+  if (normalizedRole === 'client') normalizedRole = 'customer';
+  if (normalizedRole === 'repairman') normalizedRole = 'provider';
+
   // Guard for protected pages
-  if (expectedRole && expectedRole !== 'public') {
+  if (normalizedRole && normalizedRole !== 'public') {
     if (!user) {
       const redirect = encodeURIComponent(window.location.pathname + window.location.search);
       window.location.href = `login.html?redirect=${redirect}`;
       return null;
     }
     // Check specific role authorization
-    if (expectedRole === 'customer' && user.role !== 'customer') {
-      window.location.href = user.role === 'admin' ? 'admin-overview.html' : 'provider-overview.html';
+    const uRole = user.role;
+    if (normalizedRole === 'customer' && uRole !== 'customer') {
+      window.location.href = uRole === 'admin' ? 'admin-overview.html' : 'provider-overview.html';
       return null;
     }
-    if (expectedRole === 'provider' && user.role !== 'provider') {
-      window.location.href = user.role === 'admin' ? 'admin-overview.html' : 'index.html';
+    if (normalizedRole === 'provider' && uRole !== 'provider') {
+      window.location.href = uRole === 'admin' ? 'admin-overview.html' : 'index.html';
       return null;
     }
-    if (expectedRole === 'admin' && user.role !== 'admin') {
-      window.location.href = user.role === 'provider' ? 'provider-overview.html' : 'index.html';
+    if (normalizedRole === 'admin' && uRole !== 'admin') {
+      window.location.href = uRole === 'provider' ? 'provider-overview.html' : 'index.html';
       return null;
     }
   }
 
-  const role = user ? user.role : 'guest';
+  const role = user ? user.role : (normalizedRole || 'guest');
 
   // Load favorites if customer
   if (user && user.role === 'customer') {
@@ -179,6 +189,17 @@ window.renderLayout = async function(expectedRole = null, activePage = '') {
       }
     } catch (_) {}
   }
+
+  // Common initials and avatar
+  const userInitials = (user && user.full_name)
+    ? user.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+    : 'U';
+  const avatarSrc = (user && (user.logo_url || user.avatar_url || user.avatar))
+    ? (user.logo_url || user.avatar_url || user.avatar)
+    : `https://ui-avatars.com/api/?name=${encodeURIComponent(userInitials)}&background=e8e7ff&color=6059b8&bold=true`;
+  const isDefaultAvatar = !(user && (user.logo_url || user.avatar_url || user.avatar));
+  const roleLabel = user ? ({ customer: 'Client account', provider: 'Provider account', admin: 'Admin account' })[user.role] || 'User' : 'Guest';
+  let profileUrl = (role === 'repairman' || role === 'provider') ? 'provider-profile.html' : (role === 'admin' ? 'admin-profile.html' : 'customer-profile.html');
 
   // 1. Inject Sidebar
   const sidebarEl = document.getElementById('sidebar');
@@ -288,30 +309,36 @@ window.renderLayout = async function(expectedRole = null, activePage = '') {
   }
 
   // 2. Inject Topbar
-  const topbarEl = document.getElementById('topbar');
+  let topbarEl = document.getElementById('topbar') || document.querySelector('header.topbar');
+  const mainArea = document.querySelector('.main-area') || document.querySelector('main');
+  if (!topbarEl && mainArea) {
+    topbarEl = document.createElement('header');
+    topbarEl.className = 'topbar';
+    topbarEl.id = 'topbar';
+    mainArea.prepend(topbarEl);
+  }
+
   if (topbarEl) {
     const locText = sessionStorage.getItem('hutfix_location') || 'Dhaka, Bangladesh';
-    const showLocation = (role === 'guest' || role === 'customer');
-    const initials = user ? (user.full_name || 'U').split(' ').map(x => x[0]).slice(0, 2).join('').toUpperCase() : '--';
+    const pageTitle = activePage ? activePage.replace(/-/g, ' ') : (document.title.split('—')[1]?.trim() || 'Dashboard');
 
     topbarEl.innerHTML = `
-      <div class="breadcrumb"><span>Workspace</span><b>/</b><strong>${document.title.split('—')[1]?.trim() || document.title}</strong></div>
+      <div class="breadcrumb">
+        <span>Workspace</span><b>/</b><strong>${escapeHtml(pageTitle)}</strong>
+      </div>
       <div class="topbar-actions" style="position:relative;">
-        ${!user ? `<a href="login.html" class="primary-btn" style="padding: 8px 16px; min-height: 36px;">Sign in</a>` : ''}
-        ${showLocation ? `
-          <div class="location-pill" id="location-pill" style="cursor: pointer;">
-            <span class="pin"><i class="bi bi-geo-alt"></i></span>
-            <span><small>Service location</small><strong id="currentLocationText">${escapeHtml(locText)}</strong></span>
-            <span class="chevron"><i class="bi bi-chevron-down"></i></span>
-          </div>
-        ` : ''}
+        <div class="location-pill" id="location-pill" style="cursor: pointer;">
+          <span class="pin"><i class="bi bi-geo-alt"></i></span>
+          <span><small>Service location</small><strong id="currentLocationText">${escapeHtml(locText)}</strong></span>
+          <span class="chevron"><i class="bi bi-chevron-down"></i></span>
+        </div>
         <button class="icon-btn theme-toggle-btn" id="themeToggle" aria-label="Toggle dark/light theme" title="Toggle theme">
           <i class="bi bi-moon-stars" id="themeIcon"></i>
         </button>
         ${user ? `
           <button class="icon-btn notification-btn" id="notificationBtn" aria-label="Notifications" style="position:relative;">
             <i class="bi bi-bell"></i>
-            <span class="badge" id="notifDot" style="display:none; position:absolute; top:5px; right:5px; width:8px; height:8px; background:#ef4444; border-radius:50%;"></span>
+            <span class="notification-dot badge" id="notifDot" style="display:none; position:absolute; top:5px; right:5px; width:8px; height:8px; background:#ef4444; border-radius:50%;"></span>
           </button>
           <div id="notificationsDropdown" style="display:none; position:absolute; top:52px; right:45px; width:320px; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:14px; box-shadow:var(--shadow); padding:16px; z-index:100; color:var(--text-main);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
@@ -320,8 +347,12 @@ window.renderLayout = async function(expectedRole = null, activePage = '') {
             </div>
             <div id="notificationsList" style="max-height:280px; overflow-y:auto; display:grid; gap:10px;"></div>
           </div>
-          <img src="${avatarSrc}" class="avatar top-avatar ${isDefaultAvatar ? 'default-avatar' : ''}" id="topAvatar" alt="Avatar" style="width:36px; height:36px; border-radius:50%; object-fit:cover; cursor:pointer;" title="View Profile" />
-        ` : ''}
+          <a href="${profileUrl}" id="topAvatarLink" title="View Profile" style="display:inline-flex; align-items:center; text-decoration:none;">
+            <img src="${avatarSrc}" alt="Profile" class="top-avatar avatar ${isDefaultAvatar ? 'default-avatar' : ''}" id="topAvatar" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; cursor: pointer;">
+          </a>
+        ` : `
+          <a href="login.html" class="primary-btn" style="padding: 8px 16px; min-height: 36px;">Sign in</a>
+        `}
       </div>
     `;
 
@@ -352,7 +383,6 @@ window.renderLayout = async function(expectedRole = null, activePage = '') {
           if (el) el.textContent = area;
           window.toast(`Service location updated to ${area}`);
           window.closeModal();
-          // Notify any page listener
           if (typeof window.onLocationChange === 'function') {
             window.onLocationChange(area);
           }
@@ -400,8 +430,6 @@ window.renderLayout = async function(expectedRole = null, activePage = '') {
     }
 
     // Role-based profile redirects
-    const profileUrl = user ? (user.role === 'customer' ? 'customer-profile.html' : (user.role === 'provider' ? 'provider-profile.html' : 'admin-profile.html')) : 'login.html';
-    document.getElementById('topAvatar')?.addEventListener('click', () => { window.location.href = profileUrl; });
     document.getElementById('user-avatar')?.addEventListener('click', () => { window.location.href = profileUrl; });
     document.getElementById('userMiniInfo')?.addEventListener('click', (e) => {
       if (!e.target.closest('#logoutBtn')) window.location.href = profileUrl;

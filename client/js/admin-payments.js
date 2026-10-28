@@ -1,8 +1,20 @@
 document.addEventListener('DOMContentLoaded', async () => {
-  const user = await window.renderLayout('admin', 'payments');
-  if (!user) return;
+  // 1. Fetch user data
+  const res = await fetch('/api/auth/me', { credentials: 'include' });
+  if (!res.ok) {
+    window.location.href = 'login.html';
+    return;
+  }
+  const data = await res.json();
+  const user = data.user;
 
-  loadPayments();
+  const role = user.role === 'customer' ? 'client' : user.role === 'provider' ? 'repairman' : 'admin';
+
+  // 2. Render Layout (Sidebar + Topbar)
+  await window.renderLayout(role, 'admin-payments', user); // Pass the user object!
+
+  // 3. Load page specific data (after layout is rendered)
+  await loadPayments();
 });
 
 async function loadPayments() {
