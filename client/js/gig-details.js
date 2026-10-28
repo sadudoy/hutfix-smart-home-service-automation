@@ -91,16 +91,23 @@ document.addEventListener('DOMContentLoaded', async () => {
               <div class="list-stack">
                 ${services.map(s => `
                   <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid var(--border-color); gap:16px;">
-                    <div>
-                      <strong style="font-size:15px; color:var(--text);">${window.escapeHtml(s.category_name)}</strong>
-                      <div style="font-size:12px; color:var(--muted); margin-top:2px;">Category: ${window.escapeHtml(s.category_slug)}</div>
+                    <div style="display:flex; align-items:flex-start; gap:14px; flex:1;">
+                      ${s.banner_url ? `<img src="${s.banner_url}" alt="Banner" style="width:56px; height:56px; border-radius:8px; object-fit:cover; border:1px solid var(--border-color); flex-shrink:0;" />` : ''}
+                      <div>
+                        <strong style="font-size:15px; color:var(--text);">${window.escapeHtml(s.title || s.category_name)}</strong>
+                        <div style="font-size:12px; color:var(--muted); margin-top:2px;">
+                          <span style="font-weight:600; color:var(--blue);"><i class="bi bi-clock"></i> Est. ${s.duration_minutes || 60} mins</span> · 
+                          Category: ${window.escapeHtml(s.category_name || s.category_slug)}
+                        </div>
+                        ${s.description ? `<p style="font-size:13px; color:var(--text-muted); margin:4px 0 0; line-height:1.4;">${window.escapeHtml(s.description)}</p>` : ''}
+                      </div>
                     </div>
-                    <div style="display:flex; align-items:center; gap:16px;">
+                    <div style="display:flex; align-items:center; gap:16px; flex-shrink:0;">
                       <div style="text-align:right;">
                         <span style="font-size:17px; font-weight:800; color:var(--blue);">${window.money(s.price)}</span>
                         <small style="color:var(--muted); display:block; font-size:11px;">/ base rate</small>
                       </div>
-                      <button class="secondary-btn" onclick="window.openBooking(${provId}, '${s.category_slug}')" style="padding:6px 12px; font-size:12px; font-weight:600; min-height:34px;">
+                      <button class="secondary-btn book-gig-row-btn" data-category="${s.category_slug}" data-title="${window.escapeHtml(s.title || s.category_name)}" data-duration="${s.duration_minutes || 60}" data-price="${s.price}" style="padding:6px 12px; font-size:12px; font-weight:600; min-height:34px;">
                         Book <i class="bi bi-arrow-right"></i>
                       </button>
                     </div>
@@ -124,7 +131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                   Includes initial diagnosis, standard visit dispatch, and HutFix service guarantee.
                 </p>
               </div>
-              <button class="primary-btn" onclick="window.openBooking(${provId}, '${firstService.category_slug}')" style="width:100%; justify-content:center; padding:14px; font-size:14px; font-weight:700;">
+              <button class="primary-btn" id="stickyBookProBtn" style="width:100%; justify-content:center; padding:14px; font-size:14px; font-weight:700;">
                 Book this Pro <i class="bi bi-arrow-right"></i>
               </button>
               <button class="secondary-btn" onclick="window.toggleFavorite(${provId}, event)" data-fav-provider="${provId}" style="width:100%; justify-content:center; padding:10px; font-size:13px; font-weight:600; margin-top:8px;">
@@ -186,6 +193,24 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>
         </div>
       `;
+
+      // Wire row booking buttons
+      container.querySelectorAll('.book-gig-row-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const category = btn.dataset.category;
+          const title = btn.dataset.title;
+          const duration = parseInt(btn.dataset.duration, 10) || 60;
+          const price = parseFloat(btn.dataset.price) || 0;
+          window.openBooking(provId, category, { title, duration, price });
+        });
+      });
+
+      // Wire sticky main pro booking button
+      document.getElementById('stickyBookProBtn')?.addEventListener('click', () => {
+        const gigTitle = firstService.title || firstService.category_name || 'Home Service';
+        const gigDuration = firstService.duration_minutes || 60;
+        window.openBooking(provId, firstService.category_slug, { title: gigTitle, duration: gigDuration, price: basePrice });
+      });
     } catch (err) {
       container.innerHTML = `<div class="empty-state">${window.escapeHtml(err.message)}</div>`;
     }

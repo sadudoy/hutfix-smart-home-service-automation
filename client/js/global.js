@@ -743,7 +743,7 @@ window.openTicketChat = async function(ticketId) {
 window.openChat = window.openTicketChat;
 
 // Global Direct Booking Modal (callable from Discover, Gig Details, Favorites)
-window.openBooking = async function(providerId = null, categorySlug = null) {
+window.openBooking = async function(providerId = null, categorySlug = null, gigInfo = null) {
   let platformSettings = { bkash_number: '01700000000', nagad_number: '01700000000' };
   try {
     const sRes = await fetch('/api/settings');
@@ -786,7 +786,18 @@ window.openBooking = async function(providerId = null, categorySlug = null) {
 
   const initialSlots = await loadSlots(todayStr);
 
+  const gigTitle = gigInfo?.title || 'Selected Service Appointment';
+  const gigDuration = gigInfo?.duration || 60;
+  const gigPrice = gigInfo?.price;
+
   const modalBody = `
+    <div class="gig-summary-box" style="background:var(--bg-body); border:1px solid var(--border-color); border-radius:10px; padding:12px 14px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <strong style="font-size:14px; color:var(--text-main); display:block;">${escapeHtml(gigTitle)}</strong>
+        <span style="font-size:12px; color:var(--text-muted);"><i class="bi bi-clock"></i> Est. ${gigDuration} mins · Guaranteed Pro dispatch</span>
+      </div>
+      ${gigPrice ? (`<div style="font-size:16px; font-weight:700; color:var(--primary);">${window.money(gigPrice)}</div>`) : ""}
+    </div>
     <form id="globalBookingForm">
       <div class="form-grid">
         <div class="form-field full">

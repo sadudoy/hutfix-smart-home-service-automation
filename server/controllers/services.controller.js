@@ -6,7 +6,8 @@ async function list(req, res, next) {
         const result = await pool.query(query);
         return res.status(200).json({
             ok: true,
-            services: result.rows
+            services: result.rows,
+            categories: result.rows
         });
     } catch (err) {
         return next(err);

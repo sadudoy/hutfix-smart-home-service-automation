@@ -27,7 +27,8 @@ async function getProviderProfileByUserId(req, res, next) {
         const prov = provRes.rows[0];
 
         const servRes = await pool.query(`
-            SELECT ps.id, ps.category_id, sc.slug AS category_slug, sc.name AS category_name, ps.price
+            SELECT ps.id, ps.category_id, sc.slug AS category_slug, sc.name AS category_name, ps.price,
+                   ps.title, ps.description, ps.duration_minutes, ps.banner_url
             FROM provider_services ps
             JOIN service_categories sc ON sc.id = ps.category_id
             WHERE ps.provider_id = $1;
@@ -52,7 +53,11 @@ async function getProviderProfileByUserId(req, res, next) {
                     category_id: s.category_id,
                     category_slug: s.category_slug,
                     category_name: s.category_name,
-                    price: Number(s.price)
+                    price: Number(s.price),
+                    title: s.title || s.category_name,
+                    description: s.description || '',
+                    duration_minutes: Number(s.duration_minutes) || 60,
+                    banner_url: s.banner_url || null
                 }))
             }
         });
@@ -68,7 +73,9 @@ async function search(req, res, next) {
             SELECT p.id, u.full_name AS name, p.headline, p.rating, p.rating_count,
                    p.address, p.years_experience, p.logo_url, p.banner_url,
                    sc.slug AS category_slug, sc.name AS category,
-                   ps.price AS price_per_hour
+                   ps.price AS price_per_hour,
+                   ps.id AS service_id, ps.title AS gig_title, ps.description AS gig_description,
+                   ps.duration_minutes, ps.banner_url AS gig_banner_url
             FROM providers p
             JOIN users u ON u.id = p.user_id
             JOIN provider_services ps ON ps.provider_id = p.id

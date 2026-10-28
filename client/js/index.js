@@ -68,37 +68,52 @@ document.addEventListener('DOMContentLoaded', async () => {
       const rawServices = svcData.services || [];
       const providers = provData.providers || [];
 
-      // Combine services with provider details
-      allServices = rawServices.map((s, idx) => {
-        const matchingProv = providers[idx % providers.length] || {
-          id: 1,
-          name: 'Rahim Electronics',
-          rating: 4.9,
-          rating_count: 120,
-          headline: 'Master Technician',
-          address: 'Dhanmondi, Dhaka'
-        };
-
-        return {
+      if (providers.length > 0) {
+        allServices = providers.map((p, idx) => {
+          const bannerImage = p.gig_banner_url || p.banner_url || (window.IMAGES?.category ? window.IMAGES.category(p.category_slug) : '');
+          return {
+            id: p.service_id || (idx + 1),
+            slug: p.category_slug || 'appliance-repair',
+            title: p.gig_title || p.category || 'Home Repair Service',
+            category: p.category || 'General',
+            desc: p.gig_description || 'Professional home service with guaranteed parts and verified workmanship.',
+            duration_minutes: Number(p.duration_minutes) || 60,
+            price: Number(p.price_per_hour || 650),
+            providerId: p.id,
+            provider: p.name || 'Rahim Electronics',
+            subtitle: p.headline || 'Certified Specialist',
+            rating: Number(p.rating || 4.9).toFixed(1),
+            reviews: p.rating_count || 120,
+            address: p.address || 'Dhaka, Bangladesh',
+            logo_url: p.logo_url || null,
+            banner_url: bannerImage,
+            verified: true,
+            avatar: idx % 2 === 0 ? 'avatar-green' : 'avatar-lilac',
+            cover: 'cover-wash'
+          };
+        });
+      } else {
+        allServices = rawServices.map((s, idx) => ({
           id: s.id,
           slug: s.slug,
           title: s.name,
           category: s.name.split(' ')[0] || 'Appliance',
           desc: s.description || 'Professional home service with guaranteed parts and verified workmanship.',
-          price: Number(matchingProv.price_per_hour || s.base_price || 650),
-          providerId: matchingProv.id || (idx + 1),
-          provider: matchingProv.name || 'Rahim Electronics',
-          subtitle: matchingProv.headline || 'Certified Specialist',
-          rating: Number(matchingProv.rating || 4.9).toFixed(1),
-          reviews: matchingProv.rating_count || 120,
-          address: matchingProv.address || 'Dhaka, Bangladesh',
-          logo_url: matchingProv.logo_url || null,
-          banner_url: matchingProv.banner_url || null,
+          duration_minutes: 60,
+          price: Number(s.base_price || 650),
+          providerId: 1,
+          provider: 'Rahim Electronics',
+          subtitle: 'Certified Specialist',
+          rating: '4.9',
+          reviews: 120,
+          address: 'Dhaka, Bangladesh',
+          logo_url: null,
+          banner_url: window.IMAGES?.category ? window.IMAGES.category(s.slug) : '',
           verified: true,
           avatar: idx % 2 === 0 ? 'avatar-green' : 'avatar-lilac',
           cover: 'cover-wash'
-        };
-      });
+        }));
+      }
 
       renderServiceCards();
     } catch (err) {
@@ -183,6 +198,11 @@ document.addEventListener('DOMContentLoaded', async () => {
               <h3 style="cursor:pointer;" onclick="window.location.href='gig-details.html?id=${s.providerId}'">${escapeHtml(s.title)}</h3>
               <div class="rating"><i class="bi bi-star-fill text-amber"></i> ${s.rating} <span>(${s.reviews})</span></div>
             </div>
+            <div style="font-size:12px; color:var(--text-muted); margin:-4px 0 8px; display:flex; align-items:center; gap:8px;">
+              <span style="font-weight:600; color:var(--primary);"><i class="bi bi-clock"></i> Est. ${s.duration_minutes || 60} mins</span>
+              <span>·</span>
+              <span>${escapeHtml(s.category)}</span>
+            </div>
             <div class="provider-line" style="cursor:pointer;" onclick="window.location.href='gig-details.html?id=${s.providerId}'">
               ${avatarHtml}
               <div>
@@ -195,13 +215,25 @@ document.addEventListener('DOMContentLoaded', async () => {
               <div class="price"><strong>${window.money(s.price)}</strong> <small>/ base</small></div>
               <div style="display:flex; gap:6px;">
                 <a href="gig-details.html?id=${s.providerId}" class="secondary-btn" style="padding:6px 10px; font-size:12px; min-height:34px;">Profile</a>
-                <button class="primary-btn" onclick="window.openBooking(${s.providerId}, '${s.slug}')" style="padding:6px 12px; font-size:12px; min-height:34px;">Book <i class="bi bi-arrow-right"></i></button>
+                <button class="primary-btn book-service-btn" data-provider-id="${s.providerId}" data-slug="${s.slug}" data-title="${escapeHtml(s.title)}" data-duration="${s.duration_minutes || 60}" data-price="${s.price}" style="padding:6px 12px; font-size:12px; min-height:34px;">Book <i class="bi bi-arrow-right"></i></button>
               </div>
             </div>
           </div>
         </article>
       `;
     }).join('');
+
+    // Wire booking buttons
+    grid.querySelectorAll('.book-service-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const provId = parseInt(btn.dataset.providerId, 10);
+        const slug = btn.dataset.slug;
+        const title = btn.dataset.title;
+        const duration = parseInt(btn.dataset.duration, 10) || 60;
+        const price = parseFloat(btn.dataset.price) || 0;
+        window.openBooking(provId, slug, { title, duration, price });
+      });
+    });
   }
 
   // Search input listeners

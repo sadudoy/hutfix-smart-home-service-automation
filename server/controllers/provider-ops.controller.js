@@ -4,6 +4,39 @@ const crypto = require('crypto');
 const multer = require('multer');
 const { pool } = require('../config/db');
 
+const GIGS_DIR = path.join(__dirname, '..', 'uploads', 'gigs');
+fs.mkdirSync(GIGS_DIR, { recursive: true });
+
+const gigStorage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, GIGS_DIR),
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname).toLowerCase();
+        cb(null, `gig-${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`);
+    }
+});
+
+const uploadGigBanner = multer({
+    storage: gigStorage,
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const ok = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.mimetype);
+        cb(ok ? null : new Error('only jpeg/png/webp/gif allowed'), ok);
+    }
+}).single('banner');
+
+const uploadGigBannerMiddleware = (req, res, next) => {
+    const contentType = req.headers['content-type'] || '';
+    if (contentType.includes('multipart/form-data')) {
+        uploadGigBanner(req, res, (err) => {
+            if (err) return res.status(400).json({ ok: false, error: err.message });
+            next();
+        });
+    } else {
+        next();
+    }
+};
+
+
 const PROVIDERS_DIR = path.join(__dirname, '..', 'uploads', 'providers');
 fs.mkdirSync(PROVIDERS_DIR, { recursive: true });
 
@@ -271,7 +304,8 @@ async function getServices(req, res, next) {
         if (!providerId) return res.status(404).json({ ok: false, error: 'provider not found' });
 
         const result = await pool.query(`
-            SELECT ps.id, ps.category_id, sc.slug AS category_slug, sc.name AS category_name, ps.price
+            SELECT ps.id, ps.category_id, sc.slug AS category_slug, sc.name AS category_name, ps.price,
+                   ps.title, ps.description, ps.duration_minutes, ps.banner_url
             FROM provider_services ps
             JOIN service_categories sc ON sc.id = ps.category_id
             WHERE ps.provider_id = $1
@@ -288,28 +322,45 @@ async function createService(req, res, next) {
         const providerId = await getProviderId(req.user.id);
         if (!providerId) return res.status(404).json({ ok: false, error: 'provider not found' });
 
-        const { category_id, category_slug, price } = req.body || {};
+        const { category_id, category_slug, price, title, description, duration_minutes } = req.body || {};
         const priceNum = parseFloat(price);
         if (isNaN(priceNum) || priceNum <= 0) {
             return res.status(400).json({ ok: false, error: 'valid price is required' });
         }
 
         let catId = parseInt(category_id, 10);
+        let categoryName = 'Service';
         if (isNaN(catId) && category_slug) {
-            const catRes = await pool.query('SELECT id FROM service_categories WHERE slug = $1;', [category_slug]);
-            if (catRes.rows.length > 0) catId = catRes.rows[0].id;
+            const catRes = await pool.query('SELECT id, name FROM service_categories WHERE slug = $1;', [category_slug]);
+            if (catRes.rows.length > 0) {
+                catId = catRes.rows[0].id;
+                categoryName = catRes.rows[0].name;
+            }
+        } else if (!isNaN(catId)) {
+            const catRes = await pool.query('SELECT name FROM service_categories WHERE id = $1;', [catId]);
+            if (catRes.rows.length > 0) categoryName = catRes.rows[0].name;
         }
 
         if (!catId) {
             return res.status(400).json({ ok: false, error: 'valid category is required' });
         }
 
+        const gigTitle = (title && title.trim()) ? title.trim() : categoryName;
+        const gigDesc = (description && description.trim()) ? description.trim() : `Professional ${categoryName} service with guaranteed parts and verified workmanship.`;
+        const durMin = parseInt(duration_minutes, 10) || 60;
+
+        let bannerUrl = null;
+        if (req.file) {
+            bannerUrl = `/uploads/gigs/${req.file.filename}`;
+        } else if (req.body && req.body.banner_url) {
+            bannerUrl = req.body.banner_url;
+        }
+
         const insertRes = await pool.query(`
-            INSERT INTO provider_services (provider_id, category_id, price)
-            VALUES ($1, $2, $3)
-            ON CONFLICT (provider_id, category_id) DO UPDATE SET price = EXCLUDED.price
+            INSERT INTO provider_services (provider_id, category_id, price, title, description, duration_minutes, banner_url)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
             RETURNING *;
-        `, [providerId, catId, priceNum]);
+        `, [providerId, catId, priceNum, gigTitle, gigDesc, durMin, bannerUrl]);
 
         return res.status(201).json({ ok: true, service: insertRes.rows[0] });
     } catch (err) {
@@ -325,22 +376,35 @@ async function updateService(req, res, next) {
         const serviceId = parseInt(req.params.id, 10);
         if (isNaN(serviceId)) return res.status(400).json({ ok: false, error: 'invalid service id' });
 
-        const { price } = req.body || {};
-        const priceNum = parseFloat(price);
+        const currentRes = await pool.query('SELECT * FROM provider_services WHERE id = $1 AND provider_id = $2;', [serviceId, providerId]);
+        if (currentRes.rows.length === 0) {
+            return res.status(404).json({ ok: false, error: 'service not found or unauthorized' });
+        }
+        const current = currentRes.rows[0];
+
+        const { price, title, description, duration_minutes } = req.body || {};
+        const priceNum = price != null ? parseFloat(price) : current.price;
         if (isNaN(priceNum) || priceNum <= 0) {
             return res.status(400).json({ ok: false, error: 'valid price is required' });
         }
 
+        const newTitle = title !== undefined && title.trim() ? title.trim() : current.title;
+        const newDesc = description !== undefined ? description.trim() : current.description;
+        const newDur = duration_minutes != null ? (parseInt(duration_minutes, 10) || current.duration_minutes) : current.duration_minutes;
+
+        let bannerUrl = current.banner_url;
+        if (req.file) {
+            bannerUrl = `/uploads/gigs/${req.file.filename}`;
+        } else if (req.body && req.body.banner_url !== undefined) {
+            bannerUrl = req.body.banner_url || null;
+        }
+
         const updateRes = await pool.query(`
             UPDATE provider_services
-            SET price = $1
-            WHERE id = $2 AND provider_id = $3
+            SET price = $1, title = $2, description = $3, duration_minutes = $4, banner_url = $5
+            WHERE id = $6 AND provider_id = $7
             RETURNING *;
-        `, [priceNum, serviceId, providerId]);
-
-        if (updateRes.rows.length === 0) {
-            return res.status(404).json({ ok: false, error: 'service not found or unauthorized' });
-        }
+        `, [priceNum, newTitle, newDesc, newDur, bannerUrl, serviceId, providerId]);
 
         return res.status(200).json({ ok: true, service: updateRes.rows[0] });
     } catch (err) {
@@ -373,6 +437,7 @@ async function deleteService(req, res, next) {
 }
 
 module.exports = {
+    uploadGigBannerMiddleware,
     getServices,
     createService,
     updateService,

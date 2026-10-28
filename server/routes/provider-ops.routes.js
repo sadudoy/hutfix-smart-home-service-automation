@@ -6,8 +6,8 @@ const { requireAuth, requireRole } = require('../middleware/auth');
 router.use(requireAuth, requireRole('provider'));
 
 router.get('/services', ctrl.getServices);
-router.post('/services', ctrl.createService);
-router.patch('/services/:id', ctrl.updateService);
+router.post('/services', ctrl.uploadGigBannerMiddleware, ctrl.createService);
+router.patch('/services/:id', ctrl.uploadGigBannerMiddleware, ctrl.updateService);
 router.delete('/services/:id', ctrl.deleteService);
 
 router.get('/availability', ctrl.getAvailability);

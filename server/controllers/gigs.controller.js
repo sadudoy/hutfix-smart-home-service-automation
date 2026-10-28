@@ -23,7 +23,8 @@ async function getGigDetails(req, res, next) {
 
         // 2. Fetch services
         const servicesQuery = `
-            SELECT ps.price, sc.id AS category_id, sc.slug AS category_slug, sc.name AS category_name
+            SELECT ps.id, ps.price, ps.title, ps.description, ps.duration_minutes, ps.banner_url,
+                   sc.id AS category_id, sc.slug AS category_slug, sc.name AS category_name
             FROM provider_services ps
             JOIN service_categories sc ON sc.id = ps.category_id
             WHERE ps.provider_id = $1
