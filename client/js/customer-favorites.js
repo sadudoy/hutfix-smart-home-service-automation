@@ -27,14 +27,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      grid.innerHTML = list.map(p => `
+      grid.innerHTML = list.map(p => {
+        const coverStyle = p.banner_url ? `background-image:url('${p.banner_url}'); background-size:cover; background-position:center;` : '';
+        const avatarHtml = p.logo_url
+          ? `<img src="${p.logo_url}" alt="${window.escapeHtml(p.name)}" style="width:38px; height:38px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color); flex-shrink:0;" />`
+          : `<div class="avatar avatar-green">${(p.name || 'P').slice(0, 2).toUpperCase()}</div>`;
+
+        return `
         <article class="service-card" data-provider-id="${p.id}" style="position:relative;">
-          <div class="service-cover cover-wash" style="position:relative;">
+          <div class="service-cover cover-wash" style="${coverStyle} position:relative;">
             <button class="fav-heart-btn active" onclick="window.toggleFavorite(${p.id}, event)" title="Remove from favorites" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.92); backdrop-filter:blur(4px); border:none; border-radius:50%; width:34px; height:34px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; color:var(--red); z-index:5;">
               <i class="bi bi-heart-fill" style="color:var(--red);"></i>
             </button>
             <span class="cover-badge">SAVED</span>
-            <span class="cover-emoji" style="font-size:2.5rem; color:var(--blue);"><i class="bi bi-person-badge"></i></span>
+            ${!p.banner_url ? '<span class="cover-emoji" style="font-size:2.5rem; color:var(--blue);"><i class="bi bi-person-badge"></i></span>' : ''}
           </div>
           <div class="service-body">
             <div class="service-topline">
@@ -42,12 +48,13 @@ document.addEventListener('DOMContentLoaded', async () => {
               <div class="rating"><i class="bi bi-star-fill text-amber"></i> ${Number(p.rating || 5.0).toFixed(1)} <span>(${p.rating_count || 1})</span></div>
             </div>
             <div class="provider-line" style="cursor:pointer;" onclick="window.location.href='gig-details.html?id=${p.id}'">
-              <div class="avatar avatar-green">${(p.name || 'P').slice(0, 2).toUpperCase()}</div>
+              ${avatarHtml}
               <div>
                 <div class="provider-name">${window.escapeHtml(p.name)} <span class="verified"><i class="bi bi-check-circle-fill text-green"></i></span></div>
                 <div class="provider-sub">${window.escapeHtml(p.headline || p.category || 'Specialist Pro')}</div>
               </div>
-            </div>
+            </div>`;
+      }).join('');
             <p class="service-desc">${window.escapeHtml(p.address || 'Dhaka, Bangladesh')} · ${p.years_experience || 3}+ years verified experience.</p>
             <div class="service-foot">
               <div class="price"><strong>${window.money(p.price_per_hour)}</strong> <small>/ hr</small></div>

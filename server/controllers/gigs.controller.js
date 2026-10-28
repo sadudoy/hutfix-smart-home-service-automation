@@ -9,7 +9,8 @@ async function getGigDetails(req, res, next) {
 
         // 1. Fetch provider details
         const providerQuery = `
-            SELECT p.id, u.full_name, p.headline, p.bio, p.rating, p.rating_count, p.address, p.years_experience
+            SELECT p.id, u.full_name, p.headline, p.bio, p.rating, p.rating_count, p.address, p.years_experience,
+                   p.logo_url, p.banner_url
             FROM providers p
             JOIN users u ON u.id = p.user_id
             WHERE p.id = $1;

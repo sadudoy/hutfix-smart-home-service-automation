@@ -92,6 +92,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           rating: Number(matchingProv.rating || 4.9).toFixed(1),
           reviews: matchingProv.rating_count || 120,
           address: matchingProv.address || 'Dhaka, Bangladesh',
+          logo_url: matchingProv.logo_url || null,
+          banner_url: matchingProv.banner_url || null,
           verified: true,
           avatar: idx % 2 === 0 ? 'avatar-green' : 'avatar-lilac',
           cover: 'cover-wash'
@@ -153,7 +155,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     grid.innerHTML = filtered.map(s => {
       const isFav = window.favoriteProviderIds && window.favoriteProviderIds.has(s.providerId);
-      const imageUrl = window.IMAGES?.category ? window.IMAGES.category(s.slug) : '';
+      const imageUrl = s.banner_url || (window.IMAGES?.category ? window.IMAGES.category(s.slug) : '');
       const coverHtml = imageUrl
         ? `<div class="service-cover ${s.cover}" style="background-image:url('${imageUrl}'); background-size:cover; background-position:center; position:relative;">
              <button class="fav-heart-btn ${isFav ? 'active' : ''}" data-fav-provider="${s.providerId}" onclick="window.toggleFavorite(${s.providerId}, event)" title="${isFav ? 'Remove from favorites' : 'Save specialist'}" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.92); backdrop-filter:blur(4px); border:none; border-radius:50%; width:34px; height:34px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; color:${isFav ? 'var(--red)' : '#64748b'}; z-index:5;">
@@ -169,6 +171,10 @@ document.addEventListener('DOMContentLoaded', async () => {
              <span class="cover-emoji" style="font-size:2.5rem; color:var(--blue);"><i class="bi bi-tools"></i></span>
            </div>`;
 
+      const avatarHtml = s.logo_url
+        ? `<img src="${s.logo_url}" alt="${escapeHtml(s.provider)}" style="width:38px; height:38px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color); flex-shrink:0;" />`
+        : `<div class="avatar ${s.avatar}">${s.provider.slice(0, 2).toUpperCase()}</div>`;
+
       return `
         <article class="service-card" data-provider-id="${s.providerId}">
           ${coverHtml}
@@ -178,7 +184,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               <div class="rating"><i class="bi bi-star-fill text-amber"></i> ${s.rating} <span>(${s.reviews})</span></div>
             </div>
             <div class="provider-line" style="cursor:pointer;" onclick="window.location.href='gig-details.html?id=${s.providerId}'">
-              <div class="avatar ${s.avatar}">${s.provider.slice(0, 2).toUpperCase()}</div>
+              ${avatarHtml}
               <div>
                 <div class="provider-name">${escapeHtml(s.provider)} <span class="verified"><i class="bi bi-check-circle-fill text-green"></i></span></div>
                 <div class="provider-sub">${escapeHtml(s.subtitle)}</div>

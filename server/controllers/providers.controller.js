@@ -13,7 +13,8 @@ async function getProviderProfileByUserId(req, res, next) {
         }
 
         const provRes = await pool.query(`
-            SELECT p.id, p.user_id, u.full_name, p.headline, p.bio, p.rating, p.rating_count, p.address, p.years_experience
+            SELECT p.id, p.user_id, u.full_name, p.headline, p.bio, p.rating, p.rating_count, p.address, p.years_experience,
+                   p.logo_url, p.banner_url
             FROM providers p
             JOIN users u ON u.id = p.user_id
             WHERE p.user_id = $1;
@@ -44,6 +45,8 @@ async function getProviderProfileByUserId(req, res, next) {
                 rating_count: prov.rating_count || 0,
                 address: prov.address || '',
                 years_experience: prov.years_experience || 0,
+                logo_url: prov.logo_url || null,
+                banner_url: prov.banner_url || null,
                 services: servRes.rows.map(s => ({
                     category_id: s.category_id,
                     category_slug: s.category_slug,
@@ -62,7 +65,7 @@ async function search(req, res, next) {
         const { category_slug, search: searchQuery, min_rating, max_price, sort } = req.query;
         let query = `
             SELECT p.id, u.full_name AS name, p.headline, p.rating, p.rating_count,
-                   p.address, p.years_experience,
+                   p.address, p.years_experience, p.logo_url, p.banner_url,
                    sc.slug AS category_slug, sc.name AS category,
                    ps.price AS price_per_hour
             FROM providers p

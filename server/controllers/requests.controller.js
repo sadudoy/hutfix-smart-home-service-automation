@@ -835,7 +835,8 @@ async function providerRequests(req, res, next) {
 async function getProviderSettings(req, res, next) {
     try {
         const result = await pool.query(`
-            SELECT p.id, p.address AS area, u.full_name,
+            SELECT p.id, p.address AS area, u.full_name, p.headline, p.bio, p.years_experience,
+                   p.logo_url, p.banner_url,
                    COALESCE((SELECT ps.price FROM provider_services ps WHERE ps.provider_id = p.id LIMIT 1), 500) AS base_rate
             FROM providers p
             JOIN users u ON u.id = p.user_id

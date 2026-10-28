@@ -25,6 +25,37 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (headEl) headEl.textContent = `${p.headline || 'Certified Specialist'} · ${p.address || 'Dhaka, Bangladesh'}`;
       if (rateEl) rateEl.innerHTML = `<i class="bi bi-star-fill text-amber"></i> ${p.rating || '4.9'} rating · ${p.rating_count || 120} reviews · ${p.years_experience || 5} years experience`;
 
+      const logoPreview = document.getElementById('logoPreview');
+      const bannerPreview = document.getElementById('bannerPreview');
+      const bannerBox = document.querySelector('.profile-banner');
+
+      if (p.logo_url) {
+        if (logoPreview) {
+          logoPreview.src = p.logo_url;
+          logoPreview.style.display = 'block';
+        }
+        if (avEl) {
+          avEl.innerHTML = `<img src="${p.logo_url}" alt="Avatar" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" />`;
+        }
+      } else {
+        const fallbackAvatar = window.IMAGES?.providerAvatar ? window.IMAGES.providerAvatar(user.full_name) : null;
+        if (fallbackAvatar && avEl) {
+          avEl.innerHTML = `<img src="${fallbackAvatar}" alt="Avatar" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" />`;
+        }
+      }
+
+      if (p.banner_url) {
+        if (bannerPreview) {
+          bannerPreview.src = p.banner_url;
+          bannerPreview.style.display = 'block';
+        }
+        if (bannerBox) {
+          bannerBox.style.backgroundImage = `linear-gradient(rgba(11, 18, 32, 0.8), rgba(11, 18, 32, 0.9)), url('${p.banner_url}')`;
+          bannerBox.style.backgroundSize = 'cover';
+          bannerBox.style.backgroundPosition = 'center';
+        }
+      }
+
       const nameInput = document.getElementById('proNameInput');
       const headInput = document.getElementById('proHeadlineInput');
       const yearsInput = document.getElementById('proYearsInput');
@@ -40,6 +71,69 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('loadProfile error:', err);
     }
   }
+
+  // Instant image preview handlers
+  document.getElementById('proLogoInput')?.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const preview = document.getElementById('logoPreview');
+      if (preview) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+      }
+    }
+  });
+
+  document.getElementById('proBannerInput')?.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const preview = document.getElementById('bannerPreview');
+      if (preview) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+      }
+    }
+  });
+
+  // Media form submission
+  document.getElementById('proMediaForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('saveMediaBtn');
+    const logoFile = document.getElementById('proLogoInput')?.files[0];
+    const bannerFile = document.getElementById('proBannerInput')?.files[0];
+
+    if (!logoFile && !bannerFile) {
+      window.toast('Please select a logo or banner image to upload.');
+      return;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Uploading...';
+    }
+
+    try {
+      const fd = new FormData(e.target);
+      const res = await fetch('/api/provider/upload-media', {
+        method: 'POST',
+        credentials: 'include',
+        body: fd
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Media upload failed');
+
+      window.toast('Gig branding media uploaded successfully!');
+      await loadProfile();
+    } catch (err) {
+      console.error('Upload error:', err);
+      window.toast('Upload error: ' + err.message);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-cloud-arrow-up"></i> Upload Media';
+      }
+    }
+  });
 
   document.getElementById('proDetailsForm')?.addEventListener('submit', (e) => {
     e.preventDefault();

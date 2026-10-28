@@ -198,3 +198,17 @@ CREATE TABLE IF NOT EXISTS favorites (
   UNIQUE (user_id, provider_id)
 );
 
+
+CREATE TABLE IF NOT EXISTS ticket_messages (
+  id BIGSERIAL PRIMARY KEY,
+  ticket_id BIGINT NOT NULL REFERENCES support_tickets(id) ON DELETE CASCADE,
+  sender_id BIGINT NOT NULL REFERENCES users(id),
+  message TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ticket_messages_ticket ON ticket_messages(ticket_id, created_at ASC);
+
+ALTER TABLE providers 
+  ADD COLUMN IF NOT EXISTS logo_url TEXT,
+  ADD COLUMN IF NOT EXISTS banner_url TEXT;

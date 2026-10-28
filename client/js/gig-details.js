@@ -22,8 +22,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       const breakdown = data.ratingBreakdown || [];
 
       const firstService = services[0] || { category_slug: 'appliance-repair', price: 900, category_name: 'Appliance Repair' };
-      const heroImage = window.IMAGES?.category ? window.IMAGES.category(firstService.category_slug) : '';
-      const avatarUrl = window.IMAGES?.providerAvatar ? window.IMAGES.providerAvatar(provider.full_name) : '';
+      const heroImage = provider.banner_url || (window.IMAGES?.category ? window.IMAGES.category(firstService.category_slug) : '');
+      const avatarUrl = provider.logo_url || (window.IMAGES?.providerAvatar ? window.IMAGES.providerAvatar(provider.full_name) : '');
       const basePrice = Number(firstService.price || 900);
 
       const isFav = window.favoriteProviderIds && window.favoriteProviderIds.has(provId);

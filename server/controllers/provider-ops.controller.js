@@ -1,4 +1,68 @@
+const path = require('path');
+const fs = require('fs');
+const crypto = require('crypto');
+const multer = require('multer');
 const { pool } = require('../config/db');
+
+const PROVIDERS_DIR = path.join(__dirname, '..', 'uploads', 'providers');
+fs.mkdirSync(PROVIDERS_DIR, { recursive: true });
+
+const providerStorage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, PROVIDERS_DIR),
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname).toLowerCase();
+        cb(null, `${file.fieldname}-${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`);
+    }
+});
+
+const uploadMediaMiddleware = multer({
+    storage: providerStorage,
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const ok = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.mimetype);
+        cb(ok ? null : new Error('only jpeg/png/webp/gif allowed'), ok);
+    }
+}).fields([
+    { name: 'logo', maxCount: 1 },
+    { name: 'banner', maxCount: 1 }
+]);
+
+async function uploadMedia(req, res, next) {
+    try {
+        const provRes = await pool.query('SELECT id, logo_url, banner_url FROM providers WHERE user_id = $1;', [req.user.id]);
+        if (provRes.rows.length === 0) {
+            return res.status(404).json({ ok: false, error: 'provider not found' });
+        }
+        const provider = provRes.rows[0];
+
+        let logo_url = provider.logo_url;
+        let banner_url = provider.banner_url;
+
+        if (req.files && req.files.logo && req.files.logo[0]) {
+            logo_url = `/uploads/providers/${req.files.logo[0].filename}`;
+        }
+        if (req.files && req.files.banner && req.files.banner[0]) {
+            banner_url = `/uploads/providers/${req.files.banner[0].filename}`;
+        }
+
+        const updateRes = await pool.query(
+            `UPDATE providers
+             SET logo_url = $1, banner_url = $2
+             WHERE id = $3
+             RETURNING id, logo_url, banner_url;`,
+            [logo_url, banner_url, provider.id]
+        );
+
+        return res.status(200).json({
+            ok: true,
+            provider: updateRes.rows[0],
+            logo_url,
+            banner_url
+        });
+    } catch (err) {
+        return next(err);
+    }
+}
 
 async function getProviderId(userId) {
     const res = await pool.query('SELECT id FROM providers WHERE user_id = $1;', [userId]);
@@ -207,5 +271,7 @@ module.exports = {
     createBlackout,
     removeBlackout,
     getPayouts,
-    createPayout
+    createPayout,
+    uploadMediaMiddleware,
+    uploadMedia
 };

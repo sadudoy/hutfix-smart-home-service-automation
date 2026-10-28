@@ -51,18 +51,20 @@ async function loadTickets() {
           </td>
           <td>${statusBadge}</td>
           <td>
-            ${canAct ? `
-              <div style="display:flex; gap:6px;">
-                <button class="btn btn-sm btn-primary" onclick="resolveTicket(${t.id}, 'resolved', this)">
+            <div style="display:flex; gap:6px; align-items:center;">
+              <button class="btn btn-sm btn-primary" onclick="openAdminTicketChat(${t.id})" title="Open live ticket conversation">
+                <i class="bi bi-chat-dots"></i> Chat
+              </button>
+              ${canAct ? `
+                <button class="btn btn-sm btn-secondary" onclick="resolveTicket(${t.id}, 'resolved', this)" title="Mark as resolved">
                   <i class="bi bi-check-circle"></i> Resolve
                 </button>
-                <button class="btn btn-sm btn-ghost" style="color:var(--text-muted);" onclick="resolveTicket(${t.id}, 'closed', this)">
-                  Close
+              ` : `
+                <button class="btn btn-sm btn-ghost" style="color:var(--text-muted);" onclick="resolveTicket(${t.id}, 'open', this)" title="Reopen ticket">
+                  Reopen
                 </button>
-              </div>
-            ` : `
-              <span style="font-size:12px; color:var(--text-muted);"><i class="bi bi-check2-all"></i> Done</span>
-            `}
+              `}
+            </div>
           </td>
         </tr>
       `;
@@ -72,6 +74,113 @@ async function loadTickets() {
     tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:var(--danger); text-align:center; padding:24px;">Failed to load tickets: ${window.escapeHtml(err.message)}</td></tr>`;
   }
 }
+
+window.openAdminTicketChat = async function(ticketId) {
+  try {
+    const res = await window.api(`/support/${ticketId}/messages`);
+    const ticket = res.ticket;
+    const messages = res.messages || [];
+
+    const isResolved = ticket.status === 'resolved' || ticket.status === 'closed';
+
+    const renderChatMessages = (msgs) => {
+      if (msgs.length === 0) {
+        return '<div style="text-align:center; color:var(--text-muted); font-size:13px; padding:20px;">No messages in this ticket thread yet.</div>';
+      }
+      return msgs.map(m => {
+        const isAdminSender = m.sender_role === 'admin' || Number(m.sender_id) === Number(window.currentUser?.id);
+        const timeStr = m.created_at ? new Date(m.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+        const roleLabel = isAdminSender ? 'You (Admin)' : `${window.escapeHtml(m.sender_name || 'User')} (${m.sender_role || 'User'})`;
+
+        return `
+          <div class="chat-msg ${isAdminSender ? 'mine' : 'theirs'}">
+            <div class="chat-msg-meta">
+              <strong>${roleLabel}</strong>
+              <span class="chat-msg-time">${timeStr}</span>
+            </div>
+            <div>${window.escapeHtml(m.message)}</div>
+          </div>
+        `;
+      }).join('');
+    };
+
+    const chatHtml = `
+      <div class="chat-container">
+        <div class="chat-header">
+          <div>
+            <strong style="color:var(--text-main); font-size:15px;">${window.escapeHtml(ticket.subject)}</strong>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
+              User: <strong style="color:var(--text-main);">${window.escapeHtml(ticket.user_name || 'User')}</strong> (${ticket.user_email || '—'}) · Ticket #${ticket.id}
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="badge ${ticket.status === 'resolved' ? 'badge-completed' : 'badge-pending'}">${ticket.status.toUpperCase()}</span>
+            <button class="btn btn-sm ${ticket.status === 'resolved' ? 'btn-ghost' : 'btn-secondary'}" onclick="resolveTicketInChat(${ticket.id}, '${ticket.status === 'resolved' ? 'open' : 'resolved'}')">
+              <i class="bi ${ticket.status === 'resolved' ? 'bi-arrow-counterclockwise' : 'bi-check-circle'}"></i> ${ticket.status === 'resolved' ? 'Reopen' : 'Resolve'}
+            </button>
+          </div>
+        </div>
+
+        <div class="chat-messages" id="adminChatMessagesBox">
+          ${renderChatMessages(messages)}
+        </div>
+
+        <form id="adminTicketReplyForm" class="chat-input-bar">
+          <input type="text" name="message" id="adminChatReplyInput" placeholder="Reply to user as Admin Support..." autocomplete="off" required />
+          <button type="submit" class="btn btn-primary" id="adminSendReplyBtn" style="padding:10px 18px;">
+            <i class="bi bi-send-fill"></i> Send Reply
+          </button>
+        </form>
+      </div>
+    `;
+
+    window.openModal(`Support Desk: Ticket #${ticket.id}`, chatHtml, 'ADMIN CHAT INTERFACE');
+
+    const box = document.getElementById('adminChatMessagesBox');
+    if (box) box.scrollTop = box.scrollHeight;
+
+    document.getElementById('adminTicketReplyForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('adminChatReplyInput');
+      const sendBtn = document.getElementById('adminSendReplyBtn');
+      const text = input ? input.value.trim() : '';
+      if (!text) return;
+
+      if (sendBtn) sendBtn.disabled = true;
+
+      try {
+        await window.api(`/support/${ticketId}/messages`, {
+          method: 'POST',
+          body: { message: text }
+        });
+        if (input) input.value = '';
+        window.openAdminTicketChat(ticketId);
+        loadTickets();
+      } catch (err) {
+        window.toast('Error sending message: ' + err.message);
+        if (sendBtn) sendBtn.disabled = false;
+      }
+    });
+
+  } catch (err) {
+    console.error('openAdminTicketChat error:', err);
+    window.toast('Could not open ticket thread: ' + err.message);
+  }
+};
+
+window.resolveTicketInChat = async function(id, status) {
+  try {
+    await window.api(`/admin/support/${id}`, {
+      method: 'PATCH',
+      body: { status }
+    });
+    window.toast(`Ticket #${id} marked as ${status}.`, 'success');
+    window.openAdminTicketChat(id);
+    loadTickets();
+  } catch (err) {
+    window.toast('Error updating ticket: ' + err.message);
+  }
+};
 
 window.resolveTicket = async function(id, status, btnElement) {
   if (btnElement) {

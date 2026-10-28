@@ -15,4 +15,6 @@ router.delete('/blackouts/:id', ctrl.removeBlackout);
 router.get('/payouts', ctrl.getPayouts);
 router.post('/payouts', ctrl.createPayout);
 
+router.post('/upload-media', ctrl.uploadMediaMiddleware, ctrl.uploadMedia);
+
 module.exports = router;

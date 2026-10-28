@@ -485,13 +485,18 @@ window.openSupportModal = async function() {
       <div style="max-height:220px; overflow-y:auto;">
         ${tickets.length > 0 ? `
           <table class="data-table" style="font-size:12px;">
-            <thead><tr><th>Date</th><th>Subject</th><th>Status</th></tr></thead>
+            <thead><tr><th>Date</th><th>Subject</th><th>Status</th><th style="text-align:right;">Action</th></tr></thead>
             <tbody>
               ${tickets.map(t => `
                 <tr>
                   <td>${new Date(t.created_at).toLocaleDateString()}</td>
                   <td><strong>${escapeHtml(t.subject)}</strong><div style="font-size:11px; color:var(--muted);">${escapeHtml(t.message)}</div></td>
                   <td><span class="status ${t.status === 'resolved' ? 'completed' : 'progress'}">${t.status}</span></td>
+                  <td style="text-align:right;">
+                    <button class="btn btn-sm btn-secondary" onclick="window.openTicketChat(${t.id})" style="padding:4px 10px; font-size:11px;">
+                      <i class="bi bi-chat-dots"></i> Chat
+                    </button>
+                  </td>
                 </tr>
               `).join('')}
             </tbody>
@@ -522,12 +527,112 @@ window.openSupportModal = async function() {
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || 'Failed to submit ticket');
       window.toast('Support ticket submitted successfully!');
-      window.openSupportModal();
+      if (data.ticket?.id) {
+        window.openTicketChat(data.ticket.id);
+      } else {
+        window.openSupportModal();
+      }
     } catch (err) {
       window.toast('Error: ' + err.message);
       if (btn) btn.disabled = false;
     }
   });
+};
+
+// Threaded Ticket Chat Modal (Customer & Provider)
+window.openTicketChat = async function(ticketId) {
+  try {
+    const res = await fetch(`/api/support/${ticketId}/messages`, { credentials: 'include' });
+    if (!res.ok) throw new Error('Failed to load ticket thread');
+    const data = await res.json();
+    const ticket = data.ticket;
+    const messages = data.messages || [];
+
+    const renderChatMessages = (msgs) => {
+      if (msgs.length === 0) {
+        return '<div style="text-align:center; color:var(--text-muted); font-size:13px; padding:20px;">No messages in this ticket thread yet.</div>';
+      }
+      return msgs.map(m => {
+        const isMine = Number(m.sender_id) === Number(window.currentUser?.id);
+        const timeStr = m.created_at ? new Date(m.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+        const roleLabel = m.sender_role === 'admin' ? 'HutFix Support (Admin)' : (isMine ? 'You' : window.escapeHtml(m.sender_name || 'User'));
+
+        return `
+          <div class="chat-msg ${isMine ? 'mine' : 'theirs'}">
+            <div class="chat-msg-meta">
+              <strong>${roleLabel}</strong>
+              <span class="chat-msg-time">${timeStr}</span>
+            </div>
+            <div>${window.escapeHtml(m.message)}</div>
+          </div>
+        `;
+      }).join('');
+    };
+
+    const chatHtml = `
+      <div class="chat-container">
+        <div class="chat-header">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <button class="btn btn-sm btn-ghost" onclick="window.openSupportModal()" title="Back to all tickets">
+              <i class="bi bi-arrow-left"></i> All Tickets
+            </button>
+            <div>
+              <strong style="color:var(--text-main); font-size:14px;">${window.escapeHtml(ticket.subject)}</strong>
+              <div style="font-size:11px; color:var(--text-muted);">Ticket #${ticket.id} · ${new Date(ticket.created_at).toLocaleDateString()}</div>
+            </div>
+          </div>
+          <span class="status ${ticket.status === 'resolved' ? 'completed' : 'progress'}">${ticket.status.toUpperCase()}</span>
+        </div>
+
+        <div class="chat-messages" id="chatMessagesBox">
+          ${renderChatMessages(messages)}
+        </div>
+
+        <form id="ticketReplyForm" class="chat-input-bar">
+          <input type="text" name="message" id="chatReplyInput" placeholder="Type your reply to support..." autocomplete="off" required />
+          <button type="submit" class="primary-btn" id="sendReplyBtn" style="padding:10px 18px; min-height:42px;">
+            <i class="bi bi-send-fill"></i> Send
+          </button>
+        </form>
+      </div>
+    `;
+
+    window.openModal(`Ticket #${ticket.id}: Support Thread`, chatHtml, 'HELP DESK CHAT');
+
+    const box = document.getElementById('chatMessagesBox');
+    if (box) box.scrollTop = box.scrollHeight;
+
+    document.getElementById('ticketReplyForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('chatReplyInput');
+      const sendBtn = document.getElementById('sendReplyBtn');
+      const text = input ? input.value.trim() : '';
+      if (!text) return;
+
+      if (sendBtn) sendBtn.disabled = true;
+
+      try {
+        const postRes = await fetch(`/api/support/${ticketId}/messages`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+        const postData = await postRes.json();
+        if (!postRes.ok || !postData.ok) throw new Error(postData.error || 'Failed to send reply');
+
+        if (input) input.value = '';
+        window.openTicketChat(ticketId);
+      } catch (err) {
+        window.toast('Error sending message: ' + err.message);
+        if (sendBtn) sendBtn.disabled = false;
+      }
+    });
+
+  } catch (err) {
+    console.error('openTicketChat error:', err);
+    window.toast('Could not open ticket thread: ' + err.message);
+  }
 };
 
 // Global Direct Booking Modal (callable from Discover, Gig Details, Favorites)

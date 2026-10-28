@@ -7,6 +7,8 @@ router.use(requireAuth);
 
 router.post('/', ctrl.createTicket);
 router.get('/mine', ctrl.getMine);
+router.get('/:id/messages', ctrl.getTicketMessages);
+router.post('/:id/messages', ctrl.addTicketMessage);
 
 // Admin routes also accessible under /api/support/admin
 router.get('/admin', requireRole('admin'), ctrl.getAllForAdmin);

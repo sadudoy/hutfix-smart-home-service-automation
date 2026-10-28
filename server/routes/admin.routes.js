@@ -32,5 +32,7 @@ router.patch('/payouts/:id/approve', ctrl.approvePayout);
 const supportCtrl = require('../controllers/support.controller');
 router.get('/support', supportCtrl.getAllForAdmin);
 router.patch('/support/:id', supportCtrl.updateStatus);
+router.get('/support/:id/messages', supportCtrl.getTicketMessages);
+router.post('/support/:id/messages', supportCtrl.addTicketMessage);
 
 module.exports = router;
