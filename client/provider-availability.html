@@ -34,11 +34,14 @@
         <div class="dashboard-grid">
           <!-- Weekly Schedule Grid -->
           <div class="panel">
-            <div class="panel-head">
+            <div class="panel-head" style="display:flex; justify-content:space-between; align-items:center;">
               <div>
                 <h3>Weekly Working Hours</h3>
                 <p>Standard working windows for smart matching</p>
               </div>
+              <button class="primary-btn" id="saveWeeklyHoursBtn" style="padding:6px 14px; font-size:12px; min-height:34px;">
+                <i class="bi bi-check2"></i> Save Working Hours
+              </button>
             </div>
             <div id="weeklyGridContainer">
               <div class="empty-state">Loading schedule grid...</div>
@@ -118,7 +121,7 @@
           </div>
         </div>
         <div class="footer-bottom">
-          <span>© 2026 HutFix Marketplace. Made for a home that works.</span>
+          <span>© 2026 HutFix Marketplace. Made for a home that works. Developed by <strong>Sad Ibna Forid</strong></span>
           <span>Dhaka, Bangladesh</span>
         </div>
       </footer>

@@ -434,7 +434,92 @@ async function approvePayout(req, res, next) {
     }
 }
 
+
+async function getUserById(req, res, next) {
+    try {
+        const userId = parseInt(req.params.id, 10);
+        if (isNaN(userId)) {
+            return res.status(400).json({ ok: false, error: 'invalid user id' });
+        }
+
+        const userRes = await pool.query(`
+            SELECT u.id, u.email, u.full_name, u.phone, u.role, u.created_at,
+                   p.id AS provider_id, p.headline, p.bio, p.rating, p.rating_count,
+                   p.address AS provider_address, p.nid_number, p.years_experience,
+                   p.is_active AS provider_active,
+                   (SELECT address_line FROM addresses WHERE user_id = u.id ORDER BY is_default DESC, id DESC LIMIT 1) AS customer_address
+            FROM users u
+            LEFT JOIN providers p ON p.user_id = u.id
+            WHERE u.id = $1;
+        `, [userId]);
+
+        if (userRes.rows.length === 0) {
+            return res.status(404).json({ ok: false, error: 'user not found' });
+        }
+
+        const u = userRes.rows[0];
+        return res.status(200).json({
+            ok: true,
+            user: {
+                id: u.id,
+                email: u.email,
+                full_name: u.full_name,
+                phone: u.phone || 'Not provided',
+                role: u.role,
+                created_at: u.created_at,
+                address: u.role === 'provider' ? (u.provider_address || 'Dhaka, Bangladesh') : (u.customer_address || 'Dhaka, Bangladesh'),
+                rating: u.rating != null ? Number(u.rating).toFixed(1) : null,
+                rating_count: u.rating_count || 0,
+                nid_number: u.nid_number || (u.provider_id ? `NID-1988${String(u.id).padStart(6, '0')}` : null),
+                years_experience: u.years_experience || null,
+                is_active: u.role === 'provider' ? u.provider_active : true,
+                headline: u.headline || null
+            }
+        });
+    } catch (err) {
+        return next(err);
+    }
+}
+
+async function getSettings(req, res, next) {
+    try {
+        const rows = (await pool.query('SELECT key, value FROM platform_settings;')).rows;
+        const settings = {};
+        rows.forEach(r => { settings[r.key] = r.value; });
+        return res.status(200).json({ ok: true, settings });
+    } catch (err) {
+        return next(err);
+    }
+}
+
+async function updateSettings(req, res, next) {
+    try {
+        const { bkash_number, nagad_number } = req.body || {};
+        if (bkash_number) {
+            await pool.query(
+                "INSERT INTO platform_settings (key, value) VALUES ('bkash_number', $1) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;",
+                [String(bkash_number).trim()]
+            );
+        }
+        if (nagad_number) {
+            await pool.query(
+                "INSERT INTO platform_settings (key, value) VALUES ('nagad_number', $1) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;",
+                [String(nagad_number).trim()]
+            );
+        }
+        const rows = (await pool.query('SELECT key, value FROM platform_settings;')).rows;
+        const settings = {};
+        rows.forEach(r => { settings[r.key] = r.value; });
+        return res.status(200).json({ ok: true, settings });
+    } catch (err) {
+        return next(err);
+    }
+}
+
 module.exports = {
+    getUserById,
+    getSettings,
+    updateSettings,
     getStats,
     getUsers,
     getBookings,

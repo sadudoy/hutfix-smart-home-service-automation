@@ -53,8 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="provider-name">${window.escapeHtml(p.name)} <span class="verified"><i class="bi bi-check-circle-fill text-green"></i></span></div>
                 <div class="provider-sub">${window.escapeHtml(p.headline || p.category || 'Specialist Pro')}</div>
               </div>
-            </div>`;
-      }).join('');
+            </div>
             <p class="service-desc">${window.escapeHtml(p.address || 'Dhaka, Bangladesh')} · ${p.years_experience || 3}+ years verified experience.</p>
             <div class="service-foot">
               <div class="price"><strong>${window.money(p.price_per_hour)}</strong> <small>/ hr</small></div>
@@ -65,7 +64,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
           </div>
         </article>
-      `).join('');
+      `;
+      }).join('');
     } catch (err) {
       grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">${window.escapeHtml(err.message)}</div>`;
     }

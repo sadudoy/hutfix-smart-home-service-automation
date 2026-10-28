@@ -10,7 +10,8 @@ async function create(req, res, next) {
             return res.status(400).json({ ok: false, error: 'invalid request id' });
         }
 
-        const { stars, comment } = req.body || {};
+        const stars = req.body?.stars ?? req.body?.rating_stars;
+        const comment = req.body?.comment ?? req.body?.review_comment;
         const starsNum = parseInt(stars, 10);
         if (isNaN(starsNum) || starsNum < 1 || starsNum > 5) {
             client.release();

@@ -11,5 +11,6 @@ router.post('/login', limiter, ctrl.login);
 router.post('/logout', ctrl.logout);
 router.get('/me', requireAuth, ctrl.me);
 router.patch('/profile', requireAuth, ctrl.updateProfile);
+router.patch('/password', requireAuth, ctrl.updateProfile);
 
 module.exports = router;

@@ -134,6 +134,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
+  const newPassInput = document.getElementById('newPasswordInput');
+  const oldPassInput = document.getElementById('oldPasswordInput');
+  newPassInput?.addEventListener('input', () => {
+    if (oldPassInput) oldPassInput.required = !!newPassInput.value.trim();
+  });
+
   // Change Password
   document.getElementById('changePasswordForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -141,8 +147,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btn) btn.disabled = true;
 
     const fd = new FormData(e.target);
+    const old_password = fd.get('old_password');
     const new_password = fd.get('new_password');
     const confirm_password = fd.get('confirm_password');
+
+    if (!old_password) {
+      window.toast('Current password is required.');
+      if (btn) btn.disabled = false;
+      return;
+    }
 
     if (new_password !== confirm_password) {
       window.toast('New passwords do not match.');
@@ -151,17 +164,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-      const res = await fetch('/api/auth/password', {
+      const res = await fetch('/api/auth/profile', {
         method: 'PATCH',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ new_password })
+        body: JSON.stringify({ password: new_password, old_password })
       });
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || 'Password update failed');
 
       window.toast('Password updated successfully!');
       e.target.reset();
+      if (oldPassInput) oldPassInput.required = false;
     } catch (err) {
       window.toast('Error: ' + err.message);
     } finally {

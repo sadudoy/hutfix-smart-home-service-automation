@@ -264,7 +264,119 @@ async function createPayout(req, res, next) {
     }
 }
 
+
+async function getServices(req, res, next) {
+    try {
+        const providerId = await getProviderId(req.user.id);
+        if (!providerId) return res.status(404).json({ ok: false, error: 'provider not found' });
+
+        const result = await pool.query(`
+            SELECT ps.id, ps.category_id, sc.slug AS category_slug, sc.name AS category_name, ps.price
+            FROM provider_services ps
+            JOIN service_categories sc ON sc.id = ps.category_id
+            WHERE ps.provider_id = $1
+            ORDER BY ps.id ASC;
+        `, [providerId]);
+        return res.status(200).json({ ok: true, services: result.rows });
+    } catch (err) {
+        return next(err);
+    }
+}
+
+async function createService(req, res, next) {
+    try {
+        const providerId = await getProviderId(req.user.id);
+        if (!providerId) return res.status(404).json({ ok: false, error: 'provider not found' });
+
+        const { category_id, category_slug, price } = req.body || {};
+        const priceNum = parseFloat(price);
+        if (isNaN(priceNum) || priceNum <= 0) {
+            return res.status(400).json({ ok: false, error: 'valid price is required' });
+        }
+
+        let catId = parseInt(category_id, 10);
+        if (isNaN(catId) && category_slug) {
+            const catRes = await pool.query('SELECT id FROM service_categories WHERE slug = $1;', [category_slug]);
+            if (catRes.rows.length > 0) catId = catRes.rows[0].id;
+        }
+
+        if (!catId) {
+            return res.status(400).json({ ok: false, error: 'valid category is required' });
+        }
+
+        const insertRes = await pool.query(`
+            INSERT INTO provider_services (provider_id, category_id, price)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (provider_id, category_id) DO UPDATE SET price = EXCLUDED.price
+            RETURNING *;
+        `, [providerId, catId, priceNum]);
+
+        return res.status(201).json({ ok: true, service: insertRes.rows[0] });
+    } catch (err) {
+        return next(err);
+    }
+}
+
+async function updateService(req, res, next) {
+    try {
+        const providerId = await getProviderId(req.user.id);
+        if (!providerId) return res.status(404).json({ ok: false, error: 'provider not found' });
+
+        const serviceId = parseInt(req.params.id, 10);
+        if (isNaN(serviceId)) return res.status(400).json({ ok: false, error: 'invalid service id' });
+
+        const { price } = req.body || {};
+        const priceNum = parseFloat(price);
+        if (isNaN(priceNum) || priceNum <= 0) {
+            return res.status(400).json({ ok: false, error: 'valid price is required' });
+        }
+
+        const updateRes = await pool.query(`
+            UPDATE provider_services
+            SET price = $1
+            WHERE id = $2 AND provider_id = $3
+            RETURNING *;
+        `, [priceNum, serviceId, providerId]);
+
+        if (updateRes.rows.length === 0) {
+            return res.status(404).json({ ok: false, error: 'service not found or unauthorized' });
+        }
+
+        return res.status(200).json({ ok: true, service: updateRes.rows[0] });
+    } catch (err) {
+        return next(err);
+    }
+}
+
+async function deleteService(req, res, next) {
+    try {
+        const providerId = await getProviderId(req.user.id);
+        if (!providerId) return res.status(404).json({ ok: false, error: 'provider not found' });
+
+        const serviceId = parseInt(req.params.id, 10);
+        if (isNaN(serviceId)) return res.status(400).json({ ok: false, error: 'invalid service id' });
+
+        const deleteRes = await pool.query(`
+            DELETE FROM provider_services
+            WHERE id = $1 AND provider_id = $2
+            RETURNING id;
+        `, [serviceId, providerId]);
+
+        if (deleteRes.rows.length === 0) {
+            return res.status(404).json({ ok: false, error: 'service not found or unauthorized' });
+        }
+
+        return res.status(200).json({ ok: true, deleted_id: serviceId });
+    } catch (err) {
+        return next(err);
+    }
+}
+
 module.exports = {
+    getServices,
+    createService,
+    updateService,
+    deleteService,
     getAvailability,
     updateAvailability,
     getBlackouts,

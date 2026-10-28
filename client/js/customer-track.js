@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               method: 'POST',
               credentials: 'include',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ rating_stars, review_comment })
+              body: JSON.stringify({ stars: parseInt(rating_stars, 10), comment: review_comment, rating_stars: parseInt(rating_stars, 10), review_comment })
             });
             const rtData = await rtRes.json();
             if (!rtRes.ok || !rtData.ok) throw new Error(rtData.error || 'Rating failed');

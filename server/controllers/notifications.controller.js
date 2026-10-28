@@ -3,7 +3,7 @@ const { pool } = require('../config/db');
 async function list(req, res, next) {
     try {
         const notifQuery = `
-            SELECT id, kind, title, body, is_read, request_id, created_at
+            SELECT id, kind, title, body, is_read, request_id, link, created_at
             FROM notifications
             WHERE user_id = $1
             ORDER BY created_at DESC

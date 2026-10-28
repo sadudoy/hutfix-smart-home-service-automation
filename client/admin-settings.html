@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>HutFix — Platform Settings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="css/style.css" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('hutfix_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="main-area">
+      <header class="topbar" id="topbar"></header>
+
+      <section class="content" id="content">
+        <div class="page-head" style="margin-bottom:20px;">
+          <span class="eyebrow">PLATFORM GOVERNANCE</span>
+          <h2>Platform Settings</h2>
+          <p>Configure dynamic gateway numbers, commission policies, and financial collection endpoints.</p>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- Mobile Financial Service Numbers -->
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>MFS Payment Receivers</h3>
+                <p>Dynamic merchant numbers displayed on client checkout modals</p>
+              </div>
+            </div>
+
+            <form id="platformSettingsForm" style="max-width:520px;">
+              <div class="form-grid">
+                <div class="form-field full">
+                  <label><i class="bi bi-wallet2" style="color:var(--primary); margin-right:4px;"></i> bKash Merchant / Personal Wallet Number</label>
+                  <input type="text" name="bkash_number" id="bkashNumberInput" placeholder="01700000000" required />
+                  <small style="color:var(--text-muted); font-size:12px; margin-top:4px; display:block;">Shown when customer selects bKash payment method</small>
+                </div>
+
+                <div class="form-field full">
+                  <label><i class="bi bi-wallet2" style="color:var(--amber); margin-right:4px;"></i> Nagad Direct Wallet Number</label>
+                  <input type="text" name="nagad_number" id="nagadNumberInput" placeholder="01700000000" required />
+                  <small style="color:var(--text-muted); font-size:12px; margin-top:4px; display:block;">Shown when customer selects Nagad payment method</small>
+                </div>
+              </div>
+
+              <div style="margin-top:20px;">
+                <button type="submit" class="primary-btn" id="saveSettingsBtn">
+                  <i class="bi bi-check2-circle"></i> Save Platform Settings
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Configuration Status & Info -->
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Gateway Security & Status</h3>
+                <p>Active settlement parameters</p>
+              </div>
+            </div>
+
+            <div style="display:grid; gap:16px;">
+              <div style="background:var(--bg-body); padding:16px; border-radius:12px; border:1px solid var(--border-color);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <strong style="font-size:14px; color:var(--text-main);">Dispute Review Window</strong>
+                  <span class="status completed" style="font-size:11px; padding:2px 8px;">24 Hours</span>
+                </div>
+                <p style="margin:0; font-size:12px; color:var(--text-muted);">Clients can dispute completed jobs within 24 hours before funds auto-release.</p>
+              </div>
+
+              <div style="background:var(--bg-body); padding:16px; border-radius:12px; border:1px solid var(--border-color);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <strong style="font-size:14px; color:var(--text-main);">Platform Escrow Commission</strong>
+                  <span class="status completed" style="font-size:11px; padding:2px 8px;">15% Standard</span>
+                </div>
+                <p style="margin:0; font-size:12px; color:var(--text-muted);">Deducted from gross booking volume upon admin manual payout clearance.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div class="footer-inner">
+          <div class="footer-brand-col">
+            <div class="footer-logo">
+              <img src="assets/images/logo.jpg" alt="HutFix" style="width: 28px; height: 28px; border-radius: 6px; object-fit: cover;" />
+              <span style="font-family: Manrope, sans-serif; font-weight: 800; font-size: 18px; color: var(--text-main);">HutFix</span>
+            </div>
+            <p class="footer-tagline">On-demand trusted home repairs & maintenance across Dhaka.</p>
+            <div class="footer-socials">
+              <a href="#" target="_blank" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+              <a href="#" target="_blank" aria-label="GitHub"><i class="bi bi-github"></i></a>
+              <a href="mailto:hello@example.com" aria-label="Email"><i class="bi bi-envelope-fill"></i></a>
+              <a href="https://wa.me/8801700000000" target="_blank" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+            </div>
+          </div>
+          <div class="footer-nav-col">
+            <strong>Company</strong>
+            <a href="about.html">About Us</a>
+            <a href="about.html#how-it-works">How It Works</a>
+            <a href="about.html#careers">Careers</a>
+            <a href="about.html#press">Press</a>
+          </div>
+          <div class="footer-nav-col">
+            <strong>Legal & Policies</strong>
+            <a href="terms.html#terms">Terms & Conditions</a>
+            <a href="terms.html#privacy">Privacy Policy</a>
+            <a href="terms.html#refunds">Refund Policy</a>
+            <a href="terms.html#trust">Trust & Safety</a>
+          </div>
+          <div class="footer-nav-col">
+            <strong>Platform</strong>
+            <a href="index.html">Explore Services</a>
+            <a href="login.html">Sign In</a>
+            <a href="login.html?mode=signup">Create Account</a>
+            <span style="font-size: 12px; color: var(--text-muted); margin-top: 4px;"><i class="bi bi-headset"></i> 24/7 Support</span>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>© 2026 HutFix Marketplace. Made for a home that works. Developed by <strong>Sad Ibna Forid</strong></span>
+          <span>Dhaka, Bangladesh</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="modalTitle">Modal</h3>
+        <button class="modal-close" id="modalCloseBtn" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="js/images.js"></script>
+  <script src="js/global.js"></script>
+  <script src="js/admin-settings.js"></script>
+</body>
+</html>

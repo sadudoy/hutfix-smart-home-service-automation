@@ -114,6 +114,22 @@ window.toggleTheme = function() {
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('hutfix_theme', next);
   updateThemeIcon();
+
+    const profileUrl = user ? (user.role === 'customer' ? 'customer-profile.html' : (user.role === 'provider' ? 'provider-profile.html' : 'admin-profile.html')) : 'login.html';
+    document.getElementById('topAvatar')?.addEventListener('click', () => { window.location.href = profileUrl; });
+    document.getElementById('user-avatar')?.addEventListener('click', () => { window.location.href = profileUrl; });
+    document.getElementById('userMiniInfo')?.addEventListener('click', () => { window.location.href = profileUrl; });
+
+    // Initial check for unread notifications to show red dot
+    if (user) {
+      fetch('/api/notifications', { credentials: 'include' })
+        .then(r => r.json())
+        .then(d => {
+          const dot = document.getElementById('notifDot');
+          if (dot && d.unread_count > 0) dot.style.display = 'block';
+        }).catch(() => {});
+    }
+
 };
 
 function updateThemeIcon() {
@@ -385,6 +401,7 @@ window.renderLayout = async function(expectedRole = null, activePage = '') {
       document.getElementById('markAllReadBtn')?.addEventListener('click', async () => {
         await fetch('/api/notifications/read-all', { method: 'POST', credentials: 'include' });
         window.toast('All notifications marked as read.');
+        const dot = document.getElementById('notifDot'); if (dot) dot.style.display = 'none';
         notifDropdown.style.display = 'none';
       });
     }
@@ -431,7 +448,7 @@ window.renderLayout = async function(expectedRole = null, activePage = '') {
         </div>
       </div>
       <div class="footer-bottom">
-        <span>© 2026 HutFix Marketplace. Made for a home that works.</span>
+        <span>© 2026 HutFix Marketplace. Made for a home that works. Developed by <strong>Sad Ibna Forid</strong></span>
         <span>Dhaka, Bangladesh</span>
       </div>
     `;
@@ -688,6 +705,14 @@ window.openChat = window.openTicketChat;
 
 // Global Direct Booking Modal (callable from Discover, Gig Details, Favorites)
 window.openBooking = async function(providerId = null, categorySlug = null) {
+  let platformSettings = { bkash_number: '01700000000', nagad_number: '01700000000' };
+  try {
+    const sRes = await fetch('/api/settings');
+    if (sRes.ok) {
+      const sData = await sRes.json();
+      if (sData.settings) platformSettings = { ...platformSettings, ...sData.settings };
+    }
+  } catch (_) {}
   if (!window.currentUser) {
     window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
     return;

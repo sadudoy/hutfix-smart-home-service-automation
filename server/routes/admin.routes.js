@@ -8,6 +8,7 @@ router.use(requireAuth, requireRole('admin'));
 // Stats & Ledgers
 router.get('/stats', ctrl.getStats);
 router.get('/users', ctrl.getUsers);
+router.get('/users/:id', ctrl.getUserById);
 router.get('/bookings', ctrl.getBookings);
 
 // User/Provider Verification & Assignment
@@ -34,5 +35,8 @@ router.get('/support', supportCtrl.getAllForAdmin);
 router.patch('/support/:id', supportCtrl.updateStatus);
 router.get('/support/:id/messages', supportCtrl.getTicketMessages);
 router.post('/support/:id/messages', supportCtrl.addTicketMessage);
+
+router.get('/settings', ctrl.getSettings);
+router.patch('/settings', ctrl.updateSettings);
 
 module.exports = router;

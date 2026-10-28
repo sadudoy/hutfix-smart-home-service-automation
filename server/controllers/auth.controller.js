@@ -191,7 +191,25 @@ async function updateProfile(req, res, next) {
 
         let newPassword = null;
         if (password && typeof password === 'string' && password.trim()) {
-            if (password.length < 6) {
+            if (!old_password || typeof old_password !== 'string' || !old_password.trim()) {
+                return res.status(401).json({
+                    ok: false,
+                    error: 'old_password is required to set a new password'
+                });
+            }
+
+            const check = await pool.query(
+                'SELECT id FROM users WHERE id = $1 AND password_hash = crypt($2, password_hash);',
+                [userId, old_password.trim()]
+            );
+            if (check.rows.length === 0) {
+                return res.status(401).json({
+                    ok: false,
+                    error: 'Incorrect current password'
+                });
+            }
+
+            if (password.trim().length < 6) {
                 return res.status(400).json({
                     ok: false,
                     error: 'password must be at least 6 characters long'
