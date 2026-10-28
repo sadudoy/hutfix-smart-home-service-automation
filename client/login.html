@@ -18,13 +18,18 @@
   </script>
 </head>
 <body style="min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg-body); padding:20px;">
+
+  <!-- Theme Toggle -->
   <div style="position:absolute; top:20px; right:20px;">
     <button class="icon-btn theme-toggle-btn" id="themeToggle" aria-label="Toggle theme">
       <i class="bi bi-moon-stars" id="themeIcon"></i>
     </button>
   </div>
 
+  <!-- Auth Container -->
   <div class="panel" style="max-width:440px; width:100%; box-shadow:var(--shadow); border-radius:20px; padding:32px;">
+    
+    <!-- Header -->
     <div style="text-align:center; margin-bottom:24px;">
       <a href="index.html" style="display:inline-flex; align-items:center; gap:8px; text-decoration:none; color:inherit; margin-bottom:12px;">
         <img src="assets/images/logo.jpg" alt="HutFix" style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover;" />
@@ -34,35 +39,48 @@
       <h2 id="authHeading" style="font-size:22px; margin:4px 0;">Sign in to your account</h2>
     </div>
 
+    <!-- Form -->
     <form id="authForm">
       <div class="form-grid">
+        
+        <!-- Full Name (Register only) -->
         <div class="form-field full" id="authNameField" style="display:none;">
           <label>Full Name</label>
           <input name="full_name" type="text" placeholder="John Doe" />
         </div>
+
+        <!-- Email -->
         <div class="form-field full">
           <label>Email Address</label>
           <input name="email" type="email" placeholder="you@domain.com" required />
         </div>
+
+        <!-- Phone (Register only) -->
         <div class="form-field full" id="authPhoneField" style="display:none;">
           <label>Phone Number</label>
           <input name="phone" type="tel" placeholder="+880 1711 000000" />
         </div>
+
+        <!-- Password -->
         <div class="form-field full">
           <label>Password</label>
           <input name="password" type="password" placeholder="••••••••" required />
         </div>
+
+        <!-- Role (Register only) -->
         <div class="form-field full" id="authRoleField" style="display:none;">
           <label>I want to</label>
-          <select name="role" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:14px;">
+          <select name="role">
             <option value="customer">Book Home Services (Client)</option>
             <option value="provider">Offer Specialist Services (Pro)</option>
           </select>
         </div>
       </div>
 
+      <!-- Error Container -->
       <div id="authError" style="color:var(--red); font-size:13px; margin-top:12px; display:none;"></div>
 
+      <!-- Actions -->
       <div style="margin-top:20px; display:flex; flex-direction:column; gap:12px;">
         <button class="primary-btn" id="authSubmitBtn" type="submit" style="width:100%; justify-content:center; padding:12px; font-weight:700;">
           Sign in
@@ -72,6 +90,7 @@
         </button>
       </div>
 
+      <!-- Demo Logins -->
       <div id="demoRow" style="font-size:13px; color:var(--muted); margin-top:20px; text-align:center; border-top:1px solid var(--border-color); padding-top:14px;">
         <span>Quick Demo Login:</span><br>
         <div style="display:flex; justify-content:center; gap:8px; margin-top:8px;">
