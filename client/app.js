@@ -25,6 +25,9 @@ const state = {
   active: [],
   history: [],
   favorites: [],
+  favoriteProviderIds: new Set(),
+  adminSupportTickets: [],
+  mySupportTickets: [],
   providerProfile: null,
   providerInvoices: { invoices: [], totals: { count: 0, sum_total: 0 } },
   adminStats: {},
@@ -135,6 +138,7 @@ const adminNav = [
   ['all-bookings', '<i class="bi bi-calendar-check"></i>', 'All bookings'],
   ['payouts', '<i class="bi bi-cash-stack"></i>', 'Payouts'],
   ['payments', '<i class="bi bi-credit-card"></i>', 'Payments'],
+  ['support-tickets', '<i class="bi bi-chat-left-dots"></i>', 'Support Tickets'],
   ['reports', '<i class="bi bi-graph-up"></i>', 'Reports']
 ];
 
@@ -172,7 +176,7 @@ function renderNav() {
   const userMini = $('.user-mini');
   if (userMini) userMini.style.display = state.user ? 'flex' : 'none';
   const helpCard = $('.help-card');
-  if (helpCard) helpCard.style.display = state.user ? 'block' : 'none';
+  if (helpCard) helpCard.style.display = (state.user && state.role !== 'admin') ? 'block' : 'none';
   const topAv = $('#topAvatar');
   if (topAv) topAv.style.display = state.user ? 'grid' : 'none';
   const loginBtn = $('#login-btn');
@@ -295,6 +299,8 @@ async function loadMyBookings() {
           price: Number(r.estimated_price || 800),
           status: normalizeStatus(r.status),
           rawStatus: r.status,
+          ratingStars: r.rating_stars,
+          ratingComment: r.rating_comment,
           address: r.address || 'Dhaka, Bangladesh',
           cover: 'cover-wash'
         };
@@ -382,29 +388,31 @@ async function loadAdminData() {
 function serviceCard(s) {
   const cardProvId = parseInt(s.providerId, 10) || 2;
   const imageUrl = window.IMAGES?.category ? window.IMAGES.category(s.slug) : '';
+  const isFav = state.favoriteProviderIds && state.favoriteProviderIds.has(cardProvId);
+  const heartHtml = `<button class="fav-heart-btn ${isFav ? 'active' : ''}" data-fav-provider="${cardProvId}" onclick="toggleFavorite(${cardProvId}, event)" title="${isFav ? 'Remove from favorites' : 'Save specialist'}" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.92); backdrop-filter:blur(4px); border:none; border-radius:50%; width:34px; height:34px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; color:${isFav ? 'var(--red)' : '#64748b'}; z-index:5;"><i class="bi ${isFav ? 'bi-heart-fill' : 'bi-heart'}" style="${isFav ? 'color:var(--red);' : ''}"></i></button>`;
   const coverHtml = imageUrl
-    ? `<div class="service-cover ${s.cover}" style="background-image:url('${imageUrl}'); background-size:cover; background-position:center;"><span class="cover-badge">${s.tag || 'SERVICE'}</span></div>`
-    : `<div class="service-cover ${s.cover}"><span class="cover-badge">${s.tag || 'SERVICE'}</span><span class="cover-emoji" style="font-size:2.5rem; color:var(--blue);">${s.icon}</span></div>`;
+    ? `<div class="service-cover ${s.cover}" style="background-image:url('${imageUrl}'); background-size:cover; background-position:center; position:relative;">${heartHtml}<span class="cover-badge">${s.tag || 'SERVICE'}</span></div>`
+    : `<div class="service-cover ${s.cover}" style="position:relative;">${heartHtml}<span class="cover-badge">${s.tag || 'SERVICE'}</span><span class="cover-emoji" style="font-size:2.5rem; color:var(--blue);">${s.icon}</span></div>`;
 
   return `
-    <article class="service-card" data-provider-id="${cardProvId}" style="cursor: pointer;">
+    <article class="service-card" data-provider-id="${cardProvId}" style="cursor: pointer; position:relative;">
       ${coverHtml}
       <div class="service-body">
         <div class="service-topline">
           <h3>${s.title}</h3>
-          <div class="rating">★ ${s.rating} <span>(${s.reviews})</span></div>
+          <div class="rating"><i class="bi bi-star-fill text-amber"></i> ${s.rating} <span>(${s.reviews})</span></div>
         </div>
         <div class="provider-line">
           <div class="avatar ${s.avatar}">${s.initials}</div>
           <div>
-            <div class="provider-name">${s.provider} ${s.verified ? '<span class="verified">✓</span>' : ''}</div>
+            <div class="provider-name">${s.provider} ${s.verified ? '<span class="verified"><i class="bi bi-check-circle-fill text-green"></i></span>' : ''}</div>
             <div class="provider-sub">${s.subtitle}</div>
           </div>
         </div>
         <p class="service-desc">${s.desc}</p>
         <div class="service-foot">
           <div class="price"><strong>${money(s.price)}</strong> <small>/ base</small></div>
-          <button class="mini-link" data-book="${s.slug}">Book now ↗</button>
+          <button class="mini-link" data-book="${s.slug}">Book now <i class="bi bi-arrow-right"></i></button>
         </div>
       </div>
     </article>
@@ -493,7 +501,7 @@ function renderDiscover() {
           <div class="art-icon"><i class="bi bi-tools" style="color:var(--blue); font-size:24px;"></i></div>
           <strong>Trusted professionals</strong>
           <small>Vetted experts, at your door.</small>
-          <div class="rating">★★★★★ <span style="color:#9aa2b0">4.9 average</span></div>
+          <div class="rating"><i class="bi bi-star-fill text-amber"></i><i class="bi bi-star-fill text-amber"></i><i class="bi bi-star-fill text-amber"></i><i class="bi bi-star-fill text-amber"></i><i class="bi bi-star-fill text-amber"></i> <span style="color:#9aa2b0">4.9 average</span></div>
         </div>
         <div class="art-card float">
           <div class="float-line">
@@ -563,9 +571,9 @@ function renderDiscover() {
     </div>
 
     <div class="trust-strip">
-      <div class="trust-item"><span class="trust-icon">✓</span><div><strong>Verified professionals</strong><small>Identity and background checked</small></div></div>
-      <div class="trust-item"><span class="trust-icon">♧</span><div><strong>Clear, upfront pricing</strong><small>Transparent hourly and visit rates</small></div></div>
-      <div class="trust-item"><span class="trust-icon">◷</span><div><strong>Automated dispatch</strong><small>No double-booking concurrency lock</small></div></div>
+      <div class="trust-item"><span class="trust-icon"><i class="bi bi-check-circle"></i></span><div><strong>Verified professionals</strong><small>Identity and background checked</small></div></div>
+      <div class="trust-item"><span class="trust-icon"><i class="bi bi-tag"></i></span><div><strong>Clear, upfront pricing</strong><small>Transparent hourly and visit rates</small></div></div>
+      <div class="trust-item"><span class="trust-icon"><i class="bi bi-clock"></i></span><div><strong>Automated dispatch</strong><small>No double-booking concurrency lock</small></div></div>
     </div>
   `;
 }
@@ -632,7 +640,7 @@ async function renderTracking() {
       : `<div class="timeline">
           ${steps.map((s, i) => `
             <div class="timeline-step ${i < currentStep ? 'done' : i === currentStep ? 'current' : ''}">
-              <div class="step-dot">${i < currentStep ? '✓' : i + 1}</div>
+              <div class="step-dot">${i < currentStep ? '<i class="bi bi-check-lg"></i>' : i + 1}</div>
               ${s}
               <small>${events[i] ? new Date(events[i].created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (i <= currentStep ? 'Logged' : 'Pending')}</small>
             </div>
@@ -644,10 +652,10 @@ async function renderTracking() {
 
     const payStatus = req.payment_status || 'pending';
     const payBadge = payStatus === 'verified'
-      ? `<span class="status completed">✓ Payment Verified</span>`
+      ? `<span class="status completed"><i class="bi bi-check-circle-fill"></i> Payment Verified</span>`
       : payStatus === 'rejected'
-      ? `<span class="status cancelled">✕ Payment Rejected</span>`
-      : `<span class="status pending">⏳ Payment Pending Verification</span>`;
+      ? `<span class="status cancelled"><i class="bi bi-x-circle-fill"></i> Payment Rejected</span>`
+      : `<span class="status pending"><i class="bi bi-clock-history"></i> Payment Pending Verification</span>`;
 
     // Connect SSE EventSource for real-time live telemetry
     if (window.activeTrackingSource) {
@@ -701,8 +709,8 @@ async function renderTracking() {
               ${(req.provider_name || 'SP').slice(0, 2).toUpperCase()}
             </div>
             <div>
-              <div class="provider-name" style="font-size:14px">${req.provider_name || 'Assigned Specialist'} <span class="verified">✓</span></div>
-              <div class="provider-sub">${req.provider_headline || 'Certified Specialist'} · ★ ${req.provider_rating || '4.9'}</div>
+              <div class="provider-name" style="font-size:14px">${req.provider_name || 'Assigned Specialist'} <span class="verified"><i class="bi bi-check-circle-fill text-green"></i></span></div>
+              <div class="provider-sub">${req.provider_headline || 'Certified Specialist'} · <i class="bi bi-star-fill text-amber"></i> ${req.provider_rating || '4.9'}</div>
             </div>
           </div>
           <div style="border-top:1px solid #f0f2f6; margin-top:18px; padding-top:16px;">
@@ -715,11 +723,11 @@ async function renderTracking() {
             </div>
           </div>
           <div style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap;">
-            ${canCancel ? `<button class="secondary-btn" id="rescheduleRequestBtn" data-id="${req.id}" data-date="${req.preferred_date}">Reschedule ◷</button>` : ''}
+            ${canCancel ? `<button class="secondary-btn" id="rescheduleRequestBtn" data-id="${req.id}" data-date="${req.preferred_date}">Reschedule <i class="bi bi-calendar"></i></button>` : ''}
             ${canCancel ? `<button class="danger-btn" id="cancelRequestBtn" data-id="${req.id}">Cancel request</button>` : ''}
-            ${canRate ? `<button class="primary-btn" id="rateServiceBtn" data-id="${req.id}">Rate this service ★</button>` : ''}
-            ${rating ? `<div style="font-size:13px; color:var(--amber); font-weight:700;">You rated: ★ ${rating.rating_stars} ${rating.review_comment ? `— “${escapeHtml(rating.review_comment)}”` : ''}</div>` : ''}
-            ${invoice ? `<button class="secondary-btn" id="viewInvoiceBtn" data-id="${req.id}">View invoice 📄</button>` : ''}
+            ${canRate ? `<button class="primary-btn" id="rateServiceBtn" data-id="${req.id}">Rate this service <i class="bi bi-star"></i></button>` : ''}
+            ${rating ? `<div style="font-size:13px; color:var(--amber); font-weight:700;">You rated: <i class="bi bi-star-fill text-amber"></i> ${rating.rating_stars} ${rating.review_comment ? `— “${escapeHtml(rating.review_comment)}”` : ''}</div>` : ''}
+            ${invoice ? `<button class="secondary-btn" id="viewInvoiceBtn" data-id="${req.id}">View invoice <i class="bi bi-receipt"></i></button>` : ''}
           </div>
         </div>
 
@@ -728,7 +736,7 @@ async function renderTracking() {
           <div class="list-stack">
             ${events.map(ev => `
               <div class="activity-item">
-                <span class="activity-dot">✓</span>
+                <span class="activity-dot"><i class="bi bi-check"></i></span>
                 <div class="activity-copy">
                   <strong>Status: ${normalizeStatus(ev.status)}</strong>
                   <p>${ev.status === 'requested' ? 'Service request dispatched to provider.' : ev.status === 'accepted' ? 'Provider confirmed appointment.' : ev.status === 'on_the_way' ? 'Provider en route to address.' : ev.status === 'in_progress' ? 'Service execution started.' : ev.status === 'completed' ? 'Job completed and invoice generated.' : 'Request cancelled.'}</p>
@@ -745,13 +753,56 @@ async function renderTracking() {
   }
 }
 
-function renderFavorites() {
+async function renderFavorites() {
+  await loadFavorites();
+  const list = state.favorites || [];
+  if (list.length === 0) {
+    return `
+      ${pageHead('YOUR SHORTLIST', 'Saved services', 'Keep trusted professionals and useful services close at hand.')}
+      <div class="empty-state" style="padding:60px 20px;">
+        <div style="font-size:36px; margin-bottom:12px; color:var(--text-muted);"><i class="bi bi-heart"></i></div>
+        <h3 style="margin:0 0 8px;">No saved services yet</h3>
+        <p style="margin:0 0 16px; color:var(--text-muted);">Browse top providers on the Discover page and tap the heart icon to save specialists for quick booking.</p>
+        <button class="primary-btn" data-page="discover">Discover services</button>
+      </div>
+    `;
+  }
+
   return `
     ${pageHead('YOUR SHORTLIST', 'Saved services', 'Keep trusted professionals and useful services close at hand.')}
-    <div class="empty-state" style="padding:60px 20px;">
-      <div style="font-size:32px; margin-bottom:10px;">♡</div>
-      <h3 style="margin:0 0 8px;">Coming Soon</h3>
-      <p style="margin:0;">Favorites and provider bookmarking will arrive in the next release.</p>
+    <div class="service-grid">
+      ${list.map(p => `
+        <article class="service-card" data-provider-id="${p.id}" style="position:relative;">
+          <div class="service-cover cover-wash" style="position:relative;">
+            <button class="fav-heart-btn active" onclick="toggleFavorite(${p.id}, event)" title="Remove from favorites" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.92); backdrop-filter:blur(4px); border:none; border-radius:50%; width:34px; height:34px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; color:var(--red); z-index:5;">
+              <i class="bi bi-heart-fill" style="color:var(--red);"></i>
+            </button>
+            <span class="cover-badge">SAVED</span>
+            <span class="cover-emoji" style="font-size:2.5rem; color:var(--blue);"><i class="bi bi-person-badge"></i></span>
+          </div>
+          <div class="service-body">
+            <div class="service-topline">
+              <h3>${escapeHtml(p.name)}</h3>
+              <div class="rating"><i class="bi bi-star-fill text-amber"></i> ${Number(p.rating || 5.0).toFixed(1)} <span>(${p.rating_count || 1})</span></div>
+            </div>
+            <div class="provider-line">
+              <div class="avatar avatar-green">${(p.name || 'P').slice(0, 2).toUpperCase()}</div>
+              <div>
+                <div class="provider-name">${escapeHtml(p.name)} <span class="verified"><i class="bi bi-check-circle-fill text-green"></i></span></div>
+                <div class="provider-sub">${escapeHtml(p.headline || p.category || 'Specialist Pro')}</div>
+              </div>
+            </div>
+            <p class="service-desc">${escapeHtml(p.address || 'Dhaka, Bangladesh')} · ${p.years_experience || 3}+ years verified experience.</p>
+            <div class="service-foot">
+              <div class="price"><strong>${money(p.price_per_hour)}</strong> <small>/ hr</small></div>
+              <div style="display:flex; gap:6px;">
+                <button class="secondary-btn" style="padding:6px 10px; font-size:12px; min-height:34px;" onclick="openGigDetails(${p.id})">Profile</button>
+                <button class="primary-btn" style="padding:6px 12px; font-size:12px; min-height:34px;" onclick="openBooking(${p.id}, '${p.category_slug || ''}')">Book</button>
+              </div>
+            </div>
+          </div>
+        </article>
+      `).join('')}
     </div>
   `;
 }
@@ -869,7 +920,7 @@ async function renderGigDetails() {
               <span class="eyebrow" style="color:var(--blue-light, #93c5fd);">VERIFIED SPECIALIST</span>
               <h1 style="color:#fff; margin:4px 0 6px; font-size:28px;">${escapeHtml(provider.full_name)}</h1>
               <div style="display:flex; align-items:center; gap:16px; font-size:14px; color:#e2e8f0; flex-wrap:wrap;">
-                <span style="color:var(--amber, #f59e0b); font-weight:700;">★ ${provider.rating || '4.8'} (${provider.rating_count || 120})</span>
+                <span style="color:var(--amber, #f59e0b); font-weight:700;"><i class="bi bi-star-fill text-amber"></i> ${provider.rating || '4.8'} (${provider.rating_count || 120})</span>
                 <span><i class="bi bi-geo-alt"></i> ${escapeHtml(provider.address || 'Dhaka, Bangladesh')}</span>
                 <span><i class="bi bi-briefcase"></i> ${provider.years_experience || 5} Years Experience</span>
               </div>
@@ -949,10 +1000,14 @@ async function renderGigDetails() {
               </p>
             </div>
             <button class="primary-btn" id="bookGigNowBtn" data-provider-id="${provId}" data-category-slug="${escapeHtml(firstCatSlug)}" data-price="${basePrice}" style="width:100%; justify-content:center; padding:14px; font-size:14px; font-weight:700;">
-              Book this Pro ↗
+              Book this Pro <i class="bi bi-arrow-right"></i>
+            </button>
+            <button class="secondary-btn" onclick="toggleFavorite(${provId}, event)" style="width:100%; justify-content:center; padding:10px; font-size:13px; font-weight:600; margin-top:8px;">
+              <i class="bi ${state.favoriteProviderIds && state.favoriteProviderIds.has(provId) ? 'bi-heart-fill text-danger' : 'bi-heart'}"></i>
+              <span style="margin-left:6px;">${state.favoriteProviderIds && state.favoriteProviderIds.has(provId) ? 'Saved in Favorites' : 'Save Specialist'}</span>
             </button>
             <div style="font-size:12px; color:var(--muted); text-align:center; margin-top:12px;">
-              ⚡ Concurrency protected · No double booking
+              <i class="bi bi-lightning-charge"></i> Concurrency protected · No double booking
             </div>
           </div>
         </div>
@@ -965,7 +1020,7 @@ async function renderGigDetails() {
             <h3>Client Reviews</h3>
             <p>Feedback from verified clients across Dhaka</p>
           </div>
-          <div style="font-size:16px; font-weight:700; color:var(--amber);">★ ${provider.rating || '4.8'} (${provider.rating_count || 120} reviews)</div>
+          <div style="font-size:16px; font-weight:700; color:var(--amber);"><i class="bi bi-star-fill text-amber"></i> ${provider.rating || '4.8'} (${provider.rating_count || 120} reviews)</div>
         </div>
         <div style="display:grid; grid-template-columns: 280px 1fr; gap:32px; margin-top:16px;">
           <!-- Left: Rating breakdown bars -->
@@ -976,7 +1031,7 @@ async function renderGigDetails() {
               const pct = totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;
               return `
                 <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:13px;">
-                  <span style="width:36px; font-weight:600; color:var(--text);">${star} ★</span>
+                  <span style="width:36px; font-weight:600; color:var(--text);">${star} <i class="bi bi-star-fill text-amber"></i></span>
                   <div style="flex:1; height:8px; background:var(--line); border-radius:4px; overflow:hidden;">
                     <div style="width:${pct}%; height:100%; background:var(--blue); border-radius:4px;"></div>
                   </div>
@@ -996,13 +1051,13 @@ async function renderGigDetails() {
                     <strong style="font-size:14px;">${escapeHtml(r.customer_name || 'Verified Customer')}</strong>
                     <span style="font-size:12px; color:var(--muted);">${new Date(r.created_at).toLocaleDateString()}</span>
                   </div>
-                  <div style="color:var(--amber); font-size:13px; margin-bottom:6px;">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</div>
+                  <div style="color:var(--amber); font-size:13px; margin-bottom:6px;"><span class="text-amber">${'<i class="bi bi-star-fill"></i>'.repeat(r.stars)}</span><span class="text-muted">${'<i class="bi bi-star"></i>'.repeat(5 - r.stars)}</span></div>
                   <p style="margin:0; font-size:13px; color:var(--text); line-height:1.5;">${escapeHtml(r.comment || 'Great service and very professional.')}</p>
                 </div>
               `).join('') : `
                 <div style="padding:20px 0; color:var(--muted); font-size:13px;">
-                  <p style="margin:0 0 6px;">★ Verified Client Feedback</p>
-                  <small>No written reviews submitted yet. Average rating: ★ ${provider.rating || '4.8'} based on ${provider.rating_count || 120} completed appointments.</small>
+                  <p style="margin:0 0 6px;"><i class="bi bi-star-fill text-amber"></i> Verified Client Feedback</p>
+                  <small>No written reviews submitted yet. Average rating: <i class="bi bi-star-fill text-amber"></i> ${provider.rating || '4.8'} based on ${provider.rating_count || 120} completed appointments.</small>
                 </div>
               `}
             </div>
@@ -1499,12 +1554,12 @@ function renderRepairOverview() {
   const p = state.providerProfile || {};
   const earnings = state.providerInvoices?.totals?.sum_total || 0;
   return `
-    ${pageHead('REPAIRMAN WORKSPACE', `Good morning, ${p.full_name || state.user?.full_name || 'Specialist'} 👋`, 'Here’s what’s happening with your service business today.')}
+    ${pageHead('REPAIRMAN WORKSPACE', `Good morning, ${p.full_name || state.user?.full_name || 'Specialist'}`, 'Here’s what’s happening with your service business today.')}
     <div class="stats-grid">
       ${stat('Total earnings', money(earnings), '৳', '<span class="up">↑ Real-time</span> verified')}
-      ${stat('Active jobs', state.active.length, '▤', 'Currently in progress')}
-      ${stat('New requests', state.incoming.length, '✳', 'Awaiting your acceptance')}
-      ${stat('Average rating', p.rating || '4.9', '★', `From ${p.rating_count || 120} client reviews`)}
+      ${stat('Active jobs', state.active.length, '<i class="bi bi-tools"></i>', 'Currently in progress')}
+      ${stat('New requests', state.incoming.length, '<i class="bi bi-bell"></i>', 'Awaiting your acceptance')}
+      ${stat('Average rating', p.rating || '4.9', '<i class="bi bi-star-fill text-amber"></i>', `From ${p.rating_count || 120} client reviews`)}
     </div>
     <div class="dashboard-grid">
       <div class="panel">
@@ -1514,7 +1569,7 @@ function renderRepairOverview() {
         </div>
         ${state.active.map(r => `
           <div class="gig-row">
-            <div class="gig-thumb cover-wash">🛠️</div>
+            <div class="gig-thumb cover-wash"><i class="bi bi-tools"></i></div>
             <div class="gig-info">
               <strong>${r.category_name || 'Repair Service'} · Request #${r.id}</strong>
               <small>${r.preferred_date} · ${minutesToTime(r.preferred_start_minute)} · ${r.address}</small>
@@ -1552,10 +1607,10 @@ function renderGigs() {
   return `
     ${pageHead('YOUR SERVICES', 'My service gigs', 'Your active service catalog and pricing.', '<button class="primary-btn" id="newGigBtn">＋ Create a gig</button>')}
     <div class="stats-grid">
-      ${stat('Active gigs', servicesList.length, '✳', 'Visible to clients')}
-      ${stat('Active jobs', state.active.length, '▤', 'In progress')}
-      ${stat('Completed jobs', state.history.length, '✓', 'Delivered')}
-      ${stat('Avg. rating', p.rating || '4.9', '★', 'Client satisfaction')}
+      ${stat('Active gigs', servicesList.length, '<i class="bi bi-briefcase"></i>', 'Visible to clients')}
+      ${stat('Active jobs', state.active.length, '<i class="bi bi-tools"></i>', 'In progress')}
+      ${stat('Completed jobs', state.history.length, '<i class="bi bi-check-circle"></i>', 'Delivered')}
+      ${stat('Avg. rating', p.rating || '4.9', '<i class="bi bi-star-fill text-amber"></i>', 'Client satisfaction')}
     </div>
     <div class="panel">
       <div class="panel-head">
@@ -1563,7 +1618,7 @@ function renderGigs() {
       </div>
       ${servicesList.map(s => `
         <div class="gig-row">
-          <div class="gig-thumb cover-wash">🛠️</div>
+          <div class="gig-thumb cover-wash"><i class="bi bi-tools"></i></div>
           <div class="gig-info">
             <strong>${s.category_name}</strong>
             <small>Category slug: ${s.category_slug} · <span class="status completed">Published</span></small>
@@ -1589,7 +1644,7 @@ function renderRequests() {
     </div>
     ${state.incoming.map(r => `
       <div class="booking-card">
-        <div class="booking-symbol cover-wash">❄️</div>
+        <div class="booking-symbol cover-wash"><i class="bi bi-snow"></i></div>
         <div class="booking-main">
           <h3>${r.category_name || 'Home Service'} · Request #${r.id}</h3>
           <p>Client: <strong>${r.customer_name || 'Customer'}</strong> (${r.phone || 'N/A'})<br>Date: ${r.preferred_date} · ${minutesToTime(r.preferred_start_minute)}<br>Address: ${r.address}<br>${r.description ? `Notes: “${escapeHtml(r.description)}”` : ''}</p>
@@ -1614,7 +1669,7 @@ function renderRequests() {
       const nextStatus = nextMap[r.status];
       return `
         <div class="booking-card">
-          <div class="booking-symbol cover-cool">🛠️</div>
+          <div class="booking-symbol cover-cool"><i class="bi bi-tools"></i></div>
           <div class="booking-main">
             <h3>${r.category_name || 'Home Service'} · Request #${r.id}</h3>
             <p>Client: <strong>${r.customer_name || 'Customer'}</strong> (${r.phone || 'N/A'})<br>Date: ${r.preferred_date} · ${minutesToTime(r.preferred_start_minute)}<br>Address: ${r.address}</p>
@@ -1633,7 +1688,7 @@ function renderRequests() {
     </div>
     ${state.history.map(r => `
       <div class="booking-card">
-        <div class="booking-symbol cover-lavender">✓</div>
+        <div class="booking-symbol cover-lavender"><i class="bi bi-check-circle"></i></div>
         <div class="booking-main">
           <h3>${r.category_name} · Request #${r.id}</h3>
           <p>Client: ${r.customer_name} · ${r.preferred_date}</p>
@@ -1668,7 +1723,7 @@ async function renderEarnings() {
     <div class="stats-grid">
       ${stat('Available balance', money(availableBalance), '৳', 'Eligible for withdrawal')}
       ${stat('Total earned', money(totalEarned), '↗', 'Gross job revenue')}
-      ${stat('Total invoices', invs.length, '▤', 'Completed bookings')}
+      ${stat('Total invoices', invs.length, '<i class="bi bi-receipt"></i>', 'Completed bookings')}
       ${stat('Payout method', 'bKash / Nagad', '৳', 'Direct settlement')}
     </div>
 
@@ -1704,19 +1759,24 @@ async function renderEarnings() {
       <div class="table-wrap">
         <table class="data-table">
           <thead>
-            <tr><th>INVOICE #</th><th>CUSTOMER</th><th>CATEGORY</th><th>DATE</th><th>AMOUNT</th><th>STATUS</th></tr>
+            <tr><th>Invoice ID</th><th>Date</th><th>Service</th><th>Customer</th><th>Gross (৳)</th><th>Fee (10%)</th><th>Net Payout (৳)</th></tr>
           </thead>
           <tbody>
-            ${invs.map(i => `
+            ${invs.map(i => {
+              const gross = Number(i.total || 0);
+              const fee = Math.round(gross * 0.10);
+              const net = gross - fee;
+              return `
               <tr>
-                <td><strong>${i.invoice_number}</strong></td>
-                <td>${escapeHtml(i.customer_name || 'Client')}</td>
-                <td>${escapeHtml(i.category_name || 'Service')}</td>
+                <td><strong>#${i.id || i.invoice_number}</strong></td>
                 <td>${new Date(i.issued_at).toLocaleDateString()}</td>
-                <td><strong>${money(i.total)}</strong></td>
-                <td><span class="status completed">${i.status || 'paid'}</span></td>
+                <td>${escapeHtml(i.category_name || 'Service')}</td>
+                <td>${escapeHtml(i.customer_name || 'Client')}</td>
+                <td><strong>${money(gross)}</strong></td>
+                <td style="color:var(--muted);">${money(fee)}</td>
+                <td><strong style="color:var(--green);">${money(net)}</strong></td>
               </tr>
-            `).join('') || '<tr><td colspan="6">No invoices issued yet.</td></tr>'}
+            `;}).join('') || '<tr><td colspan="7">No invoices issued yet.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -1837,9 +1897,9 @@ function renderRepairProfile() {
         ${(p.full_name || 'PR').slice(0, 2).toUpperCase()}
       </div>
       <div>
-        <h2>${escapeHtml(p.full_name || ' Rahim Electronics')} <span style="color:#b9c7ff;font-size:13px">✓</span></h2>
+        <h2>${escapeHtml(p.full_name || ' Rahim Electronics')} <span style="color:#b9c7ff;font-size:13px"><i class="bi bi-check-circle-fill"></i></span></h2>
         <p>${escapeHtml(p.headline || 'Master Technician')} · ${escapeHtml(p.address || 'Dhaka, Bangladesh')}</p>
-        <p style="margin-top:6px">★ ${p.rating || '4.9'} rating · ${p.rating_count || 120} reviews · ${p.years_experience || 6} years experience</p>
+        <p style="margin-top:6px"><i class="bi bi-star-fill text-amber"></i> ${p.rating || '4.9'} rating · ${p.rating_count || 120} reviews · ${p.years_experience || 6} years experience</p>
       </div>
       <div class="banner-actions"><span class="status completed">Verified professional</span></div>
     </div>
@@ -1882,7 +1942,7 @@ function renderAdminOverview() {
     
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-head">Total Bookings <span class="stat-icon">▤</span></div>
+        <div class="stat-head">Total Bookings <span class="stat-icon"><i class="bi bi-calendar2-check"></i></span></div>
         <div class="stat-value">${stats.total_bookings ?? 0}</div>
       </div>
       <div class="stat-card">
@@ -1890,11 +1950,11 @@ function renderAdminOverview() {
         <div class="stat-value">${money(stats.gross_volume ?? stats.total_revenue ?? 0)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-head">Total Users <span class="stat-icon">♙</span></div>
+        <div class="stat-head">Total Users <span class="stat-icon"><i class="bi bi-people"></i></span></div>
         <div class="stat-value">${stats.total_users ?? 0}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-head">Total Providers <span class="stat-icon">✳</span></div>
+        <div class="stat-head">Total Providers <span class="stat-icon"><i class="bi bi-person-badge"></i></span></div>
         <div class="stat-value">${stats.total_providers ?? 0}</div>
       </div>
     </div>
@@ -1943,19 +2003,22 @@ function renderAdminPayments() {
     <div class="panel">
       <div class="table-wrap">
         <table class="data-table">
-          <thead><tr><th>TrxID</th><th>Customer</th><th>Amount</th><th>Action</th></tr></thead>
+          <thead><tr><th>Date</th><th>Customer Name</th><th>TrxID</th><th>Sender Number</th><th>Service</th><th>Amount</th><th>Action</th></tr></thead>
           <tbody>
             ${payments.map(p => `
               <tr>
-                <td><strong>${escapeHtml(p.trx_id || 'N/A')}</strong></td>
-                <td>${escapeHtml(p.customer_name || 'Customer')}</td>
+                <td>${p.created_at ? new Date(p.created_at).toLocaleDateString() : 'Recent'}</td>
+                <td><strong>${escapeHtml(p.customer_name || 'Customer')}</strong></td>
+                <td><strong class="font-mono">${escapeHtml(p.trx_id || 'N/A')}</strong></td>
+                <td>${escapeHtml(p.sender_number || 'N/A')}</td>
+                <td>${escapeHtml(p.category_name || 'Service')}</td>
                 <td><strong>${money(p.estimated_price)}</strong></td>
                 <td>
-                  <button class="mini-link" data-payment-action="verify" data-req-id="${p.id}" onclick="verifyPayment(${p.id}, 'verify')">Verify</button>
-                  <button class="small-action" data-payment-action="reject" data-req-id="${p.id}" onclick="verifyPayment(${p.id}, 'reject')">Reject</button>
+                  <button class="mini-link" style="color:var(--green); font-weight:700;" data-payment-action="verify" data-req-id="${p.id}" onclick="verifyPayment(${p.id}, 'verify')"><i class="bi bi-check-circle"></i> Verify</button>
+                  <button class="small-action" style="color:var(--red); margin-left:8px;" data-payment-action="reject" data-req-id="${p.id}" onclick="verifyPayment(${p.id}, 'reject')"><i class="bi bi-x-circle"></i> Reject</button>
                 </td>
               </tr>
-            `).join('') || '<tr><td colspan="4" style="text-align:center; padding:30px 16px; color:var(--text-muted);">No pending payments to verify.</td></tr>'}
+            `).join('') || '<tr><td colspan="7" style="text-align:center; padding:30px 16px; color:var(--text-muted);">No pending payments to verify.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -1970,18 +2033,19 @@ function renderAdminPayouts() {
     <div class="panel">
       <div class="table-wrap">
         <table class="data-table">
-          <thead><tr><th>Provider</th><th>Amount</th><th>Date</th><th>Action</th></tr></thead>
+          <thead><tr><th>Date</th><th>Provider Name</th><th>Phone</th><th>Amount</th><th>Action</th></tr></thead>
           <tbody>
             ${payouts.map(p => `
               <tr>
+                <td>${p.created_at ? new Date(p.created_at).toLocaleDateString() : 'Recent'}</td>
                 <td><strong>${escapeHtml(p.provider_name || 'Specialist')}</strong></td>
+                <td>${escapeHtml(p.provider_phone || 'N/A')}</td>
                 <td><strong>${money(p.amount)}</strong></td>
-                <td>${new Date(p.created_at).toLocaleDateString()}</td>
                 <td>
-                  <button class="mini-link" data-payout-action="approve" data-payout-id="${p.id}" onclick="approvePayout(${p.id})">Approve</button>
+                  <button class="mini-link" style="color:var(--green); font-weight:700;" data-payout-action="approve" data-payout-id="${p.id}" onclick="approvePayout(${p.id})"><i class="bi bi-check2-circle"></i> Approve</button>
                 </td>
               </tr>
-            `).join('') || '<tr><td colspan="4" style="text-align:center; padding:30px 16px; color:var(--text-muted);">No pending payout requests.</td></tr>'}
+            `).join('') || '<tr><td colspan="5" style="text-align:center; padding:30px 16px; color:var(--text-muted);">No pending payout requests.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -2023,6 +2087,7 @@ function renderUsers() {
           <tbody>
             ${list.map(u => {
               const isActive = u.is_active !== undefined ? Boolean(u.is_active) : (u.provider_active !== false);
+              const isPro = u.role === 'provider';
               return `
               <tr>
                 <td>
@@ -2030,10 +2095,13 @@ function renderUsers() {
                     <div class="avatar ${u.role === 'provider' ? 'avatar-green' : 'avatar-lilac'}">
                       ${(u.full_name || 'U').slice(0, 2).toUpperCase()}
                     </div>
-                    <strong>${escapeHtml(u.full_name)}</strong>
+                    <div>
+                      <strong>${escapeHtml(u.full_name)}</strong>
+                      ${isPro && !isActive ? '<span class="status danger" style="margin-left:6px; font-size:11px; padding:2px 6px;">Pending Verification</span>' : ''}
+                    </div>
                   </div>
                 </td>
-                <td><span class="status ${u.role === 'admin' ? 'review' : u.role === 'provider' ? 'progress' : 'completed'}">${u.role}</span></td>
+                <td><span class="status ${u.role === 'admin' ? 'review' : u.role === 'provider' ? (isActive ? 'progress' : 'danger') : 'completed'}">${u.role}</span></td>
                 <td>${escapeHtml(u.email)}<br><small style="color:var(--muted)">${u.phone || 'N/A'}</small></td>
                 <td>${new Date(u.created_at).toLocaleDateString()}</td>
                 <td>
@@ -2128,26 +2196,309 @@ function renderAllBookings() {
       <div class="table-wrap">
         <table class="data-table">
           <thead>
-            <tr><th>BOOKING ID</th><th>SERVICE</th><th>CLIENT</th><th>SPECIALIST</th><th>DATE</th><th>ESTIMATE</th><th>STATUS</th></tr>
+            <tr><th>ID</th><th>Date</th><th>Customer</th><th>Provider</th><th>Service</th><th>Payment Method</th><th>Amount</th><th>Status</th></tr>
           </thead>
           <tbody>
             ${list.map(b => `
               <tr>
                 <td><strong>#${b.id}</strong></td>
-                <td>${escapeHtml(b.category_name || 'Service')}</td>
+                <td>${b.preferred_date || 'N/A'}</td>
                 <td>${escapeHtml(b.customer_name || 'Customer')}</td>
                 <td>${escapeHtml(b.provider_name || 'Unassigned')}</td>
-                <td>${b.preferred_date}</td>
+                <td>${escapeHtml(b.category_name || 'Service')}</td>
+                <td><span class="badge font-mono" style="font-size:11px; padding:3px 8px;">${(b.payment_method || 'bKash').toUpperCase()}</span></td>
                 <td><strong>${money(b.estimated_price)}</strong></td>
                 <td><span class="status ${statusClass(b.status)}">${normalizeStatus(b.status)}</span></td>
               </tr>
-            `).join('') || '<tr><td colspan="7">No bookings match the filter.</td></tr>'}
+            `).join('') || '<tr><td colspan="8">No bookings match the filter.</td></tr>'}
           </tbody>
         </table>
       </div>
     </div>
   `;
 }
+
+
+async function loadFavorites() {
+  try {
+    const res = await fetch('/api/favorites/mine', { credentials: 'include' });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.ok) {
+      state.favorites = data.favorites || [];
+      state.favoriteProviderIds = new Set(data.favorite_provider_ids || []);
+    }
+  } catch (err) {
+    console.error('loadFavorites error:', err);
+  }
+}
+
+window.toggleFavorite = async function(providerId, ev) {
+  if (ev) {
+    ev.stopPropagation();
+    ev.preventDefault();
+  }
+  if (!state.user) {
+    document.getElementById('auth-screen')?.classList.add('open');
+    toast('Please sign in to save favorite specialists.');
+    return;
+  }
+  const provId = parseInt(providerId, 10);
+  if (isNaN(provId)) return;
+
+  try {
+    const res = await fetch('/api/favorites/toggle', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider_id: provId })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Failed to toggle favorite');
+
+    if (data.favorited) {
+      state.favoriteProviderIds.add(provId);
+      toast('Specialist added to saved services!');
+    } else {
+      state.favoriteProviderIds.delete(provId);
+      toast('Specialist removed from saved services.');
+    }
+
+    if (state.page === 'favorites') {
+      await loadFavorites();
+      render();
+    } else {
+      document.querySelectorAll(`[data-fav-provider="${provId}"], .fav-heart-btn[onclick*="${provId}"]`).forEach(btn => {
+        const icon = btn.querySelector('i');
+        if (data.favorited) {
+          btn.classList.add('active');
+          if (icon) {
+            icon.className = 'bi bi-heart-fill';
+            icon.style.color = 'var(--red)';
+          }
+        } else {
+          btn.classList.remove('active');
+          if (icon) {
+            icon.className = 'bi bi-heart';
+            icon.style.color = '';
+          }
+        }
+      });
+    }
+  } catch (err) {
+    toast('Favorite error: ' + err.message);
+  }
+};
+
+window.printInvoice = function() {
+  window.print();
+};
+
+window.openInvoiceModal = async function(reqId) {
+  try {
+    const res = await fetch(`/api/invoices/by-request/${reqId}`, { credentials: 'include' });
+    if (!res.ok) throw new Error('Invoice not found');
+    const data = await res.json();
+    const inv = data.invoice;
+    openModal(
+      `Invoice ${inv.invoice_number}`,
+      `
+        <div class="invoice-print-area" style="padding:10px 0;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:14px; border-bottom:1px solid var(--border-color); padding-bottom:12px;">
+            <div>
+              <strong style="font-size:15px;">Customer: ${escapeHtml(inv.customer_name || 'Client')}</strong>
+              <div style="font-size:12px; color:var(--muted);">${inv.customer_phone || ''}</div>
+              <div style="font-size:12px; color:var(--muted); margin-top:2px;">Platform: HutFix Home Services</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:12px; color:var(--muted);">Date: ${new Date(inv.issued_at).toLocaleDateString()}</div>
+              <div style="font-size:12px; color:var(--muted); margin-top:2px;">Invoice #: ${inv.invoice_number}</div>
+              <span class="status completed" style="margin-top:6px; display:inline-block;">Paid</span>
+            </div>
+          </div>
+          <table style="width:100%; border-collapse:collapse; font-size:13px; margin:16px 0;">
+            <tr style="border-bottom:1px solid var(--border-color);"><th style="text-align:left; padding:8px 0;">Description</th><th style="text-align:right; padding:8px 0;">Amount</th></tr>
+            <tr style="border-bottom:1px solid var(--border-color);"><td style="padding:8px 0;">${escapeHtml(inv.category_name || 'Home Service Execution')}</td><td style="text-align:right; padding:8px 0;">${money(inv.subtotal)}</td></tr>
+            <tr style="border-bottom:1px solid var(--border-color);"><td style="padding:8px 0;">Platform Tax / Fee (5%)</td><td style="text-align:right; padding:8px 0;">${money(inv.tax_amount || inv.tax || 0)}</td></tr>
+            <tr style="font-weight:700; font-size:15px;"><td style="padding:10px 0;">Total Paid</td><td style="text-align:right; padding:10px 0; color:var(--blue);">${money(inv.total)}</td></tr>
+          </table>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="secondary-btn" id="cancelModal">Close</button>
+          <button type="button" class="primary-btn" onclick="printInvoice()"><i class="bi bi-printer"></i> Print invoice</button>
+        </div>
+      `,
+      'INVOICE RECEIPT'
+    );
+  } catch (err) {
+    toast('Error loading invoice: ' + err.message);
+  }
+};
+
+window.openRatingModal = function(reqId) {
+  openModal(
+    'Rate your service',
+    `
+      <form id="ratingForm" data-id="${reqId}">
+        <div class="form-grid">
+          <div class="form-field full">
+            <label>Rating (1 to 5 Stars)</label>
+            <select name="rating_stars" style="font-size:15px; padding:10px;">
+              <option value="5">5 Stars — Exceptional Service</option>
+              <option value="4">4 Stars — Very Good</option>
+              <option value="3">3 Stars — Satisfactory</option>
+              <option value="2">2 Stars — Needs Improvement</option>
+              <option value="1">1 Star — Poor Experience</option>
+            </select>
+          </div>
+          <div class="form-field full">
+            <label>Review comment</label>
+            <textarea name="review_comment" placeholder="Describe the quality of service, punctuality, and workmanship..." rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="secondary-btn" id="cancelModal">Cancel</button>
+          <button class="primary-btn" type="submit">Submit Rating</button>
+        </div>
+      </form>
+    `,
+    'SERVICE RATING'
+  );
+};
+
+window.openRescheduleModal = function(reqId, currentDate) {
+  const cDate = (currentDate || new Date().toISOString().split('T')[0]).split(' · ')[0] || new Date().toISOString().split('T')[0];
+  openModal('Reschedule Appointment', `
+    <form id="rescheduleForm" data-id="${reqId}">
+      <div class="form-grid">
+        <div class="form-field full">
+          <label>New Service Date</label>
+          <input type="date" name="new_date" min="${new Date().toISOString().split('T')[0]}" value="${cDate}" required />
+        </div>
+        <div class="form-field full">
+          <label>New Time Window</label>
+          <select name="time_window">
+            <option value="09:00-11:00">09:00 AM - 11:00 AM</option>
+            <option value="11:00-13:00">11:00 AM - 01:00 PM</option>
+            <option value="14:00-16:00" selected>02:00 PM - 04:00 PM</option>
+            <option value="16:00-18:00">04:00 PM - 06:00 PM</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-actions" style="margin-top:20px;">
+        <button type="button" class="secondary-btn" id="cancelModal">Cancel</button>
+        <button type="submit" class="primary-btn">Confirm Reschedule</button>
+      </div>
+    </form>
+  `, 'APPOINTMENT SCHEDULE');
+};
+
+async function openSupportModal() {
+  let tickets = [];
+  try {
+    const res = await fetch('/api/support/mine', { credentials: 'include' });
+    const data = await res.json();
+    if (data.ok) tickets = data.tickets || [];
+  } catch (err) {}
+
+  openModal(
+    'Customer Support',
+    `
+      <div style="padding:4px 0;">
+        <p style="font-size:13px; color:var(--muted); margin-bottom:16px;">
+          Have a question or need assistance with your service? Submit a ticket below and our operations team will respond promptly.
+        </p>
+        <form id="supportTicketForm" style="margin-bottom:24px;">
+          <div class="form-grid">
+            <div class="form-field full">
+              <label>Subject</label>
+              <input name="subject" placeholder="e.g., Question about my AC booking" required />
+            </div>
+            <div class="form-field full">
+              <label>Message</label>
+              <textarea name="message" rows="3" placeholder="Describe how we can help you..." required></textarea>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:flex-end; margin-top:10px;">
+            <button class="primary-btn" type="submit"><i class="bi bi-send"></i> Submit Ticket</button>
+          </div>
+        </form>
+
+        <h4 style="font-size:14px; font-weight:700; margin-bottom:10px; border-top:1px solid var(--border-color); padding-top:16px;">Your Support Tickets</h4>
+        <div style="max-height:220px; overflow-y:auto;">
+          ${tickets.length > 0 ? `
+            <table class="data-table" style="font-size:12px;">
+              <thead><tr><th>Date</th><th>Subject</th><th>Status</th></tr></thead>
+              <tbody>
+                ${tickets.map(t => `
+                  <tr>
+                    <td>${new Date(t.created_at).toLocaleDateString()}</td>
+                    <td><strong>${escapeHtml(t.subject)}</strong><div style="font-size:11px; color:var(--muted);">${escapeHtml(t.message)}</div></td>
+                    <td><span class="status ${t.status === 'resolved' ? 'completed' : t.status === 'closed' ? 'review' : 'progress'}">${t.status}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          ` : '<div style="font-size:13px; color:var(--muted); text-align:center; padding:16px;">No support tickets submitted yet.</div>'}
+        </div>
+      </div>
+    `,
+    'HUTFIX ASSISTANCE'
+  );
+}
+
+async function renderAdminSupport() {
+  let tickets = [];
+  try {
+    const res = await fetch('/api/admin/support', { credentials: 'include' });
+    const data = await res.json();
+    if (data.ok) tickets = data.tickets || [];
+  } catch (err) {}
+
+  return `
+    ${pageHead('HELPDESK & TICKETS', 'Support Tickets', 'Resolve user queries and operational requests.')}
+    <div class="panel">
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>Date</th><th>User</th><th>Role</th><th>Subject</th><th>Message</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+            ${tickets.map(t => `
+              <tr>
+                <td>${new Date(t.created_at).toLocaleDateString()}</td>
+                <td><strong>${escapeHtml(t.full_name || 'User')}</strong><br><small style="color:var(--muted);">${escapeHtml(t.email || '')}</small></td>
+                <td><span class="status ${t.role === 'provider' ? 'progress' : 'review'}">${t.role}</span></td>
+                <td><strong>${escapeHtml(t.subject)}</strong></td>
+                <td style="max-width:240px; font-size:12px;">${escapeHtml(t.message)}</td>
+                <td><span class="status ${t.status === 'resolved' ? 'completed' : t.status === 'closed' ? 'review' : 'progress'}">${t.status}</span></td>
+                <td>
+                  ${t.status === 'open' ? `
+                    <button class="mini-link" style="color:var(--green); font-weight:700;" onclick="resolveSupportTicket(${t.id})"><i class="bi bi-check2-circle"></i> Resolve</button>
+                  ` : '<span style="color:var(--muted); font-size:12px;">Resolved</span>'}
+                </td>
+              </tr>
+            `).join('') || '<tr><td colspan="7" style="text-align:center; padding:30px 16px; color:var(--text-muted);">No support tickets found.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+window.resolveSupportTicket = async function(id) {
+  const res = await fetch('/api/admin/support/' + id, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'resolved' })
+  });
+  if (res.ok) {
+    toast('Ticket resolved successfully');
+    render();
+  } else {
+    toast('Failed to resolve ticket');
+  }
+};
 
 function renderReports() {
   const st = state.adminStats || {};
@@ -2156,8 +2507,8 @@ function renderReports() {
     <div class="stats-grid">
       ${stat('Gross volume', money(st.gross_volume || st.total_revenue || 0), '৳', 'Total value')}
       ${stat('Platform revenue', money(st.platform_revenue || 0), '↗', '5% platform fee')}
-      ${stat('Total bookings', st.total_bookings || 0, '▤', 'All time bookings')}
-      ${stat('Registered users', st.total_users || 0, '♙', 'Total user accounts')}
+      ${stat('Total bookings', st.total_bookings || 0, '<i class="bi bi-calendar2-check"></i>', 'All time bookings')}
+      ${stat('Registered users', st.total_users || 0, '<i class="bi bi-people"></i>', 'Total user accounts')}
     </div>
     <div class="dashboard-grid">
       <div class="panel">
@@ -2217,6 +2568,7 @@ async function render() {
       'admin-overview': typeof renderAdminOverview === 'function' ? renderAdminOverview : null,
       payments: typeof renderAdminPayments === 'function' ? renderAdminPayments : null,
       payouts: typeof renderAdminPayouts === 'function' ? renderAdminPayouts : null,
+      'support-tickets': typeof renderAdminSupport === 'function' ? renderAdminSupport : null,
       users: typeof renderUsers === 'function' ? renderUsers : null,
       moderation: typeof renderModeration === 'function' ? renderModeration : null,
       'all-bookings': typeof renderAllBookings === 'function' ? renderAllBookings : null,
@@ -2235,16 +2587,16 @@ async function render() {
         }
       } catch (e) {
         console.error('Render error on page:', state.page, e);
-        contentArea.innerHTML = `<div class="empty-state" style="color:var(--red); padding: 30px;"><div style="font-size:24px; margin-bottom:8px;">⚠️</div><h3>Unable to load page</h3><p style="color:var(--text-muted);">${escapeHtml(e.message)}</p></div>`;
+        contentArea.innerHTML = `<div class="empty-state" style="color:var(--red); padding: 30px;"><div style="font-size:24px; margin-bottom:8px; color:var(--red);"><i class="bi bi-exclamation-triangle"></i></div><h3>Unable to load page</h3><p style="color:var(--text-muted);">${escapeHtml(e.message)}</p></div>`;
       }
     } else {
-      contentArea.innerHTML = `<div class="empty-state" style="padding: 30px;"><div style="font-size:24px; margin-bottom:8px;">📄</div><h3>Page not found</h3><p style="color:var(--text-muted);">The requested page "${escapeHtml(state.page)}" is not available.</p></div>`;
+      contentArea.innerHTML = `<div class="empty-state" style="padding: 30px;"><div style="font-size:24px; margin-bottom:8px; color:var(--muted);"><i class="bi bi-file-earmark-x"></i></div><h3>Page not found</h3><p style="color:var(--text-muted);">The requested page "${escapeHtml(state.page)}" is not available.</p></div>`;
     }
   } catch (fatalErr) {
     console.error('Fatal render error:', fatalErr);
     const contentArea = document.getElementById('content');
     if (contentArea) {
-      contentArea.innerHTML = `<div class="empty-state" style="padding:40px 20px;"><div style="font-size:32px; margin-bottom:12px;">⚠️</div><h3>Something went wrong</h3><p style="color:var(--text-muted);">${escapeHtml(fatalErr.message)}</p><button class="primary-btn" onclick="state.page='discover'; render();" style="margin-top:16px;">Return to Home</button></div>`;
+      contentArea.innerHTML = `<div class="empty-state" style="padding:40px 20px;"><div style="font-size:32px; margin-bottom:12px; color:var(--red);"><i class="bi bi-exclamation-triangle"></i></div><h3>Something went wrong</h3><p style="color:var(--text-muted);">${escapeHtml(fatalErr.message)}</p><button class="primary-btn" onclick="state.page='discover'; render();" style="margin-top:16px;">Return to Home</button></div>`;
     }
   }
 }
@@ -2604,11 +2956,11 @@ document.addEventListener('click', async (e) => {
             <div class="form-field full">
               <label>Rating (1 to 5 Stars)</label>
               <select name="rating_stars" style="font-size:16px;">
-                <option value="5">★★★★★ (5 Stars - Exceptional)</option>
-                <option value="4">★★★★☆ (4 Stars - Very Good)</option>
-                <option value="3">★★★☆☆ (3 Stars - Satisfactory)</option>
-                <option value="2">★★☆☆☆ (2 Stars - Needs Improvement)</option>
-                <option value="1">★☆☆☆☆ (1 Star - Poor)</option>
+                <option value="5">5 Stars — Exceptional Service</option>
+                <option value="4">4 Stars — Very Good</option>
+                <option value="3">3 Stars — Satisfactory</option>
+                <option value="2">2 Stars — Needs Improvement</option>
+                <option value="1">1 Star — Poor Experience</option>
               </select>
             </div>
             <div class="form-field full">
@@ -2658,7 +3010,7 @@ document.addEventListener('click', async (e) => {
           </div>
           <div class="modal-actions">
             <button type="button" class="secondary-btn" id="cancelModal">Close</button>
-            <button type="button" class="primary-btn" onclick="window.print()">Print invoice 🖨️</button>
+            <button type="button" class="primary-btn" onclick="window.print()"><i class="bi bi-printer"></i> Print invoice</button>
           </div>
         `,
         'INVOICE RECEIPT'
@@ -2923,7 +3275,7 @@ document.addEventListener('click', async (e) => {
     return;
   }
   if (e.target.closest('#supportBtn')) {
-    toast('Support team notified (demo action).');
+    openSupportModal();
     return;
   }
   if (e.target.closest('#markAllReadBtn')) {
@@ -3126,7 +3478,7 @@ document.addEventListener('submit', async (e) => {
               <div>
                 <strong style="font-size:14px; color:var(--text-main);">${escapeHtml(c.provider.name)}</strong>
                 <div style="font-size:12px; color:var(--muted); margin-top:2px;">
-                  ★ ${c.provider.rating} (${c.provider.rating_count} reviews) · ${c.provider.address}
+                  <i class="bi bi-star-fill text-amber"></i> ${c.provider.rating} (${c.provider.rating_count} reviews) · ${c.provider.address}
                 </div>
                 <div style="font-size:12px; color:var(--green); font-weight:600; margin-top:2px;">
                   Match score: ${(c.score * 100).toFixed(0)}% · Rate: ${money(c.provider.price)}/hr
@@ -3324,9 +3676,33 @@ document.addEventListener('submit', async (e) => {
       if (!res.ok || !data.ok) throw new Error(data.error || 'Rating failed');
       closeModal();
       toast('Thank you for rating your specialist!');
+      await loadMyBookings();
       render();
     } catch (err) {
       toast('Rating error: ' + err.message);
+    }
+    return;
+  }
+
+  // Support Ticket Submission Form
+  if (e.target.id === 'supportTicketForm') {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const subject = fd.get('subject');
+    const message = fd.get('message');
+    try {
+      const res = await fetch('/api/support', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject, message })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Failed to submit ticket');
+      toast('Support ticket submitted successfully!');
+      openSupportModal();
+    } catch (err) {
+      toast('Error: ' + err.message);
     }
     return;
   }
@@ -3448,7 +3824,7 @@ async function bootRoleData() {
   if (state.role === 'guest') {
     await loadServices();
   } else if (state.role === 'client') {
-    await Promise.all([loadServices(), loadMyBookings(), loadNotifications()]);
+    await Promise.all([loadServices(), loadMyBookings(), loadFavorites(), loadNotifications()]);
   } else if (state.role === 'repairman') {
     await Promise.all([loadProviderData(), loadNotifications()]);
   } else if (state.role === 'admin') {
@@ -3462,7 +3838,7 @@ function initTheme() {
   document.documentElement.setAttribute('data-theme', currentTheme);
   const btn = document.getElementById('themeToggle');
   if (btn) {
-    btn.innerHTML = currentTheme === 'dark' ? '☀️' : '🌙';
+    btn.innerHTML = currentTheme === 'dark' ? '<i class="bi bi-sun"></i>' : '<i class="bi bi-moon-stars"></i>';
     btn.title = currentTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
   }
 }
@@ -3474,7 +3850,7 @@ function toggleTheme() {
   localStorage.setItem('hutfix_theme', next);
   const btn = document.getElementById('themeToggle');
   if (btn) {
-    btn.innerHTML = next === 'dark' ? '☀️' : '🌙';
+    btn.innerHTML = next === 'dark' ? '<i class="bi bi-sun"></i>' : '<i class="bi bi-moon-stars"></i>';
     btn.title = next === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
   }
 }
@@ -3544,23 +3920,83 @@ async function boot() {
   }
 }
 
+let authMode = 'signin';
+
+document.getElementById('toggleAuthMode')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  authMode = authMode === 'signin' ? 'signup' : 'signin';
+  const isSignup = authMode === 'signup';
+
+  const titleEl = document.getElementById('auth-title');
+  const submitBtn = document.getElementById('authSubmitBtn');
+  const toggleBtn = document.getElementById('toggleAuthMode');
+  const nameF = document.getElementById('authNameField');
+  const phoneF = document.getElementById('authPhoneField');
+  const roleF = document.getElementById('authRoleField');
+  const demoRow = document.getElementById('demoAccountsRow');
+  const errEl = document.getElementById('auth-error');
+
+  if (titleEl) titleEl.textContent = isSignup ? 'Create account' : 'Sign in';
+  if (submitBtn) submitBtn.textContent = isSignup ? 'Create account' : 'Sign in';
+  if (toggleBtn) toggleBtn.textContent = isSignup ? 'Already have an account? Sign in' : "Don't have an account? Sign up";
+
+  if (nameF) nameF.style.display = isSignup ? 'block' : 'none';
+  if (phoneF) phoneF.style.display = isSignup ? 'block' : 'none';
+  if (roleF) roleF.style.display = isSignup ? 'block' : 'none';
+  if (demoRow) demoRow.style.display = isSignup ? 'none' : 'block';
+  if (errEl) errEl.style.display = 'none';
+});
+
 document.getElementById('auth-form')?.addEventListener('submit', async (ev) => {
   ev.preventDefault();
   const fd = new FormData(ev.target);
-  const res = await fetch('/api/auth/login', {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') })
-  });
-  if (!res.ok) {
+  const email = fd.get('email');
+  const password = fd.get('password');
+  const errEl = document.getElementById('auth-error');
+
+  if (authMode === 'signup') {
+    const full_name = fd.get('full_name') || 'New User';
+    const phone = fd.get('phone') || '';
+    const role = fd.get('role') || 'customer';
+
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, full_name, phone, role })
+    });
     const j = await res.json().catch(() => ({}));
-    const el = document.getElementById('auth-error');
-    el.textContent = j.error || 'Login failed';
-    el.style.display = 'block';
-    return;
+    if (!res.ok || !j.ok) {
+      if (errEl) {
+        errEl.textContent = j.error || 'Registration failed';
+        errEl.style.display = 'block';
+      }
+      return;
+    }
+
+    if (role === 'provider') {
+      toast('Account registered! Pending admin verification before public matching.');
+    } else {
+      toast('Welcome to HutFix! Account created successfully.');
+    }
+    setTimeout(() => location.reload(), 900);
+  } else {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') })
+    });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      if (errEl) {
+        errEl.textContent = j.error || 'Login failed';
+        errEl.style.display = 'block';
+      }
+      return;
+    }
+    location.reload();
   }
-  location.reload();
 });
 
 document.querySelectorAll('[data-demo]').forEach(a => a.addEventListener('click', (e) => {

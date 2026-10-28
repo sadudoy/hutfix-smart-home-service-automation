@@ -7,7 +7,7 @@
 
 ---
 
-## 🔑 Demo Credentials
+##  Demo Credentials
 
 All accounts are pre-seeded and active in the local PostgreSQL database:
 
@@ -107,7 +107,7 @@ All accounts are pre-seeded and active in the local PostgreSQL database:
 
 ---
 
-## 💡 Key Architectural & Engineering Highlights (For Judges)
+##  Key Architectural & Engineering Highlights (For Judges)
 
 1. **Advisory Transaction Locks (Zero Double-Booking Guarantee):**
    - We utilize PostgreSQL transaction-level advisory locks via `pg_advisory_xact_lock(hashtext('provider_' || provider_id || '_' || slot_date || '_' || slot_minute))`.

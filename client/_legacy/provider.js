@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
                 if (displayAvailability) {
                     var isAvailable = provider.available !== false;
-                    displayAvailability.textContent = isAvailable ? "✅ Available for bookings" : "❌ Currently Unavailable";
+                    displayAvailability.textContent = isAvailable ? " Available for bookings" : " Currently Unavailable";
                     displayAvailability.style.color = isAvailable ? "#10b981" : "#ef4444";
                 }
 
@@ -499,19 +499,19 @@ document.addEventListener("DOMContentLoaded", function() {
             var available = serviceAvailableCheck ? serviceAvailableCheck.checked : true;
 
             if (charge < 100) {
-                alert("⚠️ Service charge must be at least ৳100 per hour.");
+                alert("️ Service charge must be at least ৳100 per hour.");
                 serviceChargeInput.focus();
                 return;
             }
 
             if (charge > 10000) {
-                alert("⚠️ Service charge seems too high. Please enter a reasonable amount.");
+                alert("️ Service charge seems too high. Please enter a reasonable amount.");
                 serviceChargeInput.focus();
                 return;
             }
 
             if (types.length === 0) {
-                alert("⚠️ Please enter at least one service type.");
+                alert("️ Please enter at least one service type.");
                 serviceTypesInput.focus();
                 return;
             }
@@ -521,7 +521,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 var index = providers.findIndex(function(p) { return p.id === currentUser.id; });
 
                 if (index === -1) {
-                    alert("⚠️ Provider not found. Please contact support.");
+                    alert("️ Provider not found. Please contact support.");
                     return;
                 }
 
@@ -536,12 +536,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 localStorage.setItem("hf_providers", JSON.stringify(providers));
 
-                alert("✅ Service settings saved successfully!");
+                alert(" Service settings saved successfully!");
                 loadServiceSettings();
 
             } catch (err) {
                 console.error("Error saving service settings:", err);
-                alert("❌ There was an error saving your settings. Please try again.");
+                alert(" There was an error saving your settings. Please try again.");
             }
         });
     }

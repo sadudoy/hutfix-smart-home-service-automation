@@ -74,7 +74,7 @@ async function getUsers(req, res, next) {
         let query = `
             SELECT u.id, u.email, u.full_name, u.phone, u.role, u.created_at,
                    p.id AS provider_id, p.is_active AS provider_active,
-                   COALESCE(p.is_active, true) AS is_active
+                   CASE WHEN u.role = 'provider' THEN COALESCE(p.is_active, false) ELSE true END AS is_active
             FROM users u
             LEFT JOIN providers p ON p.user_id = u.id
             ORDER BY u.created_at DESC

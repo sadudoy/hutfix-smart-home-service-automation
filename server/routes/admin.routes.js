@@ -28,4 +28,9 @@ router.patch('/payments/:id/verify', ctrl.verifyPayment);
 router.get('/payouts', ctrl.getPayouts);
 router.patch('/payouts/:id/approve', ctrl.approvePayout);
 
+// Support Tickets
+const supportCtrl = require('../controllers/support.controller');
+router.get('/support', supportCtrl.getAllForAdmin);
+router.patch('/support/:id', supportCtrl.updateStatus);
+
 module.exports = router;

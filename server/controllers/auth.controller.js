@@ -78,12 +78,12 @@ async function register(req, res, next) {
         ]);
         const user = userRes.rows[0];
 
-        // If provider, create corresponding provider profile
+        // If provider, create corresponding provider profile (is_active = FALSE until admin verification)
         if (assignedRole === 'provider') {
             const headline = `Service provider — ${user.full_name}`;
             await pool.query(
                 `INSERT INTO providers (user_id, headline, is_active)
-                 VALUES ($1, $2, TRUE)
+                 VALUES ($1, $2, FALSE)
                  ON CONFLICT (user_id) DO NOTHING;`,
                 [user.id, headline]
             );

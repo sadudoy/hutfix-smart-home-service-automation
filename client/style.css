@@ -1699,3 +1699,56 @@ button { cursor: pointer; }
   .tracking-head { display: block; }
   .tracking-head .status { margin-top: 10px; }
 }
+
+/* Phase 14.1 Styles: Print Invoice & Micro-interactions */
+.logout-mini-btn {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 17px;
+  transition: all 0.15s ease;
+}
+.logout-mini-btn:hover {
+  background: var(--bg-hover);
+  color: var(--red);
+  border-color: var(--border-color);
+}
+
+.fav-heart-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.fav-heart-btn:hover {
+  transform: scale(1.12);
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .invoice-print-area, .invoice-print-area * {
+    visibility: visible;
+  }
+  .invoice-print-area {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    padding: 30px;
+    z-index: 99999;
+  }
+}

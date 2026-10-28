@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     matchDetails.innerHTML = 
                         '<div class="match-stat"><span>Provider:</span> <strong>' + match.name + '</strong></div>' +
                         '<div class="match-stat"><span>Rating:</span> <strong>⭐ ' + match.rating + ' (' + match.jobsCompleted + ' jobs)</strong></div>' +
-                        '<div class="match-stat"><span>Distance:</span> <strong>📍 ' + match.distance + ' km away</strong></div>' +
+                        '<div class="match-stat"><span>Distance:</span> <strong> ' + match.distance + ' km away</strong></div>' +
                         '<div class="match-stat"><span>Est. Charge:</span> <strong>৳' + match.estimatedPrice + '</strong></div>';
                 }
 

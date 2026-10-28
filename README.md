@@ -4,7 +4,7 @@
 
 **Status: Phase 14 Complete — Final Hackathon Release (`v1.0.0-hackathon`)**
 
-🎤 **[3-Minute Hackathon Presentation Script & Pitch (DEMO.md)](DEMO.md)**
+**[3-Minute Hackathon Presentation Script & Pitch (DEMO.md)](DEMO.md)**
 
 ---
 
@@ -55,24 +55,24 @@ All demo accounts use password `demo1234`:
 ## Feature Checklist
 
 ### Core Features
-- [x] ✅ Role-based JWT authentication with secure HTTP-only cookies and role guards.
-- [x] ✅ Comprehensive 8-category home services catalog with pricing baselines.
-- [x] ✅ Smart matching algorithm scoring availability, rating, distance, price, and workload.
-- [x] ✅ Slot-based 1-hour scheduling with advisory locking against race conditions.
-- [x] ✅ Finite state machine request lifecycle (requested &rarr; accepted &rarr; on the way &rarr; in progress &rarr; completed).
-- [x] ✅ Live customer fulfillment tracking with 5-stage stepper and 3-bucket provider dashboard.
+- [x] Role-based JWT authentication with secure HTTP-only cookies and role guards.
+- [x] Comprehensive 8-category home services catalog with pricing baselines.
+- [x] Smart matching algorithm scoring availability, rating, distance, price, and workload.
+- [x] Slot-based 1-hour scheduling with advisory locking against race conditions.
+- [x] Finite state machine request lifecycle (requested &rarr; accepted &rarr; on the way &rarr; in progress &rarr; completed).
+- [x] Live customer fulfillment tracking with 5-stage stepper and 3-bucket provider dashboard.
 
 ### Operational & Financial Features (Phases 10–14)
-- [x] ✅ Direct specialist booking from Gig Details with instant slot picker & upfront pricing.
-- [x] ✅ Customer Saved Address Book with default address tagging and booking pre-fill.
-- [x] ✅ Authentic Bangladeshi Mobile Banking (bKash & Nagad) manual payment proof flow with TrxID.
-- [x] ✅ Real-time Admin UI synchronization on payment verifications and specialist payout approvals.
-- [x] ✅ Server-Sent Events (SSE) real-time streaming for live dispatch and milestone progress.
-- [x] ✅ Automated financial invoice generation on job completion with 5% platform tax.
-- [x] ✅ Printable A4-styled customer invoice page (`client/invoice.html`).
-- [x] ✅ Verified customer reviews & specialist rating breakdown recalculation.
-- [x] ✅ In-transaction event notification feed with unread count and real-time navbar bells.
-- [x] ✅ Automated E2E smoke test suite (`scripts/e2e_smoke.js`) verifying entire platform lifecycle.
+- [x] Direct specialist booking from Gig Details with instant slot picker & upfront pricing.
+- [x] Customer Saved Address Book with default address tagging and booking pre-fill.
+- [x] Authentic Bangladeshi Mobile Banking (bKash & Nagad) manual payment proof flow with TrxID.
+- [x] Real-time Admin UI synchronization on payment verifications and specialist payout approvals.
+- [x] Server-Sent Events (SSE) real-time streaming for live dispatch and milestone progress.
+- [x] Automated financial invoice generation on job completion with 5% platform tax.
+- [x] Printable A4-styled customer invoice page (`client/invoice.html`).
+- [x] Verified customer reviews & specialist rating breakdown recalculation.
+- [x] In-transaction event notification feed with unread count and real-time navbar bells.
+- [x] Automated E2E smoke test suite (`scripts/e2e_smoke.js`) verifying entire platform lifecycle.
 
 ---
 

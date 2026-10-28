@@ -87,7 +87,7 @@ async function create(req, res, next) {
                 requestId,
                 kind: 'review_received',
                 title: 'New review',
-                body: `${starsNum}★ from ${customerName}`
+                body: ` stars from ${customerName}`
             });
         }
 

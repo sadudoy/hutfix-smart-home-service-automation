@@ -20,6 +20,8 @@ const notificationsRouter = require('./routes/notifications.routes');
 const adminRouter = require('./routes/admin.routes');
 const addressesRouter = require('./routes/addresses.routes');
 const gigsRouter = require('./routes/gigs.routes');
+const supportRouter = require('./routes/support.routes');
+const favoritesRouter = require('./routes/favorites.routes');
 const errorHandler = require('./middleware/error');
 
 const app = express();
@@ -51,6 +53,8 @@ app.use('/api/notifications', notificationsRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/addresses', addressesRouter);
 app.use('/api/gigs', gigsRouter);
+app.use('/api/support', supportRouter);
+app.use('/api/favorites', favoritesRouter);
 
 // Static frontend serving
 app.use(express.static(path.join(__dirname, '..', 'client')));
