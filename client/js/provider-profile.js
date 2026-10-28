@@ -29,19 +29,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       const bannerPreview = document.getElementById('bannerPreview');
       const bannerBox = document.querySelector('.profile-banner');
 
-      if (p.logo_url) {
-        if (logoPreview) {
-          logoPreview.src = p.logo_url;
-          logoPreview.style.display = 'block';
-        }
-        if (avEl) {
-          avEl.innerHTML = `<img src="${p.logo_url}" alt="Avatar" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" />`;
-        }
-      } else {
-        const fallbackAvatar = window.IMAGES?.providerAvatar ? window.IMAGES.providerAvatar(user.full_name) : null;
-        if (fallbackAvatar && avEl) {
-          avEl.innerHTML = `<img src="${fallbackAvatar}" alt="Avatar" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" />`;
-        }
+      const currentLogoUrl = p.logo_url || (window.IMAGES?.providerAvatar ? window.IMAGES.providerAvatar(user.full_name) : 'assets/images/logo.jpg');
+      if (logoPreview) {
+        logoPreview.src = currentLogoUrl;
+        logoPreview.style.display = 'block';
+      }
+      if (avEl) {
+        avEl.innerHTML = `<img src="${currentLogoUrl}" alt="Avatar" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" />`;
       }
 
       if (p.banner_url) {
@@ -73,7 +67,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Instant image preview handlers
-  document.getElementById('proLogoInput')?.addEventListener('change', (e) => {
+  const logoInput = document.getElementById('logo-upload') || document.getElementById('proLogoInput');
+  const bannerInput = document.getElementById('banner-upload') || document.getElementById('proBannerInput');
+
+  logoInput?.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
       const preview = document.getElementById('logoPreview');
@@ -84,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  document.getElementById('proBannerInput')?.addEventListener('change', (e) => {
+  bannerInput?.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
       const preview = document.getElementById('bannerPreview');
@@ -99,8 +96,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('proMediaForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('saveMediaBtn');
-    const logoFile = document.getElementById('proLogoInput')?.files[0];
-    const bannerFile = document.getElementById('proBannerInput')?.files[0];
+    const logoFile = (document.getElementById('logo-upload') || document.getElementById('proLogoInput'))?.files[0];
+    const bannerFile = (document.getElementById('banner-upload') || document.getElementById('proBannerInput'))?.files[0];
 
     if (!logoFile && !bannerFile) {
       window.toast('Please select a logo or banner image to upload.');

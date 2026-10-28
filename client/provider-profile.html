@@ -51,21 +51,24 @@
           </div>
           <form id="proMediaForm" enctype="multipart/form-data">
             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:24px; margin-top:16px;">
-              <div class="form-field">
-                <label style="font-weight:600; color:var(--text-main);">Upload Profile Logo</label>
-                <small style="color:var(--text-muted); display:block; margin-bottom:8px;">Square image (PNG, JPG, WebP) for avatar and cards.</small>
-                <div style="display:flex; align-items:center; gap:16px;">
-                  <img id="logoPreview" src="" alt="Logo Preview" style="width:64px; height:64px; border-radius:50%; object-fit:cover; border:2px solid var(--border-color); background:var(--bg-sunken); display:none;" />
-                  <input type="file" name="logo" id="proLogoInput" accept="image/*" />
+              <div class="form-group">
+                <label class="form-label" style="font-weight:600; color:var(--text-main); display:block; margin-bottom:8px;">Upload Profile Logo</label>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                  <div class="avatar" style="width:80px; height:80px; min-width:80px; min-height:80px; border:2px solid var(--border-color); background:var(--bg-sunken); overflow:hidden; border-radius:50%;">
+                    <img id="logoPreview" src="assets/images/logo.jpg" alt="Avatar Preview" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />
+                  </div>
+                  <input type="file" name="logo" id="logo-upload" class="form-control" style="max-width: 300px;" accept="image/*" />
                 </div>
+                <small class="text-muted" style="font-size: 12px; margin-top: 8px; display: block; color:var(--text-muted);">Square image (PNG, JPG, WebP) for avatar and cards.</small>
               </div>
-              <div class="form-field">
-                <label style="font-weight:600; color:var(--text-main);">Upload Cover Banner</label>
-                <small style="color:var(--text-muted); display:block; margin-bottom:8px;">Wide header image (PNG, JPG, WebP) for gig banner.</small>
+
+              <div class="form-group">
+                <label class="form-label" style="font-weight:600; color:var(--text-main); display:block; margin-bottom:8px;">Upload Cover Banner</label>
                 <div style="display:flex; flex-direction:column; gap:8px;">
                   <img id="bannerPreview" src="" alt="Banner Preview" style="width:100%; max-height:120px; border-radius:10px; object-fit:cover; border:1px solid var(--border-color); background:var(--bg-sunken); display:none;" />
-                  <input type="file" name="banner" id="proBannerInput" accept="image/*" />
+                  <input type="file" name="banner" id="banner-upload" class="form-control" style="max-width: 300px;" accept="image/*" />
                 </div>
+                <small class="text-muted" style="font-size: 12px; margin-top: 8px; display: block; color:var(--text-muted);">Wide header image (PNG, JPG, WebP) for gig banner.</small>
               </div>
             </div>
             <div style="margin-top:20px;">

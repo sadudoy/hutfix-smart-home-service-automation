@@ -81,7 +81,7 @@ window.openModal = function(title, bodyHtml, eyebrow = 'HUTFIX') {
           <div><span class="eyebrow" id="modalEyebrow">HUTFIX</span><h2 id="modalTitle">Modal</h2></div>
           <button class="icon-btn close-modal" id="closeModal" aria-label="Close"><i class="bi bi-x-lg"></i></button>
         </div>
-        <div id="modalBody"></div>
+        <div id="modalBody" class="modal-body"></div>
       </div>
     `;
     document.body.appendChild(backdrop);
@@ -216,6 +216,7 @@ window.renderLayout = async function(expectedRole = null, activePage = '') {
         ['admin-overview.html', '<i class="bi bi-speedometer2"></i>', 'Overview', activePage === 'admin-overview'],
         ['admin-users.html', '<i class="bi bi-people"></i>', 'Users & repairmen', activePage === 'users'],
         ['admin-bookings.html', '<i class="bi bi-calendar-check"></i>', 'All bookings', activePage === 'all-bookings'],
+        ['admin-reports.html', '<i class="bi bi-bar-chart"></i>', 'Reports & analytics', activePage === 'reports'],
         ['admin-payouts.html', '<i class="bi bi-cash-stack"></i>', 'Payouts', activePage === 'payouts'],
         ['admin-payments.html', '<i class="bi bi-credit-card"></i>', 'Payments', activePage === 'payments'],
         ['admin-support.html', '<i class="bi bi-chat-left-dots"></i>', 'Support Tickets', activePage === 'support']
@@ -482,25 +483,27 @@ window.openSupportModal = async function() {
       </form>
 
       <h4 style="font-size:14px; font-weight:700; margin-bottom:10px; border-top:1px solid var(--border-color); padding-top:16px;">Your Support Tickets</h4>
-      <div style="max-height:220px; overflow-y:auto;">
+      <div style="max-height:260px; overflow-y:auto; overflow-x:hidden;">
         ${tickets.length > 0 ? `
-          <table class="data-table" style="font-size:12px;">
-            <thead><tr><th>Date</th><th>Subject</th><th>Status</th><th style="text-align:right;">Action</th></tr></thead>
-            <tbody>
-              ${tickets.map(t => `
-                <tr>
-                  <td>${new Date(t.created_at).toLocaleDateString()}</td>
-                  <td><strong>${escapeHtml(t.subject)}</strong><div style="font-size:11px; color:var(--muted);">${escapeHtml(t.message)}</div></td>
-                  <td><span class="status ${t.status === 'resolved' ? 'completed' : 'progress'}">${t.status}</span></td>
-                  <td style="text-align:right;">
-                    <button class="btn btn-sm btn-secondary" onclick="window.openTicketChat(${t.id})" style="padding:4px 10px; font-size:11px;">
-                      <i class="bi bi-chat-dots"></i> Chat
-                    </button>
-                  </td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            ${tickets.map(t => `
+              <div class="ticket-item" style="display:flex; flex-direction:column; gap:8px; padding:12px; border:1px solid var(--border-color); border-radius:10px; background:var(--bg-sunken);">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%; gap:8px;">
+                  <strong style="word-break:break-word; max-width:70%; font-size:13px; color:var(--text-main);">${escapeHtml(t.subject)}</strong>
+                  <span class="status ${t.status === 'resolved' ? 'completed' : 'progress'}" style="font-size:10px; padding:2px 8px;">${t.status.toUpperCase()}</span>
+                </div>
+                <div style="font-size:12px; color:var(--text-muted); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.4;">
+                  ${escapeHtml(t.message)}
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:4px;">
+                  <span style="font-size:11px; color:var(--text-muted);">${new Date(t.created_at).toLocaleDateString()}</span>
+                  <button class="secondary-btn" onclick="window.openChat(${t.id})" style="padding:4px 12px; font-size:12px; min-height:30px;">
+                    <i class="bi bi-chat-dots"></i> Chat
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
         ` : '<div style="font-size:13px; color:var(--muted); text-align:center; padding:16px;">No support tickets submitted yet.</div>'}
       </div>
     </div>
@@ -634,6 +637,7 @@ window.openTicketChat = async function(ticketId) {
     window.toast('Could not open ticket thread: ' + err.message);
   }
 };
+window.openChat = window.openTicketChat;
 
 // Global Direct Booking Modal (callable from Discover, Gig Details, Favorites)
 window.openBooking = async function(providerId = null, categorySlug = null) {

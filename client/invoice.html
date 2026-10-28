@@ -128,23 +128,20 @@
     }
 
     @media print {
-      body {
-        background: #ffffff !important;
-        color: #000000 !important;
+      @page { margin: 0; size: auto; }
+      body { background: white !important; color: black !important; }
+      body * { visibility: hidden; }
+      .invoice-print-area, .invoice-print-area * { visibility: visible; }
+      .invoice-print-area {
+        position: absolute; left: 0; top: 0; width: 100%;
+        padding: 40px; background: white; color: black; display: block !important;
       }
-      .invoice-wrap {
-        margin: 0 !important;
-        max-width: 100% !important;
-        padding: 0 !important;
-      }
+      .sidebar, .topbar, .no-print, button, .invoice-top-actions, .toast { display: none !important; }
       .invoice-card {
         border: none !important;
         box-shadow: none !important;
         padding: 0 !important;
         background: #ffffff !important;
-      }
-      .invoice-top-actions, .toast {
-        display: none !important;
       }
       .invoice-table th {
         background: #f1f5f9 !important;
@@ -164,7 +161,7 @@
 </head>
 <body style="min-height: 100vh; background: var(--bg-body);">
   <div class="invoice-wrap">
-    <div class="invoice-top-actions">
+    <div class="invoice-top-actions no-print">
       <button onclick="window.history.back()" class="btn btn-ghost" style="gap:6px;">
         <i class="bi bi-arrow-left"></i> Back
       </button>
@@ -175,10 +172,12 @@
       </div>
     </div>
 
-    <div class="invoice-card" id="invoiceCard">
-      <div style="text-align:center; padding:40px; color:var(--text-muted);">
-        <i class="bi bi-hourglass-split" style="font-size:32px; display:block; margin-bottom:12px; color:var(--accent);"></i>
-        Loading verified invoice details...
+    <div class="invoice-print-area" id="invoice-container">
+      <div class="invoice-card" id="invoiceCard">
+        <div style="text-align:center; padding:40px; color:var(--text-muted);">
+          <i class="bi bi-hourglass-split" style="font-size:32px; display:block; margin-bottom:12px; color:var(--accent);"></i>
+          Loading verified invoice details...
+        </div>
       </div>
     </div>
   </div>

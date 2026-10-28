@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>HutFix — Reports & Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="css/style.css" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('hutfix_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="main-area">
+      <header class="topbar" id="topbar"></header>
+
+      <section class="content" id="content">
+        <div id="app-content">
+          <div class="page-head" style="margin-bottom:20px;">
+            <span class="eyebrow">MARKETPLACE INTELLIGENCE</span>
+            <h2>Reports & Analytics</h2>
+            <p>Historical booking volume, gross platform transactions, and 7-day activity telemetry.</p>
+          </div>
+
+          <!-- 4 Stat Cards -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-head">Gross Volume <span class="stat-icon">৳</span></div>
+              <div class="stat-value" id="valGrossVolume">--</div>
+              <div class="stat-foot">Cumulative transaction volume</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-head">Total Bookings <span class="stat-icon"><i class="bi bi-calendar2-check"></i></span></div>
+              <div class="stat-value" id="valTotalBookings">--</div>
+              <div class="stat-foot">All service orders</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-head">Total Users <span class="stat-icon"><i class="bi bi-people"></i></span></div>
+              <div class="stat-value" id="valTotalUsers">--</div>
+              <div class="stat-foot">Registered clients</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-head">Total Providers <span class="stat-icon"><i class="bi bi-person-badge"></i></span></div>
+              <div class="stat-value" id="valTotalProviders">--</div>
+              <div class="stat-foot">Verified specialists</div>
+            </div>
+          </div>
+
+          <!-- Analytics & 7-Day CSS Bar Chart -->
+          <div class="analytics-grid">
+            <div class="panel">
+              <div class="panel-head" style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <h3>Bookings over the last 7 days</h3>
+                  <p>Daily booking dispatch distribution</p>
+                </div>
+                <span class="badge badge-accepted"><i class="bi bi-graph-up"></i> Last 7 Days</span>
+              </div>
+              <div class="chart-container" style="border:none; padding:10px 0 0;">
+                <div class="bar-chart" id="weeklyBarChart">
+                  <div class="empty-state" style="width:100%; text-align:center; padding:40px;">Loading weekly activity chart...</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Booking Status Distribution Breakdown -->
+            <div class="panel">
+              <div class="panel-head">
+                <h3>Order Status Telemetry</h3>
+                <p>Real-time lifecycle distribution</p>
+              </div>
+              <div id="statusTelemetryList" style="display:flex; flex-direction:column; gap:14px; margin-top:16px;">
+                <div class="empty-state" style="padding:20px;">Computing status breakdown...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer"><span>© 2026 HutFix Marketplace</span><span>Made for a home that works.</span></footer>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="js/images.js"></script>
+  <script src="js/global.js"></script>
+  <script src="js/admin-reports.js"></script>
+</body>
+</html>
