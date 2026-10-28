@@ -72,15 +72,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const timelineHtml = isCancelled
         ? `<div class="conflict-alert" style="text-align:center; font-weight:700; margin:20px 0;">Request Cancelled</div>`
-        : `<div class="timeline">
-            ${steps.map((s, i) => `
-              <div class="timeline-step ${i < currentStep ? 'done' : i === currentStep ? 'current' : ''}">
-                <div class="step-dot">${i < currentStep ? '<i class="bi bi-check-lg"></i>' : i + 1}</div>
-                ${s}
-                <small>${events[i] ? new Date(events[i].created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (i <= currentStep ? 'Logged' : 'Pending')}</small>
-              </div>
-            `).join('')}
-          </div>`;
+        : `
+          <div class="timeline-wrapper">
+            <div class="timeline-line"></div>
+            <div class="timeline-steps">
+              ${steps.map((s, i) => {
+                const isDone = i < currentStep;
+                const isActive = i === currentStep;
+                const stateClass = isDone ? 'done' : (isActive ? 'active' : '');
+                const timeStr = events[i] ? new Date(events[i].created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (i <= currentStep ? 'Logged' : 'Pending');
+
+                return `
+                  <div class="timeline-step ${stateClass}">
+                    <div class="step-dot"><i class="bi bi-check-lg"></i></div>
+                    <div class="step-label">${s}</div>
+                    <div class="step-time">${timeStr}</div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
 
       const canCancel = rawStatus === 'requested' || rawStatus === 'accepted';
       const canRate = rawStatus === 'completed' && !rating;
