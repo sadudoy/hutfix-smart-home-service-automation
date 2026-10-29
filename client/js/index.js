@@ -21,11 +21,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     ['Maintenance', '<i class="bi bi-house-gear"></i>', 'bg-yellow', 'Home Maintenance']
   ];
 
-  // Render category buttons
+  // Category management & selection
   const catGrid = document.getElementById('categoryGrid');
-  if (catGrid) {
+
+  function updateCategorySelection() {
+    if (!catGrid) return;
+    catGrid.querySelectorAll('.category-card').forEach(b => {
+      const catVal = b.dataset.category || b.dataset.cat;
+      if (catVal === currentCategory) {
+        b.classList.add('selected');
+      } else {
+        b.classList.remove('selected');
+      }
+    });
+  }
+
+  function renderCategoryButtons() {
+    if (!catGrid) return;
     catGrid.innerHTML = categories.map(([cat, ic, bg, sub]) => `
-      <button type="button" class="category-card ${cat === currentCategory ? 'selected' : ''}" data-cat="${cat}">
+      <button type="button" class="category-card ${cat === currentCategory ? 'selected' : ''}" data-category="${cat}" data-cat="${cat}">
         <span class="category-icon ${bg}">${ic}</span>
         <strong>${cat}</strong>
         <small>${sub}</small>
@@ -33,10 +47,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     `).join('');
 
     catGrid.querySelectorAll('.category-card').forEach(btn => {
-      btn.addEventListener('click', () => {
-        catGrid.querySelectorAll('.category-card').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        currentCategory = btn.dataset.cat;
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        currentCategory = btn.dataset.category || btn.dataset.cat;
+        updateCategorySelection();
+        btn.blur();
         searchQuery = '';
         const searchInput = document.getElementById('serviceSearch');
         if (searchInput) searchInput.value = '';
@@ -45,12 +60,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  document.getElementById('viewAllCatBtn')?.addEventListener('click', () => {
+  if (catGrid) {
+    renderCategoryButtons();
+  }
+
+  document.getElementById('viewAllCatBtn')?.addEventListener('click', (e) => {
+    e.preventDefault();
     currentCategory = 'All services';
-    catGrid?.querySelectorAll('.category-card').forEach(b => {
-      if (b.dataset.cat === 'All services') b.classList.add('selected');
-      else b.classList.remove('selected');
-    });
+    updateCategorySelection();
     renderServiceCards();
   });
 

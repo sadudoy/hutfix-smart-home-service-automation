@@ -49,7 +49,10 @@ async function runSmokeTest() {
     // Step 2: Book manual payment
     console.log('[Step 2] Book service with bKash manual payment proof...');
     const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + 3);
+    targetDate.setDate(targetDate.getDate() + 2);
+    if (targetDate.getDay() === 0) {
+      targetDate.setDate(targetDate.getDate() + 1); // Skip Sunday to Monday
+    }
     const dateStr = targetDate.toISOString().split('T')[0];
 
     const slotsRes = await apiRequest(`/api/providers/1/slots?date=${dateStr}&category_slug=appliance-repair`);
