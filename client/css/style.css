@@ -3085,3 +3085,102 @@ button {
   color: #f8fafc;
   border: 1px solid #334155;
 }
+
+/* --- ROLE BADGES & STATUS PILLS (WITHOUT DOT) --- */
+.status-pill,
+.role-pill,
+.role-badge,
+.table-role,
+.badge-role {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: capitalize;
+  line-height: 1.4;
+}
+
+/* Remove dot from role badges */
+.role-badge::before,
+.badge-role::before,
+.table-role::before,
+.status-pill::before,
+.role-pill::before,
+.role-badge:before,
+.badge-role:before,
+.table-role:before,
+.status-pill:before,
+.role-pill:before,
+.status.no-dot::before,
+.status.no-dot:before,
+.status.role-admin::before,
+.status.role-admin:before,
+.status.role-provider::before,
+.status.role-provider:before,
+.status.role-customer::before,
+.status.role-customer:before,
+.status.admin::before,
+.status.admin:before,
+.status.provider::before,
+.status.provider:before,
+.status.customer::before,
+.status.customer:before {
+  display: none !important;
+  content: none !important;
+}
+
+.status-pill.completed,
+.role-pill.customer,
+.role-badge.role-customer {
+  color: #238d64;
+  background: #e4f8ef;
+}
+
+.status-pill.progress,
+.role-pill.provider,
+.role-badge.role-provider {
+  color: #b27a18;
+  background: #fff4d9;
+}
+
+.status-pill.review,
+.role-pill.admin,
+.role-badge.role-admin {
+  color: #9165c7;
+  background: #f3eaff;
+}
+
+.status-pill.danger {
+  color: #c45555;
+  background: #fff0f0;
+}
+
+[data-theme="dark"] .status-pill.completed,
+[data-theme="dark"] .role-pill.customer,
+[data-theme="dark"] .role-badge.role-customer {
+  background: rgba(28, 155, 106, 0.2);
+  color: #4ade80;
+}
+
+[data-theme="dark"] .status-pill.progress,
+[data-theme="dark"] .role-pill.provider,
+[data-theme="dark"] .role-badge.role-provider {
+  background: rgba(243, 182, 76, 0.2);
+  color: #fcd34d;
+}
+
+[data-theme="dark"] .status-pill.review,
+[data-theme="dark"] .role-pill.admin,
+[data-theme="dark"] .role-badge.role-admin {
+  background: rgba(145, 101, 199, 0.2);
+  color: #c084fc;
+}
+
+[data-theme="dark"] .status-pill.danger {
+  background: rgba(231, 104, 104, 0.2);
+  color: #f87171;
+}
+

@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               </div>
             </div>
           </td>
-          <td><span class="status ${u.role === 'admin' ? 'review' : isPro ? (isActive ? 'progress' : 'danger') : 'completed'}">${u.role}</span></td>
+          <td><span class="status-pill ${u.role === 'admin' ? 'review' : isPro ? (isActive ? 'progress' : 'danger') : 'completed'}">${u.role}</span></td>
           <td>${window.escapeHtml(u.email)}<br><small style="color:var(--muted);">${window.escapeHtml(u.phone || 'N/A')}</small></td>
           <td>${new Date(u.created_at).toLocaleDateString()}</td>
           <td>
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
             <div>
               <h3 style="margin:0 0 4px; font-size:18px; color:var(--text-main);">${window.escapeHtml(u.full_name)}</h3>
-              <span class="status ${u.role === 'admin' ? 'review' : isProvider ? 'progress' : 'completed'}" style="font-size:11px; padding:2px 8px;">${u.role.toUpperCase()} ACCOUNT</span>
+              <span class="status-pill ${u.role === 'admin' ? 'review' : isProvider ? 'progress' : 'completed'}" style="font-size:11px; padding:2px 8px;">${u.role.toUpperCase()} ACCOUNT</span>
               ${isProvider ? `<span class="status ${u.is_active ? 'completed' : 'danger'}" style="margin-left:6px; font-size:11px; padding:2px 8px;">${u.is_active ? 'Verified & Active' : 'Pending Verification'}</span>` : ''}
             </div>
           </div>

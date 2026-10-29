@@ -21,10 +21,10 @@ async function loadTickets() {
     tbody.innerHTML = tickets.map(t => {
       const dt = t.created_at ? new Date(t.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
       const roleBadge = t.role === 'provider' 
-        ? '<span class="badge" style="background:var(--accent-glow); color:var(--accent); font-weight:700;">Specialist</span>'
+        ? '<span class="status-pill progress">Specialist</span>'
         : (t.role === 'admin' 
-            ? '<span class="badge badge-assigned">Admin</span>' 
-            : '<span class="badge badge-accepted">Customer</span>');
+            ? '<span class="status-pill review">Admin</span>' 
+            : '<span class="status-pill completed">Customer</span>');
 
       let statusBadge = '<span class="badge badge-pending">Open</span>';
       if (t.status === 'resolved') {
