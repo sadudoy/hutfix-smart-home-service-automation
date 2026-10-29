@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
 
         <!-- 2-Column Details Layout -->
-        <div style="display:grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap:24px; align-items:start;">
+        <div class="gig-layout gig-grid" style="display:grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap:24px; align-items:start;">
           
           <!-- Left Column: Details, Highlights & Reviews -->
           <div>
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>
 
           <!-- Right Column: Sticky Booking Widget -->
-          <div style="position:sticky; top:24px;">
+          <div class="sticky-card booking-card-sidebar" style="position:sticky; top:24px;">
             <div class="panel" style="border: 2px solid var(--primary); box-shadow: var(--shadow);">
               <div class="panel-head">
                 <span class="eyebrow" style="color:var(--primary);">INSTANT SERVICE</span>

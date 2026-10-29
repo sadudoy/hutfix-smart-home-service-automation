@@ -353,7 +353,7 @@ window.renderLayout = async function(expectedRole = null, activePage = '', passe
             <i class="bi bi-bell"></i>
             <span class="notification-dot badge" id="notifDot" style="display:none; position:absolute; top:5px; right:5px; width:8px; height:8px; background:#ef4444; border-radius:50%;"></span>
           </button>
-          <div id="notificationsDropdown" style="display:none; position:absolute; top:52px; right:45px; width:320px; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:14px; box-shadow:var(--shadow); padding:16px; z-index:100; color:var(--text-main);">
+          <div class="notification-dropdown notification-panel" id="notificationsDropdown" style="display:none; position:absolute; top:52px; right:45px; width:320px; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:14px; box-shadow:var(--shadow); padding:16px; z-index:100; color:var(--text-main);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
               <strong style="font-size:14px;">Notifications</strong>
               <small id="markAllReadBtn" style="color:var(--primary); cursor:pointer; font-weight:600;">Mark all read</small>
