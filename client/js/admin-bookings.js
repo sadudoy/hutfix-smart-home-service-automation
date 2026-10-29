@@ -65,14 +65,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       const norm = normalizeStatus(b.status);
       return `
         <tr>
-          <td><strong>#${b.id}</strong></td>
-          <td>${b.preferred_date || 'N/A'}</td>
-          <td>${window.escapeHtml(b.customer_name || 'Customer')}</td>
-          <td>${window.escapeHtml(b.provider_name || 'Unassigned')}</td>
-          <td>${window.escapeHtml(b.category_name || 'Service')}</td>
-          <td><span class="badge font-mono" style="font-size:11px; padding:3px 8px;">${(b.payment_method || 'bKash').toUpperCase()}</span></td>
-          <td><strong>${window.money(b.estimated_price)}</strong></td>
-          <td><span class="status ${statusClass(norm)}">${norm}</span></td>
+          <td data-label="ID"><strong>#${b.id}</strong></td>
+          <td data-label="Date">${b.preferred_date || 'N/A'}</td>
+          <td data-label="Customer">${window.escapeHtml(b.customer_name || 'Customer')}</td>
+          <td data-label="Provider">${window.escapeHtml(b.provider_name || 'Unassigned')}</td>
+          <td data-label="Service">${window.escapeHtml(b.category_name || 'Service')}</td>
+          <td data-label="Payment Method"><span class="badge font-mono" style="font-size:11px; padding:3px 8px;">${(b.payment_method || 'bKash').toUpperCase()}</span></td>
+          <td data-label="Amount"><strong>${window.money(b.estimated_price)}</strong></td>
+          <td data-label="Status"><span class="status ${statusClass(norm)}">${norm}</span></td>
         </tr>
       `;
     }).join('');

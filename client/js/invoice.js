@@ -120,13 +120,13 @@ function renderInvoice(inv) {
       </thead>
       <tbody>
         <tr>
-          <td>
+          <td data-label="Item & Description">
             <strong style="color:var(--text-main); font-size:15px;">${window.escapeHtml(inv.category_name || 'Home Maintenance')} Service</strong>
             <div style="font-size:13px; color:var(--text-muted); margin-top:2px;">Specialist labor, standard equipment diagnostic, and resolution for Booking #${inv.request_id}</div>
           </td>
-          <td style="text-align:center; font-weight:600;">1</td>
-          <td style="text-align:right; font-family:var(--font-mono);">${window.money(subtotal)}</td>
-          <td style="text-align:right; font-family:var(--font-mono); font-weight:700;">${window.money(subtotal)}</td>
+          <td data-label="Qty" style="text-align:center; font-weight:600;">1</td>
+          <td data-label="Unit Price" style="text-align:right; font-family:var(--font-mono);">${window.money(subtotal)}</td>
+          <td data-label="Amount" style="text-align:right; font-family:var(--font-mono); font-weight:700;">${window.money(subtotal)}</td>
         </tr>
       </tbody>
     </table>

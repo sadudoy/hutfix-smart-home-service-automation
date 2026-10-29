@@ -37,20 +37,20 @@ async function loadTickets() {
 
       return `
         <tr>
-          <td><strong style="color:var(--text-main);">${dt}</strong><div class="table-sub">Ticket #${t.id}</div></td>
-          <td>
+          <td data-label="Created"><strong style="color:var(--text-main);">${dt}</strong><div class="table-sub">Ticket #${t.id}</div></td>
+          <td data-label="User / Sender">
             <div style="font-weight:600; color:var(--text-main);">${window.escapeHtml(t.full_name || 'User')}</div>
             <div class="table-sub"><i class="bi bi-envelope"></i> ${window.escapeHtml(t.email || '—')}</div>
           </td>
-          <td>${roleBadge}</td>
-          <td>
+          <td data-label="Role">${roleBadge}</td>
+          <td data-label="Subject">
             <strong style="color:var(--text-main);">${window.escapeHtml(t.subject || 'No subject')}</strong>
           </td>
-          <td style="max-width:320px;">
+          <td data-label="Message" style="max-width:320px;">
             <div style="font-size:13px; color:var(--text-muted); white-space:pre-wrap; word-break:break-word;">${window.escapeHtml(t.message || '')}</div>
           </td>
-          <td>${statusBadge}</td>
-          <td>
+          <td data-label="Status">${statusBadge}</td>
+          <td data-label="Actions">
             <div style="display:flex; gap:6px; align-items:center;">
               <button class="btn btn-sm btn-primary" onclick="openAdminTicketChat(${t.id})" title="Open live ticket conversation">
                 <i class="bi bi-chat-dots"></i> Chat

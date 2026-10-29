@@ -40,10 +40,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
           bTbody.innerHTML = bookings.slice(0, 5).map(b => `
             <tr>
-              <td><strong>#${b.id}</strong></td>
-              <td>${window.escapeHtml(b.category_name || 'Service')}</td>
-              <td>${window.escapeHtml(b.customer_name || 'Client')}</td>
-              <td><span class="status ${b.status === 'completed' ? 'completed' : b.status === 'cancelled' ? 'cancelled' : 'progress'}">${b.status}</span></td>
+              <td data-label="ID"><strong>#${b.id}</strong></td>
+              <td data-label="Service">${window.escapeHtml(b.category_name || 'Service')}</td>
+              <td data-label="Customer">${window.escapeHtml(b.customer_name || 'Client')}</td>
+              <td data-label="Status"><span class="status ${b.status === 'completed' ? 'completed' : b.status === 'cancelled' ? 'cancelled' : 'progress'}">${b.status}</span></td>
             </tr>
           `).join('');
         }

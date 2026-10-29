@@ -31,14 +31,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       addressTbody.innerHTML = addresses.map(a => `
         <tr>
-          <td><strong>${window.escapeHtml(a.label || 'Home')}</strong></td>
-          <td>${window.escapeHtml(a.address_line)}</td>
-          <td>
+          <td data-label="Label"><strong>${window.escapeHtml(a.label || 'Home')}</strong></td>
+          <td data-label="Address">${window.escapeHtml(a.address_line)}</td>
+          <td data-label="Default">
             ${a.is_default
               ? `<span class="status completed"><i class="bi bi-check-circle-fill"></i> Default</span>`
               : `<button class="secondary-btn" onclick="setDefaultAddress(${a.id})" style="padding:4px 8px; font-size:11px; min-height:26px;">Set Default</button>`}
           </td>
-          <td>
+          <td data-label="Actions">
             <button class="danger-btn" onclick="deleteAddress(${a.id})" style="padding:4px 10px; font-size:12px; min-height:28px;">
               <i class="bi bi-trash"></i> Delete
             </button>

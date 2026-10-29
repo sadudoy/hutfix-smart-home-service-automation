@@ -36,26 +36,26 @@ async function loadPayments() {
 
       return `
         <tr>
-          <td><strong style="color:var(--text-main);">${dt}</strong><div class="table-sub">Req #${p.id}</div></td>
-          <td>
+          <td data-label="Date"><strong style="color:var(--text-main);">${dt}</strong><div class="table-sub">Req #${p.id}</div></td>
+          <td data-label="Customer Name">
             <div style="font-weight:600; color:var(--text-main);">${window.escapeHtml(p.customer_name || 'Customer')}</div>
             <div class="table-sub"><i class="bi bi-telephone"></i> ${window.escapeHtml(p.customer_phone || p.customer_email || '—')}</div>
           </td>
-          <td>
+          <td data-label="TrxID">
             <code style="background:var(--bg-sunken); padding:3px 8px; border-radius:4px; font-weight:700; color:var(--accent); font-family:var(--font-mono);">${window.escapeHtml(p.trx_id || 'N/A')}</code>
           </td>
-          <td>
+          <td data-label="Sender Number">
             <span style="font-family:var(--font-mono); font-weight:600; color:var(--text-main);">${window.escapeHtml(p.sender_number || '—')}</span>
             <div>${methodBadge}</div>
           </td>
-          <td>
+          <td data-label="Service">
             <div style="font-weight:500; color:var(--text-main);">${window.escapeHtml(p.category_name || 'General')}</div>
             <div class="table-sub">Slot: ${window.escapeHtml(p.preferred_date || '—')}</div>
           </td>
-          <td>
+          <td data-label="Amount">
             <strong style="color:var(--accent); font-size:15px;">${window.money(p.estimated_price || 0)}</strong>
           </td>
-          <td>
+          <td data-label="Action">
             <div style="display:flex; gap:6px; align-items:center;">
               <button class="btn btn-sm btn-primary" onclick="verifyPayment(${p.id}, 'verify', this)">
                 <i class="bi bi-check-circle"></i> Verify

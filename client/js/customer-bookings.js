@@ -80,13 +80,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       return `
         <tr>
-          <td><strong>${b.displayId}</strong></td>
-          <td>${window.escapeHtml(b.service)}</td>
-          <td><strong>${window.escapeHtml(b.provider)}</strong></td>
-          <td>${b.date}</td>
-          <td><span class="status ${statusClass(b.status)}">${b.status}</span></td>
-          <td><strong>${window.money(b.price)}</strong></td>
-          <td>
+          <td data-label="Booking ID"><strong>${b.displayId}</strong></td>
+          <td data-label="Service Name">${window.escapeHtml(b.service)}</td>
+          <td data-label="Provider Name"><strong>${window.escapeHtml(b.provider)}</strong></td>
+          <td data-label="Date & Time">${b.date}</td>
+          <td data-label="Status"><span class="status ${statusClass(b.status)}">${b.status}</span></td>
+          <td data-label="Price"><strong>${window.money(b.price)}</strong></td>
+          <td data-label="Action">
             <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
               ${isPendingOrActive ? `
                 <a href="customer-track.html?id=${b.id}" class="secondary-btn" style="padding:4px 10px; font-size:12px; min-height:30px;"><i class="bi bi-geo-alt"></i> Track</a>

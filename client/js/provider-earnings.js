@@ -41,10 +41,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else {
         payoutsTbody.innerHTML = payouts.map(po => `
           <tr>
-            <td><strong>#${po.id}</strong></td>
-            <td><strong>${window.money(po.amount)}</strong></td>
-            <td>${new Date(po.created_at).toLocaleDateString()}</td>
-            <td>
+            <td data-label="Payout ID"><strong>#${po.id}</strong></td>
+            <td data-label="Amount"><strong>${window.money(po.amount)}</strong></td>
+            <td data-label="Date">${new Date(po.created_at).toLocaleDateString()}</td>
+            <td data-label="Status">
               <span class="status ${po.status === 'completed' ? 'completed' : po.status === 'rejected' ? 'danger' : 'progress'}">
                 ${po.status}
               </span>
@@ -64,13 +64,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           return `
             <tr>
-              <td><strong>#${i.id || i.invoice_number}</strong></td>
-              <td>${new Date(i.issued_at).toLocaleDateString()}</td>
-              <td>${window.escapeHtml(i.category_name || 'Service')}</td>
-              <td>${window.escapeHtml(i.customer_name || 'Client')}</td>
-              <td><strong>${window.money(gross)}</strong></td>
-              <td style="color:var(--muted);">${window.money(fee)}</td>
-              <td><strong style="color:var(--green);">${window.money(net)}</strong></td>
+              <td data-label="Invoice ID"><strong>#${i.id || i.invoice_number}</strong></td>
+              <td data-label="Date">${new Date(i.issued_at).toLocaleDateString()}</td>
+              <td data-label="Service">${window.escapeHtml(i.category_name || 'Service')}</td>
+              <td data-label="Customer">${window.escapeHtml(i.customer_name || 'Client')}</td>
+              <td data-label="Gross (৳)"><strong>${window.money(gross)}</strong></td>
+              <td data-label="Fee (10%)" style="color:var(--muted);">${window.money(fee)}</td>
+              <td data-label="Net Payout (৳)"><strong style="color:var(--green);">${window.money(net)}</strong></td>
             </tr>
           `;
         }).join('');

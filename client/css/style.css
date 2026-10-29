@@ -3203,8 +3203,26 @@ button {
 
 /* --- MOBILE ONLY (768px and below) --- */
 @media (max-width: 768px) {
-  body, html { overflow-x: hidden; width: 100%; max-width: 100vw; }
-  .app-shell, .main-area, .content { width: 100%; max-width: 100%; overflow-x: hidden; box-sizing: border-box; }
+  html, body {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden !important;
+    position: relative;
+  }
+
+  /* Ensure structural containers never stretch */
+  .app-shell, .main-area, .content, .dashboard-grid, .panel, .modal, .modal-body {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Prevent long text (like emails or URLs) from stretching the screen */
+  p, span, td, div, a {
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
 
   .app-shell { flex-direction: column; }
   .sidebar {
@@ -3235,13 +3253,78 @@ button {
   .timeline-steps { flex-direction: column !important; align-items: flex-start; gap: 20px; }
   .timeline-line { display: none; } 
 
-  /* Fix Tables */
+  /* Force table wrappers to hide overflow */
   .table-responsive-wrap,
-  .table-wrap { width: 100%; overflow-x: auto; display: block; -webkit-overflow-scrolling: touch; }
-  .data-table { min-width: 600px; /* Allows scroll inside the container, not the page */ }
-  .data-table th, .data-table td { white-space: nowrap; }
+  .table-wrap {
+    display: block;
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important; 
+    border: none !important;
+    padding: 0 !important;
+  }
 
-  /* Fix Provider Gig Rows (Screenshot 2) */
+  /* Hide the standard table header */
+  .data-table thead { display: none !important; }
+
+  /* Change table structure to block */
+  .data-table, .data-table tbody, .data-table tr, .data-table td {
+    display: block;
+    width: 100%;
+    min-width: 0 !important;
+    box-sizing: border-box;
+  }
+
+  /* Style each row as a card */
+  .data-table tr {
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    background: var(--bg-surface);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+
+  /* Style each cell as a label/value row */
+  .data-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border);
+    text-align: right;
+    white-space: normal !important;
+    font-size: 14px;
+  }
+
+  .data-table td:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  /* Add labels using data-label attribute */
+  .data-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: left;
+    margin-right: 15px;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  /* Empty state rows in stacked table */
+  .data-table td.empty-state, .data-table td[colspan] {
+    display: block !important;
+    text-align: center !important;
+    justify-content: center !important;
+    border-bottom: none !important;
+  }
+  .data-table td.empty-state::before, .data-table td[colspan]::before {
+    display: none !important;
+  }
+
+  /* Fix Provider Gig Rows */
   .gig-row {
     flex-direction: column !important;
     align-items: flex-start !important;
@@ -3251,9 +3334,27 @@ button {
   .gig-meta { text-align: left; width: 100%; display: flex; justify-content: space-between; align-items: center; }
   .admin-actions { width: 100%; justify-content: flex-end; }
 
-  /* Fix Invoice (Screenshot 4) */
-  .invoice-print-area { width: 100%; overflow-x: hidden; padding: 15px; }
-  .invoice-print-area table { display: block; overflow-x: auto; }
+  /* Invoice */
+  .invoice-print-area {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    padding: 15px !important;
+    box-sizing: border-box !important;
+  }
+  .invoice-print-area table, .invoice-print-area tbody, .invoice-print-area tr, .invoice-print-area td {
+    display: block;
+    width: 100%;
+  }
+  .invoice-print-area thead { display: none; }
+  .invoice-print-area td { padding: 5px 0; text-align: right; }
+  .invoice-card { padding: 16px !important; width: 100% !important; box-sizing: border-box !important; }
+  .invoice-wrap { padding: 0 10px !important; margin: 15px auto !important; width: 100% !important; box-sizing: border-box !important; }
+  .invoice-summary { width: 100% !important; max-width: 100% !important; }
+
+  /* Chat / Support Modals */
+  .chat-messages { width: 100% !important; overflow-x: hidden; }
+  .chat-bubble, .chat-msg { max-width: 90% !important; word-break: break-word; }
 }
 
 @media (max-width: 480px) {

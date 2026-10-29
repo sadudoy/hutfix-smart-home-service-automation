@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       return `
         <tr>
-          <td>
+          <td data-label="User">
             <div class="admin-user" style="display:flex; align-items:center; gap:12px;">
               <div class="avatar ${isPro ? 'avatar-green' : 'avatar-lilac'}">
                 ${(u.full_name || 'U').slice(0, 2).toUpperCase()}
@@ -55,10 +55,10 @@ document.addEventListener('DOMContentLoaded', async () => {
               </div>
             </div>
           </td>
-          <td><span class="status-pill ${u.role === 'admin' ? 'review' : isPro ? (isActive ? 'progress' : 'danger') : 'completed'}">${u.role}</span></td>
-          <td>${window.escapeHtml(u.email)}<br><small style="color:var(--muted);">${window.escapeHtml(u.phone || 'N/A')}</small></td>
-          <td>${new Date(u.created_at).toLocaleDateString()}</td>
-          <td>
+          <td data-label="Role"><span class="status-pill ${u.role === 'admin' ? 'review' : isPro ? (isActive ? 'progress' : 'danger') : 'completed'}">${u.role}</span></td>
+          <td data-label="Contact">${window.escapeHtml(u.email)}<br><small style="color:var(--muted);">${window.escapeHtml(u.phone || 'N/A')}</small></td>
+          <td data-label="Joined">${new Date(u.created_at).toLocaleDateString()}</td>
+          <td data-label="Action">
             <div class="admin-actions" style="display:flex; gap:6px;">
               <button class="secondary-btn" style="padding:4px 10px; font-size:12px; min-height:30px;" onclick="viewUser(${u.id})">
                 <i class="bi bi-eye"></i> View

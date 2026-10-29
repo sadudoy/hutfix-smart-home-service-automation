@@ -24,20 +24,20 @@ async function loadPayouts() {
 
       return `
         <tr>
-          <td><strong style="color:var(--text-main);">${dt}</strong><div class="table-sub">Req #${p.id}</div></td>
-          <td>
+          <td data-label="Date"><strong style="color:var(--text-main);">${dt}</strong><div class="table-sub">Req #${p.id}</div></td>
+          <td data-label="Provider Name">
             <div style="font-weight:600; color:var(--text-main);">${window.escapeHtml(p.provider_name || 'Specialist')}</div>
             <div class="table-sub">Provider ID #${p.provider_id}</div>
           </td>
-          <td>
+          <td data-label="Contact / Phone">
             <div style="font-family:var(--font-mono); font-weight:600; color:var(--text-main);"><i class="bi bi-telephone"></i> ${window.escapeHtml(p.provider_phone || '—')}</div>
             <div class="table-sub"><i class="bi bi-envelope"></i> ${window.escapeHtml(p.provider_email || '—')}</div>
           </td>
-          <td>
+          <td data-label="Amount">
             <strong style="color:var(--accent); font-size:16px;">${window.money(p.amount || 0)}</strong>
           </td>
-          <td>${statusBadge}</td>
-          <td>
+          <td data-label="Status">${statusBadge}</td>
+          <td data-label="Action">
             <div style="display:flex; gap:6px; align-items:center;">
               <button class="btn btn-sm btn-primary" onclick="approvePayout(${p.id}, 'approve', this)">
                 <i class="bi bi-check-circle"></i> Approve
