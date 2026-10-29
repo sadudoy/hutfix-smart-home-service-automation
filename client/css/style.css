@@ -3184,3 +3184,48 @@ button {
   color: #f87171;
 }
 
+/* Default: Hide the mobile menu button on desktop */
+.mobile-menu-btn { display: none; }
+.sidebar-overlay { display: none; }
+
+/* --- MOBILE ONLY (768px and below) --- */
+@media (max-width: 768px) {
+  .app-shell { flex-direction: column; }
+  .sidebar {
+    position: fixed; top: 0; left: -100%; width: 260px; height: 100vh;
+    z-index: 9999; transition: left 0.3s ease;
+  }
+  .sidebar.open { left: 0; }
+  .sidebar-overlay.active { display: block; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; }
+  .mobile-menu-btn { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; background: transparent; border: 1px solid var(--border); border-radius: 10px; font-size: 20px; cursor: pointer; color: var(--text-main); }
+  .main-area { width: 100%; margin-left: 0; }
+  
+  .topbar { padding: 10px 15px; flex-wrap: wrap; gap: 10px; height: auto; min-height: 67px; }
+  .location-pill { display: none; /* Hide on mobile to save space */ }
+  .content { padding: 15px !important; }
+  
+  /* Grids */
+  .category-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+  .service-grid { grid-template-columns: 1fr !important; gap: 16px; }
+  .dashboard-grid { grid-template-columns: 1fr !important; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px; }
+  
+  /* Modals & Forms */
+  .modal { width: 95% !important; max-height: 90vh; overflow-y: auto; }
+  .form-grid { grid-template-columns: 1fr !important; }
+  
+  /* Timeline */
+  .timeline-steps { flex-direction: column !important; align-items: flex-start; gap: 20px; }
+  .timeline-line { display: none; } 
+
+  /* Tables */
+  .table-responsive-wrap,
+  .table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .data-table { min-width: 600px; /* Force horizontal scroll instead of squishing */ }
+}
+
+@media (max-width: 480px) {
+  .category-grid { grid-template-columns: 1fr !important; }
+  .stats-grid { grid-template-columns: 1fr !important; }
+}
+

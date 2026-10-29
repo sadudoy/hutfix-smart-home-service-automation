@@ -323,6 +323,9 @@ window.renderLayout = async function(expectedRole = null, activePage = '', passe
     const pageTitle = activePage ? activePage.replace(/-/g, ' ') : (document.title.split('—')[1]?.trim() || 'Dashboard');
 
     topbarEl.innerHTML = `
+      <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Toggle navigation menu" style="margin-right:8px;">
+        <i class="bi bi-list"></i>
+      </button>
       <div class="breadcrumb">
         <span>Workspace</span><b>/</b><strong>${escapeHtml(pageTitle)}</strong>
       </div>
@@ -444,6 +447,46 @@ window.renderLayout = async function(expectedRole = null, activePage = '', passe
           if (dot && d.unread_count > 0) dot.style.display = 'block';
         }).catch(() => {});
     }
+
+    // Mobile Menu Toggle & Overlay
+    let overlay = document.querySelector('.sidebar-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.className = 'sidebar-overlay';
+      document.body.appendChild(overlay);
+    }
+
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const sidebar = document.getElementById('sidebar');
+
+    if (mobileMenuBtn && sidebar) {
+      mobileMenuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+      });
+
+      overlay.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+      });
+
+      sidebar.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          if (window.innerWidth <= 768) {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+          }
+        });
+      });
+    }
+
+    // Auto-wrap data-table in table-responsive-wrap
+    document.querySelectorAll('table.data-table').forEach(tbl => {
+      if (!tbl.parentElement.classList.contains('table-responsive-wrap')) {
+        tbl.parentElement.classList.add('table-responsive-wrap');
+      }
+    });
   }
 
   // 3. Inject Rich Footer across all pages that have <footer class="footer">
