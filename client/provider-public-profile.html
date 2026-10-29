@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>HutFix — Specialist Public Profile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="css/style.css" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('hutfix_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="main-area">
+      <header class="topbar" id="topbar"></header>
+
+      <section class="content" id="content">
+        <div style="margin-bottom:16px;">
+          <a href="index.html" class="secondary-btn" style="padding:6px 14px; font-size:13px; min-height:36px; display:inline-flex; align-items:center;">
+            <i class="bi bi-arrow-left" style="margin-right:6px;"></i> Back to Discover
+          </a>
+        </div>
+
+        <div id="providerProfileContainer">
+          <div class="empty-state">Loading specialist profile...</div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div class="footer-inner">
+          <div class="footer-brand-col">
+            <div class="footer-logo">
+              <img src="assets/images/logo.jpg" alt="HutFix" style="width: 28px; height: 28px; border-radius: 6px; object-fit: cover;" />
+              <span style="font-family: Manrope, sans-serif; font-weight: 800; font-size: 18px; color: var(--text-main);">HutFix</span>
+            </div>
+            <p class="footer-tagline">On-demand trusted home repairs & maintenance across Dhaka.</p>
+            <div class="footer-socials">
+              <a href="#" target="_blank" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+              <a href="#" target="_blank" aria-label="GitHub"><i class="bi bi-github"></i></a>
+              <a href="mailto:hello@example.com" aria-label="Email"><i class="bi bi-envelope-fill"></i></a>
+              <a href="https://wa.me/8801700000000" target="_blank" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+            </div>
+          </div>
+          <div class="footer-nav-col">
+            <strong>Company</strong>
+            <a href="about.html">About Us</a>
+            <a href="about.html#how-it-works">How It Works</a>
+            <a href="about.html#careers">Careers</a>
+            <a href="about.html#press">Press</a>
+          </div>
+          <div class="footer-nav-col">
+            <strong>Legal & Policies</strong>
+            <a href="terms.html#terms">Terms & Conditions</a>
+            <a href="terms.html#privacy">Privacy Policy</a>
+            <a href="terms.html#refunds">Refund Policy</a>
+            <a href="terms.html#trust">Trust & Safety</a>
+          </div>
+          <div class="footer-nav-col">
+            <strong>Platform</strong>
+            <a href="index.html">Explore Services</a>
+            <a href="login.html">Sign In</a>
+            <a href="signup.html">Create Account</a>
+            <span style="font-size: 12px; color: var(--text-muted); margin-top: 4px;"><i class="bi bi-headset"></i> 24/7 Support</span>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>© 2026 HutFix Marketplace. Made for a home that works. Developed by <strong>Sad Ibna Forid</strong></span>
+          <span>Dhaka, Bangladesh</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="js/images.js"></script>
+  <script src="js/global.js"></script>
+  <script src="js/provider-public-profile.js"></script>
+</body>
+</html>

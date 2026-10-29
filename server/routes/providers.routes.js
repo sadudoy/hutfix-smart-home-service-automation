@@ -10,6 +10,9 @@ router.get('/:userId/profile', requireAuth, requireRole('provider', 'admin'), pr
 router.get('/search', providersCtrl.search);
 router.get('/', providersCtrl.search);
 
+router.get('/:id/public', providersCtrl.getPublicProfile);
+router.get('/public/:id', providersCtrl.getPublicProfile);
+
 router.get('/:id/slots', async (req, res, next) => {
     try {
         const providerId = parseInt(req.params.id, 10);

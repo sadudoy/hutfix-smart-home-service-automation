@@ -1,220 +1,205 @@
 /**
- * HutFix — Specialist Gig Profile & Direct Booking Page (MPA)
+ * HutFix — Service Gig Details Page (MPA)
+ * Fiverr-style service gig presentation with isolated details & reviews
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
   await window.renderLayout('public', 'discover');
 
   const urlParams = new URLSearchParams(window.location.search);
-  const provId = parseInt(urlParams.get('id') || '1', 10) || 1;
+  const gigId = parseInt(urlParams.get('id') || '1', 10);
 
   const container = document.getElementById('gigContainer');
+  if (!container) return;
 
-  async function loadGig() {
+  async function loadGigDetails() {
     try {
-      const res = await fetch(`/api/gigs/${provId}`);
-      if (!res.ok) throw new Error('Provider gig profile not found');
-      const data = await res.json();
+      const [gigRes, revRes] = await Promise.all([
+        fetch(`/api/gigs/${gigId}`),
+        fetch(`/api/gigs/${gigId}/reviews`)
+      ]);
 
-      const provider = data.provider || {};
-      const services = provider.services || [];
-      const reviews = data.reviews || [];
-      const breakdown = data.ratingBreakdown || [];
+      if (!gigRes.ok) throw new Error('Service gig not found');
 
-      const firstService = services[0] || { category_slug: 'appliance-repair', price: 900, category_name: 'Appliance Repair' };
-      const heroImage = provider.banner_url || (window.IMAGES?.category ? window.IMAGES.category(firstService.category_slug) : '');
-      const avatarUrl = provider.logo_url || (window.IMAGES?.providerAvatar ? window.IMAGES.providerAvatar(provider.full_name) : '');
-      const basePrice = Number(firstService.price || 900);
+      const gigData = await gigRes.json();
+      const gig = gigData.gig;
+      if (!gig) throw new Error('Service gig data is missing');
 
-      const isFav = window.favoriteProviderIds && window.favoriteProviderIds.has(provId);
-
-      const starCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-      if (breakdown.length > 0) {
-        breakdown.forEach(b => { starCounts[b.stars] = Number(b.count); });
-      } else if (Number(provider.rating_count) > 0) {
-        const tot = Number(provider.rating_count);
-        starCounts[5] = Math.round(tot * 0.75);
-        starCounts[4] = Math.round(tot * 0.20);
-        starCounts[3] = Math.round(tot * 0.05);
+      let reviews = [];
+      if (revRes.ok) {
+        const revData = await revRes.json();
+        reviews = revData.reviews || [];
       }
-      const totalCount = Object.values(starCounts).reduce((a, b) => a + b, 0) || Number(provider.rating_count) || 1;
+
+      const categorySlug = gig.category_slug || 'appliance-repair';
+      const categoryName = gig.category_name || 'Home Service';
+      const bannerUrl = gig.banner_url || (window.IMAGES?.category ? window.IMAGES.category(categorySlug) : '');
+      const duration = Number(gig.duration_minutes) || 60;
+      const price = Number(gig.price) || 0;
+      const rating = Number(gig.provider_rating || 5.0).toFixed(1);
+      const isFav = window.favoriteProviderIds && window.favoriteProviderIds.has(gig.provider_id);
 
       container.innerHTML = `
-        <!-- Top Section Banner -->
-        <div class="panel" style="overflow:hidden; padding:0; margin-bottom:24px; position:relative;">
-          <div style="height:220px; background-image:url('${heroImage}'); background-size:cover; background-position:center; position:relative;">
-            <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(11,18,32,0.2) 0%, rgba(11,18,32,0.85) 100%);"></div>
-            <div style="position:absolute; bottom:20px; left:24px; right:24px; display:flex; align-items:flex-end; gap:20px;">
-              <img src="${avatarUrl}" alt="${window.escapeHtml(provider.full_name)}" style="width:84px; height:84px; border-radius:18px; border:3px solid #fff; box-shadow:0 8px 24px rgba(0,0,0,0.2); object-fit:cover; background:#1e293b;" />
-              <div style="color:#fff;">
-                <span class="eyebrow" style="color:var(--blue-light, #93c5fd);">VERIFIED SPECIALIST</span>
-                <h1 style="color:#fff; margin:4px 0 6px; font-size:28px;">${window.escapeHtml(provider.full_name)}</h1>
+        <!-- Gig Hero Banner -->
+        <div class="panel" style="overflow:hidden; padding:0; margin-bottom:24px; position:relative; border-radius:18px;">
+          <div style="height:240px; background-image:url('${bannerUrl}'); background-size:cover; background-position:center; position:relative;">
+            <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(11,18,32,0.25) 0%, rgba(11,18,32,0.85) 100%);"></div>
+            <div style="position:absolute; bottom:20px; left:24px; right:24px; display:flex; justify-content:space-between; align-items:flex-end; gap:20px; flex-wrap:wrap;">
+              <div style="color:#ffffff;">
+                <span class="cover-badge" style="background:var(--primary); color:#ffffff; margin-bottom:8px; display:inline-block;">${window.escapeHtml(categoryName.toUpperCase())}</span>
+                <h1 style="color:#ffffff; margin:4px 0 8px; font-size:28px; letter-spacing:-0.5px;">${window.escapeHtml(gig.title)}</h1>
                 <div style="display:flex; align-items:center; gap:16px; font-size:14px; color:#e2e8f0; flex-wrap:wrap;">
-                  <span style="color:var(--amber, #f59e0b); font-weight:700;"><i class="bi bi-star-fill"></i> ${provider.rating || '4.8'} (${provider.rating_count || 120})</span>
-                  <span><i class="bi bi-geo-alt"></i> ${window.escapeHtml(provider.address || 'Dhaka, Bangladesh')}</span>
-                  <span><i class="bi bi-briefcase"></i> ${provider.years_experience || 5} Years Experience</span>
+                  <span style="color:var(--amber, #f59e0b); font-weight:700;"><i class="bi bi-star-fill text-amber"></i> ${rating}</span>
+                  <span><i class="bi bi-clock"></i> Est. ${duration} mins</span>
+                  <span><i class="bi bi-person"></i> Provided by <strong>${window.escapeHtml(gig.provider_name || 'Verified Pro')}</strong></span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Main Content 2-Column Grid -->
-        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:24px; align-items:start;">
-          <!-- Left Column -->
+        <!-- 2-Column Details Layout -->
+        <div style="display:grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap:24px; align-items:start;">
+          
+          <!-- Left Column: Details, Highlights & Reviews -->
           <div>
+            <!-- Gig Description -->
             <div class="panel" style="margin-bottom:20px;">
-              <div class="panel-head"><h3>About the Pro</h3></div>
-              <p style="color:var(--text); line-height:1.65; margin:0 0 16px;">
-                ${window.escapeHtml(provider.bio || provider.headline || 'Experienced home service specialist offering guaranteed repairs and fast response times across Dhaka.')}
+              <div class="panel-head">
+                <h3>About This Service</h3>
+              </div>
+              <p style="color:var(--text-main); font-size:15px; line-height:1.7; margin:0 0 16px; white-space:pre-line;">
+                ${window.escapeHtml(gig.description || 'Professional home service executed by background-verified specialists. Includes initial diagnosis, genuine component replacements (billed transparently), and HutFix quality guarantee.')}
               </p>
+
               <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; padding-top:16px; border-top:1px solid var(--border-color);">
-                <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted);">
+                <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-muted);">
                   <i class="bi bi-shield-check" style="color:var(--green); font-size:18px;"></i>
-                  <span>Background Verified</span>
+                  <span>100% Background Checked</span>
                 </div>
-                <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted);">
-                  <i class="bi bi-award" style="color:var(--blue); font-size:18px;"></i>
-                  <span>Certified Specialist</span>
+                <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-muted);">
+                  <i class="bi bi-tools" style="color:var(--primary); font-size:18px;"></i>
+                  <span>Standard Toolset Included</span>
                 </div>
-                <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted);">
-                  <i class="bi bi-lightning-charge" style="color:var(--orange, #f97316); font-size:18px;"></i>
-                  <span>Concurrency Locked</span>
+                <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-muted);">
+                  <i class="bi bi-lightning-charge" style="color:var(--amber); font-size:18px;"></i>
+                  <span>Concurrency Protected</span>
                 </div>
               </div>
             </div>
 
+            <!-- Provider Teaser Box -->
+            <div class="panel" style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
+              <div style="display:flex; align-items:center; gap:14px;">
+                <div class="avatar avatar-green" style="width:48px; height:48px; font-size:16px;">
+                  ${(gig.provider_name || 'P').slice(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <h4 style="margin:0 0 4px; font-size:16px; color:var(--text-main);">${window.escapeHtml(gig.provider_name || 'Specialist')}</h4>
+                  <div style="font-size:12px; color:var(--text-muted);">
+                    <i class="bi bi-star-fill text-amber"></i> ${rating} Rating · Verified Specialist
+                  </div>
+                </div>
+              </div>
+              <a href="provider-public-profile.html?id=${gig.provider_id}" class="secondary-btn" style="padding:8px 14px; font-size:13px; min-height:36px; display:inline-flex; align-items:center; gap:6px;">
+                <i class="bi bi-person-badge"></i> View Provider Profile
+              </a>
+            </div>
+
+            <!-- Reviews for this Gig -->
             <div class="panel">
               <div class="panel-head">
-                <div><h3>Services Offered</h3><p>Transparent upfront pricing per service category</p></div>
+                <div>
+                  <h3>Customer Reviews for this Service</h3>
+                  <p>Real feedback from verified completed appointments</p>
+                </div>
+                <span class="status completed">${reviews.length} Review${reviews.length === 1 ? '' : 's'}</span>
               </div>
-              <div class="list-stack">
-                ${services.map(s => `
-                  <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid var(--border-color); gap:16px;">
-                    <div style="display:flex; align-items:flex-start; gap:14px; flex:1;">
-                      ${s.banner_url ? `<img src="${s.banner_url}" alt="Banner" style="width:56px; height:56px; border-radius:8px; object-fit:cover; border:1px solid var(--border-color); flex-shrink:0;" />` : ''}
-                      <div>
-                        <strong style="font-size:15px; color:var(--text);">${window.escapeHtml(s.title || s.category_name)}</strong>
-                        <div style="font-size:12px; color:var(--muted); margin-top:2px;">
-                          <span style="font-weight:600; color:var(--blue);"><i class="bi bi-clock"></i> Est. ${s.duration_minutes || 60} mins</span> · 
-                          Category: ${window.escapeHtml(s.category_name || s.category_slug)}
+
+              ${reviews.length === 0 ? `
+                <div class="empty-state" style="padding:24px; text-align:center;">
+                  No reviews logged yet for this specific service. Be the first to book and rate!
+                </div>
+              ` : `
+                <div class="list-stack">
+                  ${reviews.map(r => `
+                    <div style="padding:14px 0; border-bottom:1px solid var(--border-color);">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <div class="avatar avatar-lilac" style="width:28px; height:28px; font-size:11px;">
+                            ${(r.customer_name || 'C').slice(0, 2).toUpperCase()}
+                          </div>
+                          <strong style="font-size:14px; color:var(--text-main);">${window.escapeHtml(r.customer_name || 'Client')}</strong>
                         </div>
-                        ${s.description ? `<p style="font-size:13px; color:var(--text-muted); margin:4px 0 0; line-height:1.4;">${window.escapeHtml(s.description)}</p>` : ''}
+                        <div style="font-size:13px; color:var(--amber);">
+                          ${Array.from({ length: 5 }, (_, i) => `<i class="bi bi-star${i < r.stars ? '-fill' : ''}"></i>`).join('')}
+                        </div>
                       </div>
+                      <p style="margin:4px 0 6px; font-size:14px; color:var(--text-main); line-height:1.5;">${window.escapeHtml(r.comment || 'Great service and prompt resolution.')}</p>
+                      <time style="font-size:11px; color:var(--text-muted);">${new Date(r.created_at).toLocaleDateString()}</time>
                     </div>
-                    <div style="display:flex; align-items:center; gap:16px; flex-shrink:0;">
-                      <div style="text-align:right;">
-                        <span style="font-size:17px; font-weight:800; color:var(--blue);">${window.money(s.price)}</span>
-                        <small style="color:var(--muted); display:block; font-size:11px;">/ base rate</small>
-                      </div>
-                      <button class="secondary-btn book-gig-row-btn" data-category="${s.category_slug}" data-title="${window.escapeHtml(s.title || s.category_name)}" data-duration="${s.duration_minutes || 60}" data-price="${s.price}" style="padding:6px 12px; font-size:12px; font-weight:600; min-height:34px;">
-                        Book <i class="bi bi-arrow-right"></i>
-                      </button>
-                    </div>
-                  </div>
-                `).join('')}
-              </div>
+                  `).join('')}
+                </div>
+              `}
             </div>
           </div>
 
-          <!-- Right Sticky Column -->
+          <!-- Right Column: Sticky Booking Widget -->
           <div style="position:sticky; top:24px;">
-            <div class="panel" style="border: 2px solid var(--blue); box-shadow: 0 10px 30px rgba(37,99,235,0.08);">
+            <div class="panel" style="border: 2px solid var(--primary); box-shadow: var(--shadow);">
               <div class="panel-head">
-                <h3>Book this Pro</h3>
-                <span class="status completed">Available</span>
+                <span class="eyebrow" style="color:var(--primary);">INSTANT SERVICE</span>
+                <span class="status completed">Available Now</span>
               </div>
+
               <div style="margin: 16px 0 20px;">
-                <div style="font-size:12px; color:var(--muted); text-transform:uppercase; font-weight:700;">Starting from</div>
-                <div style="font-size:32px; font-weight:800; color:var(--text); margin-top:4px;">${window.money(basePrice)}</div>
-                <p style="font-size:13px; color:var(--muted); margin:8px 0 0; line-height:1.5;">
-                  Includes initial diagnosis, standard visit dispatch, and HutFix service guarantee.
+                <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Starting from</div>
+                <div style="font-size:32px; font-weight:800; color:var(--text-main); margin-top:4px;">${window.money(price)}</div>
+                <div style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--primary); font-weight:600; margin-top:6px;">
+                  <i class="bi bi-clock-history"></i> Standard duration: ${duration} mins
+                </div>
+                <p style="font-size:13px; color:var(--text-muted); margin:12px 0 0; line-height:1.5;">
+                  Transparent pricing guaranteed by HutFix. Concurrency lock prevents overlapping appointments.
                 </p>
               </div>
-              <button class="primary-btn" id="stickyBookProBtn" style="width:100%; justify-content:center; padding:14px; font-size:14px; font-weight:700;">
-                Book this Pro <i class="bi bi-arrow-right"></i>
+
+              <button class="primary-btn" id="bookGigDirectBtn" style="width:100%; justify-content:center; padding:14px; font-size:15px; font-weight:700;">
+                Book this service <i class="bi bi-arrow-right"></i>
               </button>
-              <button class="secondary-btn" onclick="window.toggleFavorite(${provId}, event)" data-fav-provider="${provId}" style="width:100%; justify-content:center; padding:10px; font-size:13px; font-weight:600; margin-top:8px;">
+
+              <a href="provider-public-profile.html?id=${gig.provider_id}" class="secondary-btn" style="width:100%; justify-content:center; padding:10px; font-size:13px; font-weight:600; margin-top:10px;">
+                <i class="bi bi-person-circle" style="margin-right:6px;"></i> View Provider Profile
+              </a>
+
+              <button class="secondary-btn" onclick="window.toggleFavorite(${gig.provider_id}, event)" data-fav-provider="${gig.provider_id}" style="width:100%; justify-content:center; padding:10px; font-size:13px; font-weight:600; margin-top:8px;">
                 <i class="bi ${isFav ? 'bi-heart-fill text-danger' : 'bi-heart'}" style="${isFav ? 'color:var(--red);' : ''}"></i>
                 <span style="margin-left:6px;">${isFav ? 'Saved in Favorites' : 'Save Specialist'}</span>
               </button>
-              <div style="font-size:12px; color:var(--muted); text-align:center; margin-top:12px;">
-                <i class="bi bi-lightning-charge"></i> Concurrency protected · No double booking
+
+              <div style="font-size:12px; color:var(--text-muted); text-align:center; margin-top:14px;">
+                <i class="bi bi-shield-check"></i> HutFix Advisory Lock & Dispatched Protection
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Bottom Reviews Section -->
-        <div class="panel" style="margin-top:24px;">
-          <div class="panel-head">
-            <div><h3>Client Reviews</h3><p>Verified feedback from clients across Dhaka</p></div>
-            <div style="font-size:16px; font-weight:700; color:var(--amber);"><i class="bi bi-star-fill"></i> ${provider.rating || '4.8'} (${provider.rating_count || 120} reviews)</div>
-          </div>
-          <div style="display:grid; grid-template-columns: 280px 1fr; gap:32px; margin-top:16px;">
-            <div>
-              ${[5, 4, 3, 2, 1].map(star => {
-                const count = starCounts[star] || 0;
-                const pct = totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;
-                return `
-                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:13px;">
-                    <span style="width:36px; font-weight:600; color:var(--text);">${star} <i class="bi bi-star-fill text-amber"></i></span>
-                    <div style="flex:1; height:8px; background:var(--border-color); border-radius:4px; overflow:hidden;">
-                      <div style="width:${pct}%; height:100%; background:var(--blue); border-radius:4px;"></div>
-                    </div>
-                    <span style="width:32px; text-align:right; color:var(--muted); font-size:12px;">${count}</span>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-
-            <div>
-              <h4 style="margin:0 0 16px; font-size:14px; color:var(--text);">Recent Reviews (${reviews.length})</h4>
-              <div class="list-stack">
-                ${reviews.length > 0 ? reviews.map(r => `
-                  <div style="padding:14px 0; border-bottom:1px solid var(--border-color);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                      <strong style="font-size:14px;">${window.escapeHtml(r.customer_name || 'Verified Customer')}</strong>
-                      <span style="font-size:12px; color:var(--muted);">${new Date(r.created_at).toLocaleDateString()}</span>
-                    </div>
-                    <div style="font-size:13px; margin-bottom:6px;">
-                      <span class="text-amber">${'<i class="bi bi-star-fill"></i>'.repeat(r.stars)}</span><span class="text-muted">${'<i class="bi bi-star"></i>'.repeat(5 - r.stars)}</span>
-                    </div>
-                    <p style="margin:0; font-size:13px; color:var(--text); line-height:1.5;">${window.escapeHtml(r.comment || 'Great service and very professional.')}</p>
-                  </div>
-                `).join('') : `
-                  <div style="padding:20px 0; color:var(--muted); font-size:13px;">
-                    <p style="margin:0 0 6px;"><i class="bi bi-star-fill text-amber"></i> Verified Client Feedback</p>
-                    <small>No written reviews submitted yet. Average rating: ${provider.rating || '4.8'} based on completed appointments.</small>
-                  </div>
-                `}
-              </div>
-            </div>
-          </div>
         </div>
       `;
 
-      // Wire row booking buttons
-      container.querySelectorAll('.book-gig-row-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const category = btn.dataset.category;
-          const title = btn.dataset.title;
-          const duration = parseInt(btn.dataset.duration, 10) || 60;
-          const price = parseFloat(btn.dataset.price) || 0;
-          window.openBooking(provId, category, { title, duration, price });
-        });
+      // Wire the Book button to the global modal
+      document.getElementById('bookGigDirectBtn')?.addEventListener('click', () => {
+        window.openBooking(gig.provider_id, categorySlug);
       });
 
-      // Wire sticky main pro booking button
-      document.getElementById('stickyBookProBtn')?.addEventListener('click', () => {
-        const gigTitle = firstService.title || firstService.category_name || 'Home Service';
-        const gigDuration = firstService.duration_minutes || 60;
-        window.openBooking(provId, firstService.category_slug, { title: gigTitle, duration: gigDuration, price: basePrice });
-      });
     } catch (err) {
-      container.innerHTML = `<div class="empty-state">${window.escapeHtml(err.message)}</div>`;
+      container.innerHTML = `
+        <div class="empty-state" style="padding:40px; text-align:center;">
+          <h3 style="margin-bottom:8px; color:var(--text-main);">Service Not Found</h3>
+          <p style="color:var(--text-muted); margin-bottom:16px;">${window.escapeHtml(err.message)}</p>
+          <a href="index.html" class="primary-btn">Return to Services Catalog</a>
+        </div>
+      `;
     }
   }
 
-  await loadGig();
+  loadGigDetails();
 });

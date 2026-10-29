@@ -128,7 +128,55 @@ async function search(req, res, next) {
     }
 }
 
+async function getPublicProfile(req, res, next) {
+    try {
+        const id = parseInt(req.params.id, 10);
+        if (isNaN(id) || id <= 0) {
+            return res.status(400).json({ ok: false, error: 'invalid provider id' });
+        }
+
+        const provRes = await pool.query(`
+            SELECT p.id, u.full_name, p.headline, p.bio, p.rating, p.rating_count, p.logo_url, p.banner_url, p.years_experience
+            FROM providers p
+            JOIN users u ON u.id = p.user_id
+            WHERE p.id = $1;
+        `, [id]);
+
+        if (provRes.rows.length === 0) {
+            return res.status(404).json({ ok: false, error: 'Provider not found' });
+        }
+
+        const servRes = await pool.query(`
+            SELECT ps.id, ps.title, ps.price, ps.duration_minutes, ps.banner_url, sc.name AS category_name, sc.slug AS category_slug
+            FROM provider_services ps
+            JOIN service_categories sc ON sc.id = ps.category_id
+            WHERE ps.provider_id = $1
+            ORDER BY ps.id ASC;
+        `, [id]);
+
+        const providerData = provRes.rows[0];
+
+        return res.status(200).json({
+            ok: true,
+            provider: {
+                ...providerData,
+                rating: Number(providerData.rating) || 5.0,
+                rating_count: Number(providerData.rating_count) || 0,
+                years_experience: Number(providerData.years_experience) || 5,
+                services: servRes.rows.map(s => ({
+                    ...s,
+                    price: Number(s.price),
+                    duration_minutes: Number(s.duration_minutes) || 60
+                }))
+            }
+        });
+    } catch (err) {
+        return next(err);
+    }
+}
+
 module.exports = {
     getProviderProfileByUserId,
-    search
+    search,
+    getPublicProfile
 };

@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           ${coverHtml}
           <div class="service-body">
             <div class="service-topline">
-              <h3 style="cursor:pointer;" onclick="window.location.href='gig-details.html?id=${s.providerId}'">${escapeHtml(s.title)}</h3>
+              <h3 style="cursor:pointer;" onclick="window.location.href='gig-details.html?id=${s.id}'">${escapeHtml(s.title)}</h3>
               <div class="rating"><i class="bi bi-star-fill text-amber"></i> ${s.rating} <span>(${s.reviews})</span></div>
             </div>
             <div style="font-size:12px; color:var(--text-muted); margin:-4px 0 8px; display:flex; align-items:center; gap:8px;">
@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               <span>·</span>
               <span>${escapeHtml(s.category)}</span>
             </div>
-            <div class="provider-line" style="cursor:pointer;" onclick="window.location.href='gig-details.html?id=${s.providerId}'">
+            <div class="provider-line" style="cursor:pointer;" onclick="window.location.href='provider-public-profile.html?id=${s.providerId}'">
               ${avatarHtml}
               <div>
                 <div class="provider-name">${escapeHtml(s.provider)} <span class="verified"><i class="bi bi-check-circle-fill text-green"></i></span></div>
@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="service-foot">
               <div class="price"><strong>${window.money(s.price)}</strong> <small>/ base</small></div>
               <div style="display:flex; gap:6px;">
-                <a href="gig-details.html?id=${s.providerId}" class="secondary-btn" style="padding:6px 10px; font-size:12px; min-height:34px;">Profile</a>
+                <a href="gig-details.html?id=${s.id}" class="secondary-btn" style="padding:6px 10px; font-size:12px; min-height:34px;">Details</a>
                 <button class="primary-btn book-service-btn" data-provider-id="${s.providerId}" data-slug="${s.slug}" data-title="${escapeHtml(s.title)}" data-duration="${s.duration_minutes || 60}" data-price="${s.price}" style="padding:6px 12px; font-size:12px; min-height:34px;">Book <i class="bi bi-arrow-right"></i></button>
               </div>
             </div>
