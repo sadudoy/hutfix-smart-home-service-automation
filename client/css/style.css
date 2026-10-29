@@ -252,6 +252,12 @@ button {
 .nav-list {
   display: grid;
   gap: 4px;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.nav-list::-webkit-scrollbar {
+  display: none;
 }
 
 .nav-item {
@@ -304,6 +310,8 @@ button {
 
 .sidebar-bottom {
   margin-top: auto;
+  padding-bottom: 20px;
+  flex-shrink: 0;
 }
 
 .help-card {
@@ -2061,6 +2069,7 @@ button {
 .gig-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 13px;
   padding: 13px 0;
   border-bottom: 1px solid var(--border-color);
@@ -2096,6 +2105,10 @@ button {
 }
 .gig-meta {
   text-align: right;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
 }
 .gig-meta strong {
   font-family: Manrope, sans-serif;
@@ -3190,9 +3203,13 @@ button {
 
 /* --- MOBILE ONLY (768px and below) --- */
 @media (max-width: 768px) {
+  body, html { overflow-x: hidden; width: 100%; max-width: 100vw; }
+  .app-shell, .main-area, .content { width: 100%; max-width: 100%; overflow-x: hidden; box-sizing: border-box; }
+
   .app-shell { flex-direction: column; }
   .sidebar {
     position: fixed; top: 0; left: -100%; width: 260px; height: 100vh;
+    display: flex; flex-direction: column;
     z-index: 9999; transition: left 0.3s ease;
   }
   .sidebar.open { left: 0; }
@@ -3218,14 +3235,28 @@ button {
   .timeline-steps { flex-direction: column !important; align-items: flex-start; gap: 20px; }
   .timeline-line { display: none; } 
 
-  /* Tables */
+  /* Fix Tables */
   .table-responsive-wrap,
-  .table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .data-table { min-width: 600px; /* Force horizontal scroll instead of squishing */ }
+  .table-wrap { width: 100%; overflow-x: auto; display: block; -webkit-overflow-scrolling: touch; }
+  .data-table { min-width: 600px; /* Allows scroll inside the container, not the page */ }
+  .data-table th, .data-table td { white-space: nowrap; }
+
+  /* Fix Provider Gig Rows (Screenshot 2) */
+  .gig-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    padding: 16px !important;
+  }
+  .gig-meta { text-align: left; width: 100%; display: flex; justify-content: space-between; align-items: center; }
+  .admin-actions { width: 100%; justify-content: flex-end; }
+
+  /* Fix Invoice (Screenshot 4) */
+  .invoice-print-area { width: 100%; overflow-x: hidden; padding: 15px; }
+  .invoice-print-area table { display: block; overflow-x: auto; }
 }
 
 @media (max-width: 480px) {
   .category-grid { grid-template-columns: 1fr !important; }
   .stats-grid { grid-template-columns: 1fr !important; }
 }
-

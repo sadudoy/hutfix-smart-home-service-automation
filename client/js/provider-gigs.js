@@ -36,10 +36,10 @@ document.addEventListener('DOMContentLoaded', async () => {
              </div>`;
 
         return `
-          <div class="gig-row" style="padding:18px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:16px;">
-            <div style="display:flex; align-items:flex-start; gap:16px; flex:1;">
+          <div class="gig-row" style="padding:18px 0; border-bottom:1px solid var(--border-color);">
+            <div style="display:flex; align-items:flex-start; gap:16px; flex:1; min-width:0;">
               ${thumbHtml}
-              <div>
+              <div style="flex:1; min-width:0;">
                 <strong style="font-size:16px; display:block; color:var(--text-main);">${window.escapeHtml(s.title || s.category_name)}</strong>
                 <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
                   <span style="font-weight:600; color:var(--primary);"><i class="bi bi-clock"></i> Est. ${s.duration_minutes || 60} mins</span> · 
@@ -49,17 +49,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ${s.description ? `<p style="font-size:13px; color:var(--text-muted); margin:4px 0 0; max-width:600px;">${window.escapeHtml(s.description)}</p>` : ''}
               </div>
             </div>
-            <div style="display:flex; align-items:center; gap:16px; flex-shrink:0;">
+            <div class="gig-meta">
               <div style="text-align:right;">
                 <strong style="font-size:17px; color:var(--primary); display:block;">${window.money(s.price)}</strong>
                 <small style="color:var(--text-muted);">Base fee</small>
               </div>
-              <button class="secondary-btn edit-gig-btn" data-gig-id="${s.id}" style="padding:6px 12px; font-size:12px; min-height:34px;">
-                <i class="bi bi-pencil-square"></i> Edit
-              </button>
-              <button class="secondary-btn delete-gig-btn" data-gig-id="${s.id}" data-gig-name="${window.escapeHtml(s.title || s.category_name)}" style="padding:6px 12px; font-size:12px; min-height:34px; color:var(--red); border-color:rgba(231,104,104,0.3);">
-                <i class="bi bi-trash"></i> Delete
-              </button>
+              <div class="admin-actions">
+                <button class="secondary-btn edit-gig-btn" data-gig-id="${s.id}" style="padding:6px 12px; font-size:12px; min-height:34px;">
+                  <i class="bi bi-pencil-square"></i> Edit
+                </button>
+                <button class="secondary-btn delete-gig-btn" data-gig-id="${s.id}" data-gig-name="${window.escapeHtml(s.title || s.category_name)}" style="padding:6px 12px; font-size:12px; min-height:34px; color:var(--red); border-color:rgba(231,104,104,0.3);">
+                  <i class="bi bi-trash"></i> Delete
+                </button>
+              </div>
             </div>
           </div>
         `;
