@@ -10,7 +10,8 @@ build/
 client/_legacy/node_modules/
 .firebase/
 firebase-debug.log
-server/uploads/
+server/uploads/*
+!server/uploads/.gitkeep
 .gemini/
 
 # impeccable

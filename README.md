@@ -1,130 +1,262 @@
-# HutFix — Smart Home Service Automation
+# HutFix — On-Demand Home Services Marketplace
 
-> On-demand, slot-scheduled home services with algorithmic matching, concurrency-safe booking, and automated invoice delivery for the BAUST CSE FEST 2026 Hackathon.
+<p align="center">
+  <img src="client/assets/images/logo.jpg" alt="HutFix Logo" width="140">
+</p>
 
-**Status: Phase 14 Complete — Final Hackathon Release (`v1.0.0-hackathon`)**
+<p align="center">
+  <strong>Enterprise-Grade Home Services Booking Platform</strong>
+</p>
 
-**[3-Minute Hackathon Presentation Script & Pitch (DEMO.md)](DEMO.md)**
-
----
-
-## Quick start
-
-Follow these 4 steps to run the complete platform locally:
-
-1. **Configure Environment**: Ensure `.env` is created in the repo root with:
-   ```env
-   PORT=5000
-   NODE_ENV=development
-   DATABASE_URL=postgresql://postgres:<your_postgres_password>@localhost:5432/smart_home_service
-   JWT_SECRET=super_secret_hackathon_jwt_key_2026
-   ```
-2. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
-3. **Database Setup & Migrations**: Ensure PostgreSQL is running, create the database, and apply migrations:
-   ```bash
-   psql "$DATABASE_URL" -f database/schema.sql
-   psql "$DATABASE_URL" -f database/seed.sql
-   psql "$DATABASE_URL" -f database/migrations/001_add_notifications.sql
-   psql "$DATABASE_URL" -f database/migrations/002_add_addresses.sql
-   psql "$DATABASE_URL" -f database/migrations/003_provider_ops.sql
-   psql "$DATABASE_URL" -f database/seed_demo.sql
-   ```
-4. **Launch Dev Server**:
-   ```bash
-   npm run dev
-   # Open http://localhost:5000 in your browser
-   ```
+<p align="center">
+  <img src="https://img.shields.io/badge/Node.js-v18+-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js">
+  <img src="https://img.shields.io/badge/PostgreSQL-v14+-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/Architecture-MPA-blueviolet?style=flat-square" alt="Architecture">
+  <img src="https://img.shields.io/badge/Security-RBAC%20%7C%20pgcrypto-2ea44f?style=flat-square" alt="Security">
+  <img src="https://img.shields.io/badge/Currency-BDT-informational?style=flat-square" alt="Currency">
+</p>
 
 ---
 
-## Demo Credentials Table
+## Overview
 
-All demo accounts use password `demo1234`:
+**HutFix** is a production-grade, multi-tenant marketplace platform engineered to bridge end-consumers with vetted home service technicians—spanning HVAC maintenance, electrical repairs, plumbing, and housekeeping.
 
-| Role | Email | Password | Persona & Scope |
-| :--- | :--- | :--- | :--- |
-| **Customer** | `customer@demo.test` | `demo1234` | Service seeker in Dhanmondi, Dhaka |
-| **Provider** | `provider@demo.test` | `demo1234` | Rahim Electronics & AC Care (Specialist) |
-| **Admin** | `admin@demo.test` | `demo1234` | Full system audit and platform supervisor |
+Architected with **Node.js**, **Express.js**, and an ACID-compliant **PostgreSQL** storage layer, the system provides dedicated operational dashboards for customers, service partners, and platform administrators. Key capabilities include concurrency-safe booking pipelines, transactional monetary integrity, role-based access controls, and low-latency status dispatching via Server-Sent Events (SSE).
 
 ---
 
-## Feature Checklist
+## Technical Specifications
 
-### Core Features
-- [x] Role-based JWT authentication with secure HTTP-only cookies and role guards.
-- [x] Comprehensive 8-category home services catalog with pricing baselines.
-- [x] Smart matching algorithm scoring availability, rating, distance, price, and workload.
-- [x] Slot-based 1-hour scheduling with advisory locking against race conditions.
-- [x] Finite state machine request lifecycle (requested &rarr; accepted &rarr; on the way &rarr; in progress &rarr; completed).
-- [x] Live customer fulfillment tracking with 5-stage stepper and 3-bucket provider dashboard.
+### System Prerequisites
 
-### Operational & Financial Features (Phases 10–14)
-- [x] Direct specialist booking from Gig Details with instant slot picker & upfront pricing.
-- [x] Customer Saved Address Book with default address tagging and booking pre-fill.
-- [x] Authentic Bangladeshi Mobile Banking (bKash & Nagad) manual payment proof flow with TrxID.
-- [x] Real-time Admin UI synchronization on payment verifications and specialist payout approvals.
-- [x] Server-Sent Events (SSE) real-time streaming for live dispatch and milestone progress.
-- [x] Automated financial invoice generation on job completion with 5% platform tax.
-- [x] Printable A4-styled customer invoice page (`client/invoice.html`).
-- [x] Verified customer reviews & specialist rating breakdown recalculation.
-- [x] In-transaction event notification feed with unread count and real-time navbar bells.
-- [x] Automated E2E smoke test suite (`scripts/e2e_smoke.js`) verifying entire platform lifecycle.
+| Runtime / Component | Requirement | Operational Context |
+| :--- | :--- | :--- |
+| **Node.js** | `>= 18.0.0` | Core application execution environment |
+| **PostgreSQL** | `>= 14.0` | Relational persistence layer and security primitives |
+| **Client Engine** | Modern Standards | Chromium, Gecko, or WebKit runtime with ECMAScript 6+ |
 
----
+### Core Architecture & Dependencies
 
-## Architecture
-HutFix is structured as a production-grade monorepo containing a Vanilla JS frontend, an Express REST backend, and a PostgreSQL persistence layer. The system decouples domain intelligence into isolated services covering multi-factor matching, advisory-lock scheduling, lifecycle state progression, and in-transaction notifications. All write operations use strict database transactions to guarantee transactional integrity and eliminate concurrency hazards. For an in-depth breakdown of components and data flows, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+| Tier | Component | Specification |
+| :--- | :--- | :--- |
+| **Frontend Core** | User Interface | Vanilla JavaScript (ES6+), HTML5, CSS3 Custom Properties |
+| **UI Components** | Visual Assets | Bootstrap Icons |
+| **Client Architecture** | Application Delivery | Multi-Page Application (MPA) Structure |
+| **Application Layer** | HTTP Server | Node.js with Express.js REST Framework |
+| **Data Layer** | RDBMS | PostgreSQL managed via native `pg` connection pooling |
+| **Identity & Sessions** | Authentication | Stateless JWT transmitted over `HttpOnly`, `SameSite=Lax` cookies |
+| **Cryptography** | Data Security | PostgreSQL `pgcrypto` (`crypt()`, `gen_salt()`) |
+| **Event Stream** | Live Updates | Native Server-Sent Events (SSE) Protocol |
+| **Fiscal Scope** | Localization | Bangladeshi Taka (BDT) |
 
 ---
 
-## API Surface
-The complete REST API contract including payload schemas, curl examples, and error codes is detailed in [docs/API.md](docs/API.md).
+## Platform Visuals
+
+### Portal Interfaces
+
+| Customer Portal | Provider Control Center |
+| :---: | :---: |
+| `[ Customer Portal — Interface Preview ]` | `[ Provider Portal — Operations Preview ]` |
+
+### Operations & Booking
+
+| Administrative Analytics | Transactional Checkout Flow |
+| :---: | :---: |
+| `[ Admin Panel — Analytics Overview ]` | `[ Transaction Pipeline — Modal Preview ]` |
 
 ---
 
-## Testing
+## Directory Organization
 
-The project maintains an automated test suite verifying every layer from static checks to high-concurrency race condition testing:
-
-| Test Suite | Coverage Summary | Status |
-| :--- | :--- | :---: |
-| `test_phase0.js` | Baseline audit, legacy prototype isolation, and contract integrity | **PASS** |
-| `test_phase1.js` | Monorepo layout, schema validation, and seed data integrity | **PASS** |
-| `test_phase2.js` | JWT auth, cookie lifecycle, role guards, and login portal | **PASS** |
-| `test_phase3.js` | Service catalog, multi-factor matching engine, and booking API | **PASS** |
-| `test_phase4.js` | Slot generation, advisory locks, 409 conflict suggestions, and timezone | **PASS** |
-| `test_phase5.js` | Lifecycle transitions, tracking page, and 3-bucket provider dashboard | **PASS** |
-| `test_phase6.js` | Invoices, ratings, notifications, busy-day filter, and documentation protocol | **PASS** |
-| `test_phase7.js` | Modern design system, landing/login/request overhaul, and dark mode toggle | **PASS** |
-| `test_phase8.js` | Impeccable redesign, purged AI visual tells, dark mode contrast hardening, 0 detector findings | **PASS** |
-| `test_phase9.legacy.js` | Restored original prototype UI, backend rewiring, mobile responsive fixes | **PASS** |
-| `test_phase10.js` | Phase 10: HutFix reference UI adoption, scaled typography (>=11px), strict RBAC, admin analytics, and live backend wiring | **PASS** |
-| `test_phase10_1.js` | Phase 10.1: UI hotfix: sticky sidebar, guest browsing, profile editing, Bootstrap Icons, HutFix branding | **PASS** |
-| `test_phase11.js` | Phase 11: Customer experience: gig details, address book CRUD, advisory-locked reschedule, search filters, mock checkout | **PASS** |
-| `test_phase12.js` | Phase 12: HutFix operations, manual bKash/Nagad verification, provider availability & blackouts, admin payouts, real-time SSE tracking | **PASS** |
-
-Run tests anytime with:
-```bash
-node test_phase12.js
+```text
+hutfix/
+│
+├── client/                               # Presentation Layer
+│   ├── css/
+│   │   └── style.css                     # Global design system, theme tokens, layout
+│   ├── js/
+│   │   ├── global.js                     # Shared utilities, auth guards, shell handlers
+│   │   ├── index.js                      # Discovery catalog logic
+│   │   ├── login.js                      # Authentication pipeline client
+│   │   ├── customer-*.js                 # Customer dashboard controllers
+│   │   ├── provider-*.js                 # Provider console controllers
+│   │   ├── admin-*.js                    # Administrative management scripts
+│   │   └── invoice.js                    # Document compilation and print formatting
+│   ├── assets/images/                    # Brand assets, static images, icon sets
+│   ├── index.html                        # Application entry interface
+│   ├── login.html                        # Identity portal
+│   ├── gig-details.html                  # Service specification and scheduling
+│   ├── provider-public-profile.html      # Public credential directory
+│   └── ...                               # Domain views
+│
+├── server/                               # Application Layer
+│   ├── config/                           # Environment and pooled client parameters
+│   ├── controllers/                      # Request-response business orchestration
+│   ├── middleware/                       # RBAC, boundary security, asset ingestion
+│   ├── routes/                           # REST endpoint declarations
+│   ├── services/                         # Scheduling, matching, SSE broadcast pipelines
+│   └── index.js                          # Server initialization sequence
+│
+├── database/                             # Persistence Layer
+│   ├── schema.sql                        # DDL table structures, indexes, constraints
+│   ├── migrations/                       # Incremental schema evolution scripts
+│   └── seed.sql                          # Deterministic development baseline fixtures
+│
+├── package.json                          # Manifest, lifecycle hooks, and dependencies
+├── .env.example                          # Canonical environment configuration schema
+├── .gitignore                            # VCS boundary specifications
+└── README.md                             # System operational manual
 ```
 
 ---
 
-## Local vs Supabase
-**The One-Line Swap Rule**: HutFix strictly uses standard SQL and standard PostgreSQL connection strings. To switch from local development to a hosted Supabase instance, simply replace `DATABASE_URL` in `.env` with your Supabase PostgreSQL URI — zero application code changes required.
+## Deployment & Setup Guide
+
+### 1. Environment Configuration
+
+Clone the configuration template and specify your environment parameters:
+
+```bash
+cp .env.example .env
+```
+
+```ini
+PORT=3000
+NODE_ENV=development
+DATABASE_URL=postgresql://postgres:your_password@localhost:5432/hutfix
+JWT_SECRET=your_super_secret_key
+```
+
+### 2. Dependency Management
+
+Provision runtime and development packages:
+
+```bash
+npm install
+```
+
+### 3. Database Initialization
+
+Execute the Data Definition Language (DDL) scripts and incremental schema migrations:
+
+```bash
+psql -U postgres -d hutfix -f database/schema.sql
+psql -U postgres -d hutfix -f database/migrations/*.sql
+```
+
+### 4. Deterministic Fixture Seeding
+
+Inject base access roles, system operators, and test fixtures:
+
+```bash
+psql -U postgres -d hutfix -f database/seed.sql
+```
+
+### 5. Runtime Launch
+
+Initiate the development server:
+
+```bash
+npm run dev
+```
+
+Platform Endpoint: `http://localhost:3000`
 
 ---
 
-## Documentation Index
-- [Design System Specification (Impeccable)](docs/DESIGN.md)
-- [Architecture & Data Flow](docs/ARCHITECTURE.md)
-- [Database Schema & Migrations](docs/DATABASE.md)
-- [REST API Specification](docs/API.md)
-- [Frontend & Component System](docs/UI.md)
-- [5-Minute Demo Script](docs/DEMO.md)
-- [Engineering Changelog](docs/CHANGELOG.md)
-- [Product Roadmap](docs/ROADMAP.md)
+## Standard Development Credentials
+
+| Access Level | Identifier | Secret Key | Scope & Authorization |
+| :--- | :--- | :--- | :--- |
+| **Administrator** | `admin@demo.test` | `demo1234` | Complete platform governance and financial audits |
+| **Service Provider** | `provider@demo.test` | `demo1234` | Rahim Electronics (4 active service listings) |
+| **Customer** | `customer@demo.test` | `demo1234` | End-consumer booking and invoicing interface |
+
+---
+
+## System Architecture & Security Controls
+
+### Identity and Session Management
+
+- **Credential Storage**: Cryptographically secured through PostgreSQL `pgcrypto` utilizing salt-generated routines (`crypt(..., gen_salt('bf'))`).
+- **Transport Protection**: Session tokens are isolated within `HttpOnly` flags to mitigate Cross-Site Scripting (XSS) vectors, configured with `SameSite=Lax`.
+- **Token Rotation**: Password reset mechanisms employ cryptographically secure pseudo-random tokens bound to a strict 60-minute time-to-live (TTL).
+
+### Role-Based Access Control (RBAC)
+
+API authorization is guarded by modular middleware filters enforcing least-privilege principles:
+
+```text
+Incoming Request ──> requireAuth ──> requireRole('admin' | 'provider' | 'customer') ──> Handler
+                                     └── Fail: 403 Forbidden
+```
+
+Cross-role access violations terminate with deterministic `403 Forbidden` responses.
+
+### Financial Transaction Integrity
+
+- **Precision Arithmetic**: Balances, order totals, and platform cuts use PostgreSQL `NUMERIC(10, 2)` to eliminate floating-point representation drift.
+- **Two-Phase Settlement**: Mobile Financial Services (bKash, Nagad) enter the system under a strict `PENDING` state.
+- **Manual Verification Boundary**: Final confirmation requires manual Transaction ID (TrxID) validation by an administrator prior to state transition.
+- **Payout Clearance**: Technician earnings distributions are handled via an asynchronous request queue requiring administrative verification.
+
+### Concurrency Controls & Race Condition Prevention
+
+Time-slot contention is resolved at the database transaction layer using explicit transactional advisory locks:
+
+```sql
+SELECT pg_advisory_xact_lock(hashtext(provider_id::text || slot_date::text));
+```
+
+Physical storage layers duplicate this guarantee via composited domain constraints:
+
+```sql
+ALTER TABLE provider_bookings 
+ADD CONSTRAINT uq_provider_slot 
+UNIQUE(provider_id, slot_date, start_minute);
+```
+
+### Event-Driven Communication Pipeline
+
+Real-time telemetry and order transitions are broadcast through Server-Sent Events (SSE), keeping consumer and technician states synchronized without HTTP polling:
+
+```text
+[Accepted] ──────> [On the Way] ──────> [In Progress] ──────> [Completed]
+```
+
+### Data Integrity Constraints
+
+- **Evaluation Ranges**: Service ratings are bound to physical limits:
+  ```sql
+  CONSTRAINT chk_rating_range CHECK (stars BETWEEN 1 AND 5)
+  ```
+- **Referential Integrity**: Cascading strategies (`ON DELETE CASCADE`) are selectively declared to enforce clean deletion boundaries across orphaned relational records.
+
+---
+
+## Author & Maintainer
+
+<p align="center">
+  <strong>Sad Ibna Forid</strong>
+  <br><br>
+  <a href="https://www.linkedin.com/in/sadudoy">LinkedIn</a>
+  &nbsp; | &nbsp;
+  <a href="https://github.com/sadudoy">GitHub</a>
+  &nbsp; | &nbsp;
+  <a href="mailto:sadudoy29@gmail.com">Email</a>
+  &nbsp; | &nbsp;
+  <a href="https://wa.me/8801776942272">WhatsApp</a>
+</p>
+
+---
+
+<p align="center">
+  <sub>Designed and developed by Sad Ibna Forid</sub>
+</p>
+
+
+<p align="center">
+  <sub>HutFix Platform Architecture Documentation &copy; 2026. Authored by Sad Ibna Forid.</sub>
+</p>

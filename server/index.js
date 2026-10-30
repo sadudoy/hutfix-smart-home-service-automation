@@ -70,7 +70,7 @@ async function startServer() {
         await pool.query('SELECT 1;');
         console.log('DB: connected');
 
-        const server = app.listen(PORT, () => {
+        const server = app.listen(PORT, '0.0.0.0', () => {
             console.log(`Server ready: http://localhost:${PORT}`);
         });
 

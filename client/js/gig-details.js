@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                   <h3>Customer Reviews for this Service</h3>
                   <p>Real feedback from verified completed appointments</p>
                 </div>
-                <span class="status completed">${reviews.length} Review${reviews.length === 1 ? '' : 's'}</span>
+                <span class="status completed" style="white-space:nowrap; flex-shrink:0;">${reviews.length} Review${reviews.length === 1 ? '' : 's'}</span>
               </div>
 
               ${reviews.length === 0 ? `
