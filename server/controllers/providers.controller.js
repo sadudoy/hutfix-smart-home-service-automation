@@ -68,7 +68,8 @@ async function getProviderProfileByUserId(req, res, next) {
 
 async function search(req, res, next) {
     try {
-        const { category_slug, search: searchQuery, min_rating, max_price, sort } = req.query;
+        const { category_slug, search: searchQuery, q, min_rating, max_price, sort } = req.query;
+        const queryTerm = (q || searchQuery || '').trim();
         let query = `
             SELECT p.id, u.full_name AS name, p.headline, p.rating, p.rating_count,
                    p.address, p.years_experience, p.logo_url, p.banner_url,
@@ -89,9 +90,9 @@ async function search(req, res, next) {
             query += ` AND sc.slug = $${params.length}`;
         }
 
-        if (searchQuery) {
-            params.push(`%${searchQuery.trim().toLowerCase()}%`);
-            query += ` AND (LOWER(u.full_name) LIKE $${params.length} OR LOWER(sc.name) LIKE $${params.length} OR LOWER(p.headline) LIKE $${params.length})`;
+        if (queryTerm) {
+            params.push(`%${queryTerm.toLowerCase()}%`);
+            query += ` AND (LOWER(u.full_name) LIKE $${params.length} OR LOWER(sc.name) LIKE $${params.length} OR LOWER(p.headline) LIKE $${params.length} OR LOWER(COALESCE(ps.title, '')) LIKE $${params.length} OR LOWER(COALESCE(ps.description, '')) LIKE $${params.length})`;
         }
 
         if (min_rating != null && min_rating !== '') {

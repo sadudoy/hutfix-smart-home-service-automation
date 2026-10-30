@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../config/db');
 const { JWT_SECRET, NODE_ENV } = require('../config/env');
@@ -254,6 +255,73 @@ async function updateProfile(req, res, next) {
     }
 }
 
+async function forgotPassword(req, res, next) {
+    try {
+        const { email } = req.body || {};
+        if (!email || typeof email !== 'string' || !email.trim()) {
+            return res.status(400).json({ ok: false, error: 'Email is required' });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        const userRes = await pool.query('SELECT id, email FROM users WHERE email = $1;', [normalizedEmail]);
+
+        if (userRes.rows.length === 0) {
+            return res.status(404).json({ ok: false, error: 'User with this email not found' });
+        }
+
+        const user = userRes.rows[0];
+        const token = crypto.randomBytes(20).toString('hex');
+
+        await pool.query(
+            `UPDATE users 
+             SET reset_token = $1, 
+                 reset_token_expiry = NOW() + INTERVAL '1 hour' 
+             WHERE id = $2;`,
+            [token, user.id]
+        );
+
+        console.log(`Reset Link: http://localhost:3000/reset-password.html?token=${token}`);
+        return res.status(200).json({ ok: true, message: 'Password reset link generated' });
+    } catch (err) {
+        return next(err);
+    }
+}
+
+async function resetPassword(req, res, next) {
+    try {
+        const { token, password } = req.body || {};
+        if (!token || typeof token !== 'string' || !token.trim()) {
+            return res.status(400).json({ ok: false, error: 'Reset token is required' });
+        }
+        if (!password || typeof password !== 'string' || password.trim().length < 6) {
+            return res.status(400).json({ ok: false, error: 'password must be at least 6 characters long' });
+        }
+
+        const userRes = await pool.query(
+            'SELECT id FROM users WHERE reset_token = $1 AND reset_token_expiry > NOW();',
+            [token.trim()]
+        );
+
+        if (userRes.rows.length === 0) {
+            return res.status(400).json({ ok: false, error: 'Invalid or expired reset token' });
+        }
+
+        const userId = userRes.rows[0].id;
+        await pool.query(
+            `UPDATE users 
+             SET password_hash = crypt($1, gen_salt('bf')),
+                 reset_token = NULL,
+                 reset_token_expiry = NULL
+             WHERE id = $2;`,
+            [password.trim(), userId]
+        );
+
+        return res.status(200).json({ ok: true, message: 'Password reset successfully' });
+    } catch (err) {
+        return next(err);
+    }
+}
+
 module.exports = {
     TOKEN_NAME,
     TOKEN_OPTS,
@@ -261,5 +329,7 @@ module.exports = {
     login,
     logout,
     me,
-    updateProfile
+    updateProfile,
+    forgotPassword,
+    resetPassword
 };

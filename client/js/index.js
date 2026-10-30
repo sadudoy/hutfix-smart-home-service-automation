@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     `).join('');
 
     catGrid.querySelectorAll('.category-card').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         e.preventDefault();
         currentCategory = btn.dataset.category || btn.dataset.cat;
         updateCategorySelection();
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         searchQuery = '';
         const searchInput = document.getElementById('serviceSearch');
         if (searchInput) searchInput.value = '';
-        renderServiceCards();
+        await loadServices();
       });
     });
   }
@@ -64,11 +64,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderCategoryButtons();
   }
 
-  document.getElementById('viewAllCatBtn')?.addEventListener('click', (e) => {
+  document.getElementById('viewAllCatBtn')?.addEventListener('click', async (e) => {
     e.preventDefault();
     currentCategory = 'All services';
     updateCategorySelection();
-    renderServiceCards();
+    searchQuery = '';
+    const searchInput = document.getElementById('serviceSearch');
+    if (searchInput) searchInput.value = '';
+    await loadServices();
   });
 
   // Load services and specialists catalog
@@ -135,13 +138,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderServiceCards();
     } catch (err) {
       console.error('loadServices error:', err);
-      const grid = document.getElementById('servicesGrid');
+      const grid = getGridEl();
       if (grid) grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">Failed to load services. Please refresh.</div>';
     }
   }
 
+  function getGridEl() {
+    return document.getElementById('services-grid') || document.getElementById('servicesGrid');
+  }
+
   function renderServiceCards() {
-    const grid = document.getElementById('servicesGrid');
+    const grid = getGridEl();
     if (!grid) return;
 
     let filtered = allServices.filter(s => {
@@ -257,9 +264,50 @@ document.addEventListener('DOMContentLoaded', async () => {
   const searchInput = document.getElementById('serviceSearch');
   const searchBtn = document.getElementById('searchBtn');
 
-  function doSearch() {
+  async function doSearch() {
     searchQuery = (searchInput?.value || '').trim();
-    renderServiceCards();
+    if (!searchQuery) {
+      await loadServices();
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/providers/search?q=${encodeURIComponent(searchQuery)}`);
+      const data = await res.json();
+      const providers = data.providers || [];
+
+      allServices = providers.map((p, idx) => {
+        const bannerImage = p.gig_banner_url || p.banner_url || (window.IMAGES?.category ? window.IMAGES.category(p.category_slug) : '');
+        return {
+          id: p.service_id || (idx + 1),
+          slug: p.category_slug || 'appliance-repair',
+          title: p.gig_title || p.category || 'Home Repair Service',
+          category: p.category || 'General',
+          desc: p.gig_description || 'Professional home service with guaranteed parts and verified workmanship.',
+          duration_minutes: Number(p.duration_minutes) || 60,
+          price: Number(p.price_per_hour || 650),
+          providerId: p.id,
+          provider: p.name || 'Rahim Electronics',
+          subtitle: p.headline || 'Certified Specialist',
+          rating: Number(p.rating || 4.9).toFixed(1),
+          reviews: p.rating_count || 120,
+          address: p.address || 'Dhaka, Bangladesh',
+          logo_url: p.logo_url || null,
+          banner_url: bannerImage,
+          verified: true,
+          avatar: idx % 2 === 0 ? 'avatar-green' : 'avatar-lilac',
+          cover: 'cover-wash'
+        };
+      });
+
+      renderServiceCards();
+    } catch (err) {
+      console.error('Search error:', err);
+      const grid = getGridEl();
+      if (grid) {
+        grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1; text-align:center; padding:32px 16px; color:var(--muted);"><i class="bi bi-search" style="font-size:28px; display:block; margin-bottom:8px; color:var(--accent);"></i>No services match your search query.</div>';
+      }
+    }
   }
 
   searchBtn?.addEventListener('click', doSearch);

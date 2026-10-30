@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const nameF = document.getElementById('authNameField');
   const phoneF = document.getElementById('authPhoneField');
   const roleF = document.getElementById('authRoleField');
+  const forgotLink = document.getElementById('forgotPasswordLink');
   const demoRow = document.getElementById('demoRow');
   const errorEl = document.getElementById('authError');
   const form = document.getElementById('authForm');
@@ -29,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     nameF.style.display = isSignup ? 'block' : 'none';
     phoneF.style.display = isSignup ? 'block' : 'none';
     roleF.style.display = isSignup ? 'block' : 'none';
+    if (forgotLink) forgotLink.style.display = isSignup ? 'none' : 'inline';
     demoRow.style.display = isSignup ? 'none' : 'block';
     if (errorEl) errorEl.style.display = 'none';
   });
@@ -51,6 +53,60 @@ document.addEventListener('DOMContentLoaded', () => {
       if (emailInput) emailInput.value = emails[demo];
       if (passInput) passInput.value = 'demo1234';
       if (errorEl) errorEl.style.display = 'none';
+    });
+  });
+
+  // Forgot Password modal
+  forgotLink?.addEventListener('click', (e) => {
+    e.preventDefault();
+    const modalHtml = `
+      <form id="forgotPasswordForm" style="display:grid; gap:16px;">
+        <div class="form-field full">
+          <label style="font-size:13px; font-weight:600; color:var(--text-main);">Registered Email Address</label>
+          <input type="email" name="email" id="forgotEmailInput" placeholder="you@domain.com" required style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main);" />
+          <small style="color:var(--text-muted); font-size:12px; margin-top:4px;">We'll generate a secure password reset link for your account.</small>
+        </div>
+        <div id="forgotError" style="color:var(--red); font-size:13px; display:none;"></div>
+        <div class="modal-actions" style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+          <button type="button" class="secondary-btn" onclick="window.closeModal()">Cancel</button>
+          <button type="submit" class="primary-btn" id="confirmForgotBtn">Send Reset Link</button>
+        </div>
+      </form>
+    `;
+
+    window.openModal('Forgot Password', modalHtml, 'ACCOUNT RECOVERY');
+
+    document.getElementById('forgotPasswordForm')?.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const btn = document.getElementById('confirmForgotBtn');
+      const errBox = document.getElementById('forgotError');
+      const email = document.getElementById('forgotEmailInput')?.value.trim();
+
+      if (!email) return;
+      if (btn) btn.disabled = true;
+      if (errBox) errBox.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || 'Failed to request password reset');
+        }
+
+        window.closeModal();
+        window.toast('Reset link sent! Check server console.', 'success');
+      } catch (err) {
+        if (errBox) {
+          errBox.textContent = err.message;
+          errBox.style.display = 'block';
+        }
+        window.toast(err.message, 'error');
+        if (btn) btn.disabled = false;
+      }
     });
   });
 

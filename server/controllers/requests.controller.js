@@ -25,6 +25,11 @@ async function match(req, res, next) {
             });
         }
 
+        const pastDateCheck = await pool.query('SELECT ($1::date < CURRENT_DATE) AS is_past;', [preferred_date]);
+        if (pastDateCheck.rows[0]?.is_past) {
+            return res.status(400).json({ ok: false, error: 'Cannot book a date in the past.' });
+        }
+
         const startMin = parseInt(preferred_start_minute, 10);
         const endMin = parseInt(preferred_end_minute, 10);
 
@@ -87,6 +92,13 @@ async function create(req, res, next) {
                 ok: false,
                 error: 'category_slug, preferred_date, preferred_start_minute, preferred_end_minute, and address are required'
             });
+        }
+
+        const pastCheck = await client.query('SELECT ($1::date < CURRENT_DATE) AS is_past;', [preferred_date]);
+        if (pastCheck.rows[0]?.is_past) {
+            client.release();
+            clientReleased = true;
+            return res.status(400).json({ ok: false, error: 'Cannot book a date in the past.' });
         }
 
         if (startMin >= endMin) {

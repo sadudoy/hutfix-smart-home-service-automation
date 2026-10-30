@@ -169,13 +169,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         method: 'DELETE',
         credentials: 'include'
       });
-      const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error(data.error || 'Failed to delete gig');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || 'Failed to delete gig');
+      }
 
-      window.toast(`Gig "${name}" deleted.`);
+      window.toast(`Gig "${name}" deleted.`, 'success');
       await loadGigs();
     } catch (err) {
-      window.toast('Error: ' + err.message);
+      window.toast(err.message, 'error');
     }
   }
 

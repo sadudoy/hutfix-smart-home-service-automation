@@ -420,15 +420,38 @@ async function deleteService(req, res, next) {
         const serviceId = parseInt(req.params.id, 10);
         if (isNaN(serviceId)) return res.status(400).json({ ok: false, error: 'invalid service id' });
 
+        const gigRes = await pool.query(
+            'SELECT id, category_id FROM provider_services WHERE id = $1 AND provider_id = $2;',
+            [serviceId, providerId]
+        );
+
+        if (gigRes.rows.length === 0) {
+            return res.status(404).json({ ok: false, error: 'service not found or unauthorized' });
+        }
+
+        const categoryId = gigRes.rows[0].category_id;
+
+        // Check for active service requests for this provider and category
+        const activeCheck = await pool.query(`
+            SELECT id FROM service_requests
+            WHERE assigned_provider_id = $1
+              AND category_id = $2
+              AND status IN ('requested', 'accepted', 'on_the_way', 'in_progress')
+            LIMIT 1;
+        `, [providerId, categoryId]);
+
+        if (activeCheck.rows.length > 0) {
+            return res.status(400).json({
+                ok: false,
+                error: 'Cannot delete a gig with active bookings. Please complete or cancel them first.'
+            });
+        }
+
         const deleteRes = await pool.query(`
             DELETE FROM provider_services
             WHERE id = $1 AND provider_id = $2
             RETURNING id;
         `, [serviceId, providerId]);
-
-        if (deleteRes.rows.length === 0) {
-            return res.status(404).json({ ok: false, error: 'service not found or unauthorized' });
-        }
 
         return res.status(200).json({ ok: true, deleted_id: serviceId });
     } catch (err) {

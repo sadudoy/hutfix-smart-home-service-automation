@@ -9,6 +9,8 @@ const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 50, standardHeaders: 
 router.post('/register', limiter, ctrl.register);
 router.post('/login', limiter, ctrl.login);
 router.post('/logout', ctrl.logout);
+router.post('/forgot-password', limiter, ctrl.forgotPassword);
+router.post('/reset-password', limiter, ctrl.resetPassword);
 router.get('/me', requireAuth, ctrl.me);
 router.patch('/profile', requireAuth, ctrl.updateProfile);
 router.patch('/password', requireAuth, ctrl.updateProfile);

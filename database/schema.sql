@@ -222,3 +222,8 @@ ALTER TABLE provider_services
 
 ALTER TABLE provider_services DROP CONSTRAINT IF EXISTS provider_services_provider_id_category_id_key;
 
+
+-- Migration 011: Reset token
+ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMPTZ;
+CREATE INDEX IF NOT EXISTS idx_users_reset_token ON users(reset_token) WHERE reset_token IS NOT NULL;
