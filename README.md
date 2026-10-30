@@ -30,25 +30,25 @@ Architected with **Node.js**, **Express.js**, and an ACID-compliant **PostgreSQL
 
 ### System Prerequisites
 
-| Runtime / Component | Requirement | Operational Context |
-| :--- | :--- | :--- |
-| **Node.js** | `>= 18.0.0` | Core application execution environment |
-| **PostgreSQL** | `>= 14.0` | Relational persistence layer and security primitives |
-| **Client Engine** | Modern Standards | Chromium, Gecko, or WebKit runtime with ECMAScript 6+ |
+| Runtime / Component | Requirement      | Operational Context                                   |
+| :------------------ | :--------------- | :---------------------------------------------------- |
+| **Node.js**         | `>= 18.0.0`      | Core application execution environment                |
+| **PostgreSQL**      | `>= 14.0`        | Relational persistence layer and security primitives  |
+| **Client Engine**   | Modern Standards | Chromium, Gecko, or WebKit runtime with ECMAScript 6+ |
 
 ### Core Architecture & Dependencies
 
-| Tier | Component | Specification |
-| :--- | :--- | :--- |
-| **Frontend Core** | User Interface | Vanilla JavaScript (ES6+), HTML5, CSS3 Custom Properties |
-| **UI Components** | Visual Assets | Bootstrap Icons |
-| **Client Architecture** | Application Delivery | Multi-Page Application (MPA) Structure |
-| **Application Layer** | HTTP Server | Node.js with Express.js REST Framework |
-| **Data Layer** | RDBMS | PostgreSQL managed via native `pg` connection pooling |
-| **Identity & Sessions** | Authentication | Stateless JWT transmitted over `HttpOnly`, `SameSite=Lax` cookies |
-| **Cryptography** | Data Security | PostgreSQL `pgcrypto` (`crypt()`, `gen_salt()`) |
-| **Event Stream** | Live Updates | Native Server-Sent Events (SSE) Protocol |
-| **Fiscal Scope** | Localization | Bangladeshi Taka (BDT) |
+| Tier                    | Component            | Specification                                                     |
+| :---------------------- | :------------------- | :---------------------------------------------------------------- |
+| **Frontend Core**       | User Interface       | Vanilla JavaScript (ES6+), HTML5, CSS3 Custom Properties          |
+| **UI Components**       | Visual Assets        | Bootstrap Icons                                                   |
+| **Client Architecture** | Application Delivery | Multi-Page Application (MPA) Structure                            |
+| **Application Layer**   | HTTP Server          | Node.js with Express.js REST Framework                            |
+| **Data Layer**          | RDBMS                | PostgreSQL managed via native `pg` connection pooling             |
+| **Identity & Sessions** | Authentication       | Stateless JWT transmitted over `HttpOnly`, `SameSite=Lax` cookies |
+| **Cryptography**        | Data Security        | PostgreSQL `pgcrypto` (`crypt()`, `gen_salt()`)                   |
+| **Event Stream**        | Live Updates         | Native Server-Sent Events (SSE) Protocol                          |
+| **Fiscal Scope**        | Localization         | Bangladeshi Taka (BDT)                                            |
 
 ---
 
@@ -56,15 +56,15 @@ Architected with **Node.js**, **Express.js**, and an ACID-compliant **PostgreSQL
 
 ### Portal Interfaces
 
-| Customer Portal | Provider Control Center |
-| :---: | :---: |
-| `[ Customer Portal — Interface Preview ]` | `[ Provider Portal — Operations Preview ]` |
+|             Customer Portal             |           Provider Control Center           |
+| :-------------------------------------: | :-----------------------------------------: |
+| <img src="screenshots\home.png" alt=""> | <img src="screenshots\provider.png" alt=""> |
 
 ### Operations & Booking
 
-| Administrative Analytics | Transactional Checkout Flow |
-| :---: | :---: |
-| `[ Admin Panel — Analytics Overview ]` | `[ Transaction Pipeline — Modal Preview ]` |
+|         Administrative Analytics         |        Transactional Checkout Flow         |
+| :--------------------------------------: | :----------------------------------------: |
+| <img src="screenshots\admin.png" alt=""> | <img src="screenshots\booking.png" alt=""> |
 
 ---
 
@@ -168,11 +168,11 @@ Platform Endpoint: `http://localhost:3000`
 
 ## Standard Development Credentials
 
-| Access Level | Identifier | Secret Key | Scope & Authorization |
-| :--- | :--- | :--- | :--- |
-| **Administrator** | `admin@demo.test` | `demo1234` | Complete platform governance and financial audits |
-| **Service Provider** | `provider@demo.test` | `demo1234` | Rahim Electronics (4 active service listings) |
-| **Customer** | `customer@demo.test` | `demo1234` | End-consumer booking and invoicing interface |
+| Access Level         | Identifier           | Secret Key | Scope & Authorization                             |
+| :------------------- | :------------------- | :--------- | :------------------------------------------------ |
+| **Administrator**    | `admin@demo.test`    | `demo1234` | Complete platform governance and financial audits |
+| **Service Provider** | `provider@demo.test` | `demo1234` | Rahim Electronics (4 active service listings)     |
+| **Customer**         | `customer@demo.test` | `demo1234` | End-consumer booking and invoicing interface      |
 
 ---
 
@@ -213,8 +213,8 @@ SELECT pg_advisory_xact_lock(hashtext(provider_id::text || slot_date::text));
 Physical storage layers duplicate this guarantee via composited domain constraints:
 
 ```sql
-ALTER TABLE provider_bookings 
-ADD CONSTRAINT uq_provider_slot 
+ALTER TABLE provider_bookings
+ADD CONSTRAINT uq_provider_slot
 UNIQUE(provider_id, slot_date, start_minute);
 ```
 
@@ -255,7 +255,6 @@ Real-time telemetry and order transitions are broadcast through Server-Sent Even
 <p align="center">
   <sub>Designed and developed by Sad Ibna Forid</sub>
 </p>
-
 
 <p align="center">
   <sub>HutFix Platform Architecture Documentation &copy; 2026. Authored by Sad Ibna Forid.</sub>
